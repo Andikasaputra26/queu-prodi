@@ -1,0 +1,448 @@
+@extends('layouts.app')
+
+@section('title', 'Pengajuan Surat Mahasiswa — Queu')
+
+@push('styles')
+<style>
+    .hero-section {
+        text-align: center;
+        padding: 2.5rem 1rem 2rem;
+    }
+
+    .hero-badge {
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        background: rgba(99,102,241,0.12);
+        border: 1px solid rgba(99,102,241,0.25);
+        color: #A5B4FC;
+        padding: 0.4rem 1rem;
+        border-radius: 99px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin-bottom: 1.25rem;
+    }
+
+    .hero-title {
+        font-size: clamp(1.8rem, 4.5vw, 3rem);
+        font-weight: 900;
+        line-height: 1.15;
+        background: linear-gradient(135deg, #fff 0%, #A5B4FC 50%, #8B5CF6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.75rem;
+    }
+
+    .hero-sub {
+        font-size: 1rem;
+        color: var(--text-muted);
+        max-width: 520px;
+        margin: 0 auto 2.5rem;
+        line-height: 1.6;
+    }
+
+    .register-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.75rem;
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    @media (max-width: 800px) {
+        .register-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ---- Konsultasi Cards ---- */
+    .section-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 0.875rem;
+        display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    .service-cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.7rem;
+        margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 500px) {
+        .service-cards { grid-template-columns: 1fr; }
+    }
+
+    .service-card {
+        position: relative;
+        background: rgba(30, 41, 59, 0.6);
+        border: 2px solid var(--border);
+        border-radius: 14px;
+        padding: 1.1rem;
+        cursor: pointer;
+        transition: all 0.22s;
+        overflow: hidden;
+    }
+
+    .service-card::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 2px;
+        background: var(--svc-color, var(--primary));
+        border-radius: 14px 14px 0 0;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    .service-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(99,102,241,0.35);
+    }
+
+    .service-card.selected {
+        border-color: var(--svc-color, var(--primary)) !important;
+        background: color-mix(in srgb, var(--svc-color, var(--primary)) 8%, rgba(30,41,59,0.8));
+    }
+
+    .service-card.selected::after { opacity: 1; }
+
+    .svc-code {
+        width: 36px; height: 36px;
+        border-radius: 9px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.1rem; font-weight: 900;
+        margin-bottom: 0.65rem;
+        font-family: 'JetBrains Mono', monospace;
+        flex-shrink: 0;
+    }
+
+    .svc-name {
+        font-size: 0.85rem; font-weight: 700;
+        margin-bottom: 0.2rem;
+        line-height: 1.3;
+    }
+
+    .svc-desc {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        line-height: 1.4;
+    }
+
+    .svc-meta {
+        position: absolute;
+        top: 0.65rem; right: 0.65rem;
+        display: flex; gap: 0.3rem; align-items: center;
+    }
+
+    .svc-count {
+        font-size: 0.68rem;
+        color: var(--text-muted);
+        background: var(--surface-3);
+        padding: 0.15rem 0.5rem;
+        border-radius: 99px;
+    }
+
+    .svc-check {
+        width: 20px; height: 20px;
+        border-radius: 50%;
+        display: none;
+        align-items: center; justify-content: center;
+        font-size: 0.7rem;
+    }
+
+    .service-card.selected .svc-count { display: none; }
+    .service-card.selected .svc-check { display: flex; background: var(--svc-color, var(--primary)); color: white; }
+
+    /* ---- Stats ---- */
+    .live-stats {
+        display: grid; grid-template-columns: repeat(3, 1fr);
+        gap: 0.7rem;
+        margin-top: 0;
+    }
+
+    .stat-card {
+        background: rgba(30,41,59,0.6);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .stat-number {
+        font-size: 1.9rem;
+        font-weight: 900;
+        font-family: 'JetBrains Mono', monospace;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-label {
+        font-size: 0.68rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-top: 0.2rem;
+    }
+
+    /* ---- Form ---- */
+    .input-icon { position: relative; }
+    .input-icon i {
+        position: absolute;
+        left: 1rem; top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+    .input-icon .form-control { padding-left: 2.75rem; }
+
+    .selected-service-preview {
+        background: var(--surface-3);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.25rem;
+        display: none;
+        align-items: center; gap: 0.875rem;
+    }
+    .selected-service-preview.show { display: flex; }
+
+    .preview-code {
+        width: 44px; height: 44px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.25rem; font-weight: 900;
+        font-family: 'JetBrains Mono', monospace;
+        flex-shrink: 0;
+    }
+    .preview-name { font-size: 0.9rem; font-weight: 700; }
+    .preview-desc { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem; }
+
+    /* Info box */
+    .info-box {
+        background: rgba(99,102,241,0.08);
+        border: 1px solid rgba(99,102,241,0.2);
+        border-radius: 10px;
+        padding: 0.875rem 1rem;
+        font-size: 0.8rem;
+        color: #A5B4FC;
+        margin-top: 1rem;
+        line-height: 1.6;
+    }
+
+    .info-box i { margin-right: 0.3rem; }
+</style>
+@endpush
+
+@section('content')
+<div class="hero-section">
+    <div class="hero-badge">
+        <span class="pulse">🟢</span> Administrasi Prodi — {{ now()->format('l, d F Y') }}
+    </div>
+    <h1 class="hero-title">Sistem Pelacakan<br>Surat Mahasiswa</h1>
+    <p class="hero-sub">Daftarkan pengajuan surat Anda secara digital. Pantau progres pengerjaan surat dari verifikasi admin hingga siap diambil.</p>
+</div>
+
+<div class="register-grid">
+    <!-- Kiri: Pilih Jenis Konsultasi -->
+    <div>
+        <div class="section-label"><i class="fas fa-file-alt"></i> Pilih Jenis Surat</div>
+        <div class="service-cards" id="service-cards">
+            @foreach($services as $service)
+            <div class="service-card"
+                 style="--svc-color: {{ $service->color }}"
+                 data-id="{{ $service->id }}"
+                 data-name="{{ $service->name }}"
+                 data-code="{{ $service->code }}"
+                 data-desc="{{ $service->description }}"
+                 data-color="{{ $service->color }}"
+                 onclick="selectService(this)">
+                <div class="svc-code" style="background: {{ $service->color }}20; color: {{ $service->color }}">
+                    {{ $service->code }}
+                </div>
+                <div class="svc-name">{{ $service->name }}</div>
+                <div class="svc-desc">{{ $service->description }}</div>
+                <div class="svc-meta">
+                    <span class="svc-count">Diproses: —</span>
+                    <div class="svc-check">✓</div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+
+        <div class="section-label"><i class="fas fa-chart-line"></i> Statistik Hari Ini</div>
+        <div class="live-stats">
+            <div class="stat-card">
+                <div class="stat-number" id="stat-total">0</div>
+                <div class="stat-label">Total Pengajuan</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="stat-prodi">0</div>
+                <div class="stat-label">Di Prodi</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="stat-ready">0</div>
+                <div class="stat-label">Siap Ambil</div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <i class="fas fa-info-circle"></i>
+            Setelah mengambil nomor, Anda akan mendapat <strong>tiket digital</strong>.
+            Sistem akan memberitahu otomatis saat nomor Anda dipanggil.
+        </div>
+    </div>
+
+    <!-- Kanan: Form Pendaftaran -->
+    <div>
+        <div class="card" style="position: sticky; top: 80px;">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-id-badge" style="color: var(--primary)"></i>
+                    Data Mahasiswa
+                </h2>
+            </div>
+
+            <div class="selected-service-preview" id="service-preview">
+                <div class="preview-code" id="preview-code"></div>
+                <div>
+                    <div class="preview-name" id="preview-name"></div>
+                    <div class="preview-desc" id="preview-desc"></div>
+                </div>
+            </div>
+
+            <form action="{{ route('queue.store') }}" method="POST" id="register-form">
+                @csrf
+                <input type="hidden" name="service_id" id="service_id">
+
+                <div class="form-group">
+                    <label class="form-label" for="patient_name">
+                        Nama Lengkap <span style="color: var(--danger)">*</span>
+                    </label>
+                    <div class="input-icon">
+                        <i class="fas fa-user-graduate"></i>
+                        <input type="text"
+                               class="form-control"
+                               id="patient_name"
+                               name="patient_name"
+                               placeholder="Masukkan nama lengkap"
+                               value="{{ old('patient_name') }}"
+                               required>
+                    </div>
+                    @error('patient_name')
+                        <small style="color: var(--danger); margin-top: 0.3rem; display: block">{{ $message }}</small>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="phone">NIM / No. HP (Opsional)</label>
+                    <div class="input-icon">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text"
+                               class="form-control"
+                               id="phone"
+                               name="phone"
+                               placeholder="Contoh: 2021001234 atau 08123456789"
+                               value="{{ old('phone') }}">
+                    </div>
+                </div>
+
+                @error('service_id')
+                    <div style="color: var(--danger); font-size: 0.85rem; margin-bottom: 1rem; padding: 0.75rem; background: rgba(239,68,68,0.08); border-radius: 8px; border: 1px solid rgba(239,68,68,0.25);">
+                        <i class="fas fa-exclamation-triangle"></i> {{ $message }}
+                    </div>
+                @enderror
+
+                <button type="submit" class="btn btn-primary" id="submit-btn"
+                        style="width: 100%; justify-content: center; padding: 0.9rem; font-size: 1rem; margin-top: 0.25rem;"
+                        disabled>
+                    <i class="fas fa-paper-plane"></i> Kirim Pengajuan Surat
+                </button>
+
+                <p id="hint-text" style="text-align: center; color: var(--text-muted); font-size: 0.78rem; margin-top: 0.875rem;">
+                    <i class="fas fa-arrow-left"></i> Pilih jenis surat terlebih dahulu
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+@endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/pusher-js@8.3.0/dist/web/pusher.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
+<script>
+    let selectedService = null;
+
+    function selectService(el) {
+        document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedService = {
+            id: el.dataset.id, name: el.dataset.name,
+            code: el.dataset.code, desc: el.dataset.desc, color: el.dataset.color,
+        };
+        document.getElementById('service_id').value = selectedService.id;
+
+        const preview = document.getElementById('service-preview');
+        document.getElementById('preview-code').textContent         = selectedService.code;
+        document.getElementById('preview-code').style.background    = selectedService.color + '20';
+        document.getElementById('preview-code').style.color         = selectedService.color;
+        document.getElementById('preview-name').textContent         = selectedService.name;
+        document.getElementById('preview-desc').textContent         = selectedService.desc;
+        preview.classList.add('show');
+
+        document.getElementById('submit-btn').disabled = false;
+        document.getElementById('hint-text').style.display = 'none';
+    }
+
+    function updateStats(data) {
+        let total = 0, prodi = 0, ready = 0;
+        if (data.services) {
+            Object.values(data.services).forEach(s => {
+                total += s.total;
+                prodi += s.prodi;
+                ready += s.ready;
+            });
+            // Update diproses badge per layanan
+            document.querySelectorAll('.service-card').forEach(card => {
+                const s = data.services[card.dataset.code];
+                if (s) {
+                    const diproses = s.admin + s.prodi;
+                    card.querySelector('.svc-count').textContent = `Diproses: ${diproses}`;
+                }
+            });
+        }
+        document.getElementById('stat-total').textContent = total;
+        document.getElementById('stat-prodi').textContent = prodi;
+        document.getElementById('stat-ready').textContent = ready;
+    }
+
+    fetch('/api/stats').then(r => r.json()).then(updateStats).catch(() => {});
+
+    try {
+        const echo = new window.Echo({
+            broadcaster: 'reverb',
+            key: '{{ env("VITE_REVERB_APP_KEY") }}',
+            wsHost: '{{ env("VITE_REVERB_HOST", "localhost") }}',
+            wsPort: {{ env("VITE_REVERB_PORT", 8080) }},
+            forceTLS: false,
+            enabledTransports: ['ws'],
+        });
+
+        echo.channel('queue-monitor').listen('.queue.updated', (e) => {
+            setWsStatus(true);
+            if (e.stats) updateStats(e.stats);
+            if (e.action === 'new' && e.queue) {
+                showToast(`Antrian baru: ${e.queue.queue_number}`, 'info', 3000);
+            }
+        });
+
+        echo.connector.socket.on('connect',    () => setWsStatus(true));
+        echo.connector.socket.on('disconnect', () => setWsStatus(false));
+    } catch(err) { console.warn('WebSocket:', err); }
+</script>
+@endpush

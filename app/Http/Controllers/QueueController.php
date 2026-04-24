@@ -1,0 +1,152 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Events\QueueUpdated;
+use App\Models\Queue;
+use App\Models\QueueCounter;
+use App\Models\QueueService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class QueueController extends Controller
+{
+    /**
+     * Halaman pendaftaran antrian (pasien)
+     */
+    public function index()
+    {
+        $services = QueueService::where('is_active', true)->get();
+        return view('queue.register', compact('services'));
+    }
+
+    /**
+     * Daftarkan pasien ke antrian
+     */
+    public function register(Request $request)
+    {
+        $request->validate([
+            'patient_name' => 'required|string|max:100',
+            'phone'        => 'nullable|string|max:30',
+            'service_id'   => 'required|exists:queue_services,id',
+        ]);
+
+        $queue = DB::transaction(function () use ($request) {
+            // Lock the service row to prevent concurrent sequence generation
+            $service     = QueueService::where('id', $request->service_id)->lockForUpdate()->firstOrFail();
+            $sequence    = $service->getNextSequence();
+            $queueNumber = $service->code . str_pad($sequence, 3, '0', STR_PAD_LEFT);
+
+            return Queue::create([
+                'queue_number' => $queueNumber,
+                'patient_name' => $request->patient_name,
+                'phone'        => $request->phone,
+                'service_id'   => $service->id,
+                'status'       => 'pending',
+                'sequence'     => $sequence,
+                'queue_date'   => today(),
+            ]);
+        });
+
+        // Notifikasi WA (Opsional/Background)
+        \App\Services\WhatsAppService::notifyRegistration($queue);
+
+        // Broadcast update ke monitor
+        broadcast(new QueueUpdated(action: 'new', queueItem: $queue, stats: $this->getStats()))->toOthers();
+
+        return redirect()->route('queue.ticket', $queue->id);
+    }
+
+    /**
+     * Tampilan tiket antrian
+     */
+    public function ticket(Queue $queue)
+    {
+        $waitingBefore = Queue::where('service_id', $queue->service_id)
+            ->whereDate('queue_date', today())
+            ->where('status', 'waiting')
+            ->where('sequence', '<', $queue->sequence)
+            ->count();
+
+        return view('queue.ticket', compact('queue', 'waitingBefore'));
+    }
+
+    /**
+     * Ambil statistik antrian hari ini
+     */
+    public function getStats(): array
+    {
+        $services = QueueService::where('is_active', true)->with(['queues' => function ($q) {
+            $q->whereDate('queue_date', today());
+        }])->get();
+
+        $stats = [];
+        foreach ($services as $service) {
+            $stats[$service->code] = [
+                'service_name' => $service->name,
+                'color'        => $service->color,
+                'pending'      => $service->queues->where('status', 'pending')->count(),
+                'admin'        => $service->queues->where('status', 'admin')->count(),
+                'prodi'        => $service->queues->where('status', 'prodi')->count(),
+                'ready'        => $service->queues->where('status', 'ready')->count(),
+                'done'         => $service->queues->where('status', 'done')->count(),
+                'total'        => $service->queues->count(),
+            ];
+        }
+
+        $calling = Queue::with(['service', 'counter'])
+            ->whereDate('queue_date', today())
+            ->where('status', 'calling')
+            ->latest('called_at')
+            ->first();
+
+        return [
+            'services' => $stats,
+            'calling'  => $calling ? [
+                'queue_number'  => $calling->queue_number,
+                'patient_name'  => $calling->patient_name,
+                'service_name'  => $calling->service?->name,
+                'service_code'  => $calling->service?->code,
+                'service_color' => $calling->service?->color,
+                'counter_name'  => $calling->counter?->name,
+                'called_at'     => $calling->called_at?->format('H:i:s'),
+            ] : null,
+        ];
+    }
+
+    /**
+     * API: get current queue stats
+     */
+    public function stats()
+    {
+        return response()->json($this->getStats());
+    }
+
+    /**
+     * API: get waiting list
+     */
+    public function waitingList()
+    {
+        $queues = Queue::with(['service', 'counter'])
+            ->whereDate('queue_date', today())
+            ->whereIn('status', ['waiting', 'calling', 'serving'])
+            ->orderBy('service_id')
+            ->orderBy('sequence')
+            ->get()
+            ->map(fn($q) => [
+                'id'            => $q->id,
+                'queue_number'  => $q->queue_number,
+                'patient_name'  => $q->patient_name,
+                'phone'         => $q->phone,
+                'status'        => $q->status,
+                'status_label'  => $q->status_label,
+                'service_name'  => $q->service?->name,
+                'service_color' => $q->service?->color,
+                'counter_name'  => $q->counter?->name,
+                'called_at'     => $q->called_at?->format('H:i:s'),
+                'created_at'    => $q->created_at->format('H:i:s'),
+            ]);
+
+        return response()->json($queues);
+    }
+}
