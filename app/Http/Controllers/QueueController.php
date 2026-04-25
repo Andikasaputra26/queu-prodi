@@ -129,7 +129,7 @@ class QueueController extends Controller
     {
         $queues = Queue::with(['service', 'counter'])
             ->whereDate('queue_date', today())
-            ->whereIn('status', ['waiting', 'calling', 'serving'])
+            ->whereIn('status', ['pending', 'admin', 'prodi', 'ready', 'calling', 'serving'])
             ->orderBy('service_id')
             ->orderBy('sequence')
             ->get()

@@ -18,9 +18,9 @@ class WhatsAppService
             $to = '62' . substr($to, 1);
         }
 
-        $token = env('FONNTE_TOKEN');
+        $token = trim(env('FONNTE_TOKEN'));
 
-        if (!$token || $token === 'your_token_here') {
+        if (!$token || $token === 'your_token_here' || $token === '') {
             Log::info("[SIMULATION] WhatsApp to {$to}: {$message}");
             return true;
         }
@@ -53,6 +53,11 @@ class WhatsAppService
             Log::error("Fonnte Error: " . $err);
             return false;
         } else {
+            // Jika token salah, catat di log
+            $resJson = json_decode($response, true);
+            if (isset($resJson['status']) && $resJson['status'] === false) {
+                Log::warning("Fonnte Warning: " . ($resJson['reason'] ?? 'Unknown Error'));
+            }
             Log::info("Fonnte Response: " . $response);
             return true;
         }
@@ -65,7 +70,7 @@ class WhatsAppService
     {
         if (!$queue->phone) return;
 
-        $message = "Halo, *{$queue->patient_name}*!\n\nPengajuan surat Anda telah terdaftar di *SiPro — Pelacakan Surat Mahasiswa*.\n\nID Surat: *{$queue->queue_number}*\nJenis Surat: {$queue->service->name}\n\nStatus saat ini: *Menunggu Verifikasi Admin*.\nSilakan pantau progres surat Anda secara berkala.\n\nTerima kasih.";
+        $message = "✅ *PENGAJUAN TERDAFTAR*\n\nHalo, *{$queue->patient_name}*!\n\nPermohonan surat Anda telah diterima oleh sistem.\n\n🆔 ID Surat: *{$queue->queue_number}*\n📝 Jenis: {$queue->service->name}\n📅 Tanggal: " . now()->format('d/m/Y H:i') . "\n\nStatus saat ini: *Menunggu Verifikasi Admin*.\nKami akan mengabari Anda kembali melalui WhatsApp ini jika ada perkembangan.";
 
         return self::send($queue->phone, $message);
     }
@@ -78,17 +83,34 @@ class WhatsAppService
         if (!$queue->phone) return;
 
         $statusLabel = $queue->status_label;
-        $message = "🔔 *UPDATE PROGRES SURAT*\n\nHalo, *{$queue->patient_name}*!\n\nSurat Anda (*{$queue->queue_number}*) telah diperbarui.\nStatus Terbaru: *{$statusLabel}*.\n\n";
+        $message = "🔔 *UPDATE PROGRES SURAT*\n\nHalo, *{$queue->patient_name}*!\n\nAda perkembangan terbaru untuk surat Anda (*{$queue->queue_number}*).\n\n📍 *POSISI PROSES SEKARANG*:\n*{$statusLabel}*\n\n";
 
-        if ($queue->status === 'ready') {
-            $message .= "Surat Anda *SUDAH SIAP* dan dapat diambil di loket Administrasi Prodi pada jam kerja.\n\nMohon membawa kartu identitas/KTM saat pengambilan.";
+        if ($queue->status === 'admin') {
+            $message .= "Petugas administrasi sedang memeriksa kelengkapan berkas Anda. Mohon ditunggu.";
         } elseif ($queue->status === 'prodi') {
-            $message .= "Surat sedang dalam proses tanda tangan / pengerjaan di tingkat Program Studi.";
+            $message .= "Berkas sudah lengkap dan sekarang sedang diproses di tingkat Program Studi (Ketua Prodi).";
+        } elseif ($queue->status === 'ready') {
+            $message .= "🎉 *BERITA BAGUS!* Surat Anda sudah selesai dan *SIAP DIAMBIL* di loket Prodi.\n\nSilakan datang pada jam kerja dengan membawa KTM/Kartu Identitas.";
         } elseif ($queue->status === 'rejected') {
-            $message .= "Mohon maaf, pengajuan surat Anda *DITOLAK*. Silakan hubungi admin prodi untuk informasi lebih lanjut.";
+            $message .= "❌ Mohon maaf, pengajuan Anda belum bisa diproses karena ada ketidaksesuaian berkas. Silakan hubungi loket admin untuk detailnya.";
         } else {
-            $message .= "Silakan pantau progres selanjutnya melalui sistem.";
+            $message .= "Silakan pantau terus perkembangannya secara berkala.";
         }
+
+        $message .= "\n\nTerima kasih,\n*Layanan Administrasi Prodi*";
+
+        return self::send($queue->phone, $message);
+    }
+
+    /**
+     * Notifikasi saat dipanggil ke loket
+     */
+    public static function notifyCalled(Queue $queue)
+    {
+        if (!$queue->phone) return;
+
+        $counterName = $queue->counter ? $queue->counter->name : 'Loket Administrasi';
+        $message = "📢 *PANGGILAN ANTRIAN*\n\nHalo, *{$queue->patient_name}*!\n\nNomor antrian Anda *{$queue->queue_number}* sedang dipanggil di *{$counterName}*.\n\nSilakan segera menuju ke loket tersebut.\nTerima kasih.";
 
         return self::send($queue->phone, $message);
     }
