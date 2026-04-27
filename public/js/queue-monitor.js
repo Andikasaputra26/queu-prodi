@@ -432,10 +432,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        echo.connector.socket.on('connect', () => {
-            setWsStatus(true);
-        });
-        echo.connector.socket.on('disconnect', () => setWsStatus(false));
+        // Reverb/Pusher connection events
+        echo.connector.pusher.connection.bind('connected', () => setWsStatus(true));
+        echo.connector.pusher.connection.bind('disconnected', () => setWsStatus(false));
+        echo.connector.pusher.connection.bind('unavailable', () => setWsStatus(false));
+        echo.connector.pusher.connection.bind('failed', () => setWsStatus(false));
 
     } catch(err) { console.warn('WS:', err); }
 

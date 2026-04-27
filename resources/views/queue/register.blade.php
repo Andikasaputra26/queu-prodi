@@ -367,6 +367,29 @@
                     <i class="fas fa-arrow-left"></i> Pilih jenis surat terlebih dahulu
                 </p>
             </form>
+        <div class="card" style="margin-top: 1.5rem;">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-search" style="color: var(--warning)"></i>
+                    Lacak Antrian Saya
+                </h2>
+            </div>
+            <form action="{{ route('queue.search') }}" method="POST" style="padding: 1.25rem;">
+                @csrf
+                <div class="form-group" style="margin-bottom: 0.875rem;">
+                    <label class="form-label" style="font-size: 0.75rem;">Masukkan Nomor Antrian / ID Surat</label>
+                    <div class="input-icon">
+                        <i class="fas fa-ticket-alt"></i>
+                        <input type="text" name="queue_number" class="form-control" placeholder="Contoh: A001" style="text-transform: uppercase;">
+                    </div>
+                    @error('queue_number')
+                        <small style="color: var(--danger); margin-top: 0.3rem; display: block">{{ $message }}</small>
+                    @enderror
+                </div>
+                <button type="submit" class="btn btn-ghost" style="width: 100%; justify-content: center; border-color: var(--warning); color: var(--warning);">
+                    Lihat Progres Surat
+                </button>
+            </form>
         </div>
     </div>
 </div>

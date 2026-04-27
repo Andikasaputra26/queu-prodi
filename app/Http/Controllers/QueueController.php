@@ -64,11 +64,29 @@ class QueueController extends Controller
     {
         $waitingBefore = Queue::where('service_id', $queue->service_id)
             ->whereDate('queue_date', today())
-            ->where('status', 'waiting')
+            ->whereIn('status', ['pending', 'admin', 'prodi'])
             ->where('sequence', '<', $queue->sequence)
             ->count();
 
         return view('queue.ticket', compact('queue', 'waitingBefore'));
+    }
+
+    /**
+     * Cari tiket berdasarkan nomor antrian
+     */
+    public function search(Request $request)
+    {
+        $request->validate(['queue_number' => 'required|string']);
+        
+        $queue = Queue::where('queue_number', strtoupper($request->queue_number))
+            ->whereDate('queue_date', today())
+            ->first();
+
+        if (!$queue) {
+            return back()->withErrors(['queue_number' => 'Nomor antrian tidak ditemukan untuk hari ini.']);
+        }
+
+        return redirect()->route('queue.ticket', $queue->id);
     }
 
     /**

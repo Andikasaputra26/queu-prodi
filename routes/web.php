@@ -15,6 +15,7 @@ Route::get('/', fn() => redirect()->route('queue.register'));
 // ============================
 Route::get('/daftar', [QueueController::class, 'index'])->name('queue.register');
 Route::post('/daftar', [QueueController::class, 'register'])->name('queue.store');
+Route::post('/lacak', [QueueController::class, 'search'])->name('queue.search');
 Route::get('/tiket/{queue}', [QueueController::class, 'ticket'])->name('queue.ticket');
 
 // ============================
