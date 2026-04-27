@@ -376,73 +376,13 @@
 <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.3.0/dist/web/pusher.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
 <script>
-    let selectedService = null;
-
-    function selectService(el) {
-        document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
-        el.classList.add('selected');
-        selectedService = {
-            id: el.dataset.id, name: el.dataset.name,
-            code: el.dataset.code, desc: el.dataset.desc, color: el.dataset.color,
-        };
-        document.getElementById('service_id').value = selectedService.id;
-
-        const preview = document.getElementById('service-preview');
-        document.getElementById('preview-code').textContent         = selectedService.code;
-        document.getElementById('preview-code').style.background    = selectedService.color + '20';
-        document.getElementById('preview-code').style.color         = selectedService.color;
-        document.getElementById('preview-name').textContent         = selectedService.name;
-        document.getElementById('preview-desc').textContent         = selectedService.desc;
-        preview.classList.add('show');
-
-        document.getElementById('submit-btn').disabled = false;
-        document.getElementById('hint-text').style.display = 'none';
+window.QueueConfig = {
+    reverb: {
+        key: '{{ env("VITE_REVERB_APP_KEY") }}',
+        host: '{{ env("VITE_REVERB_HOST", "localhost") }}',
+        port: {{ env("VITE_REVERB_PORT", 8080) }}
     }
-
-    function updateStats(data) {
-        let total = 0, prodi = 0, ready = 0;
-        if (data.services) {
-            Object.values(data.services).forEach(s => {
-                total += s.total;
-                prodi += s.prodi;
-                ready += s.ready;
-            });
-            // Update diproses badge per layanan
-            document.querySelectorAll('.service-card').forEach(card => {
-                const s = data.services[card.dataset.code];
-                if (s) {
-                    const diproses = s.admin + s.prodi;
-                    card.querySelector('.svc-count').textContent = `Diproses: ${diproses}`;
-                }
-            });
-        }
-        document.getElementById('stat-total').textContent = total;
-        document.getElementById('stat-prodi').textContent = prodi;
-        document.getElementById('stat-ready').textContent = ready;
-    }
-
-    fetch('/api/stats').then(r => r.json()).then(updateStats).catch(() => {});
-
-    try {
-        const echo = new window.Echo({
-            broadcaster: 'reverb',
-            key: '{{ env("VITE_REVERB_APP_KEY") }}',
-            wsHost: '{{ env("VITE_REVERB_HOST", "localhost") }}',
-            wsPort: {{ env("VITE_REVERB_PORT", 8080) }},
-            forceTLS: false,
-            enabledTransports: ['ws'],
-        });
-
-        echo.channel('queue-monitor').listen('.queue.updated', (e) => {
-            setWsStatus(true);
-            if (e.stats) updateStats(e.stats);
-            if (e.action === 'new' && e.queue) {
-                showToast(`Antrian baru: ${e.queue.queue_number}`, 'info', 3000);
-            }
-        });
-
-        echo.connector.socket.on('connect',    () => setWsStatus(true));
-        echo.connector.socket.on('disconnect', () => setWsStatus(false));
-    } catch(err) { console.warn('WebSocket:', err); }
+};
 </script>
+<script src="{{ asset('js/queue-register.js') }}"></script>
 @endpush

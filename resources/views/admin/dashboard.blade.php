@@ -238,7 +238,7 @@
 <div class="page-header">
     <div>
         <h1 class="page-title">📄 Pelacakan Surat Mahasiswa</h1>
-        <div class="page-sub">Panel Administrasi Prodi — {{ now()->format('l, d F Y') }}</div>
+        <div class="page-sub">Panel Administrasi Prodi — Semua Riwayat</div>
     </div>
     <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
         <div class="ws-status"><div class="ws-dot" id="ws-dot"></div><span id="ws-text">Live</span></div>
@@ -258,7 +258,7 @@
 <div class="stats-row">
     <div class="mini-stat ms-total">
         <div class="mini-num">{{ $todayStats['total'] }}</div>
-        <div class="mini-lbl">Total</div>
+        <div class="mini-lbl">Total Semua</div>
     </div>
     <div class="mini-stat ms-pending">
         <div class="mini-num">{{ $todayStats['pending'] }}</div>
@@ -338,6 +338,21 @@
                 <span id="q-total-lbl" style="font-size:0.78rem; color:var(--text-muted)"></span>
             </div>
 
+            <!-- Filter -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+                <input type="date" class="q-search" id="filter-date" 
+                       style="flex: 1; padding-left: 1rem;" 
+                       onchange="refreshQueues()">
+                <select class="q-search" id="filter-service" 
+                        style="flex: 1; padding-left: 1rem; appearance: auto;" 
+                        onchange="refreshQueues()">
+                    <option value="">— Semua Jenis Surat —</option>
+                    @foreach($services as $svc)
+                    <option value="{{ $svc->id }}">{{ $svc->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
             <!-- Search -->
             <div class="q-search-wrap">
                 <i class="fas fa-search"></i>
@@ -366,231 +381,18 @@
 <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.3.0/dist/web/pusher.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
 <script>
-const CSRF = document.querySelector('meta[name="csrf-token"]').content;
-let tab = 'pending';
-let allQueues = [];
-
-// ─── Modal ───
-function openModal()  { document.getElementById('manual-modal').classList.add('open'); }
-function closeModal() { document.getElementById('manual-modal').classList.remove('open'); }
-
-document.getElementById('manual-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
-});
-
-// ─── Submit manual ───
-async function submitManual() {
-    const svcId = document.getElementById('manual-service').value;
-    const name  = document.getElementById('manual-name').value.trim();
-    const phone = document.getElementById('manual-phone').value.trim();
-
-    if (!svcId)  { showToast('Pilih jenis surat terlebih dahulu', 'error'); return; }
-    if (!name)   { showToast('Nama mahasiswa harus diisi', 'error'); return; }
-
-    try {
-        const res  = await fetch('{{ route("admin.add-manual") }}', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-            body: JSON.stringify({ service_id: svcId, patient_name: name, phone }),
-        });
-        const data = await res.json();
-        showToast(data.message, data.success ? 'success' : 'error');
-        if (data.success) {
-            closeModal();
-            document.getElementById('manual-name').value  = '';
-            document.getElementById('manual-phone').value = '';
-            document.getElementById('manual-service').value = '';
-            refreshQueues();
-        }
-    } catch(e) { showToast('Terjadi kesalahan', 'error'); }
-}
-
-// ─── Tab & search ───
-function switchTab(s, btn) {
-    tab = s;
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    refreshQueues();
-}
-
-function filterQueues() {
-    const q = document.getElementById('q-search').value.toLowerCase();
-    renderQueues(allQueues.filter(item =>
-        item.patient_name.toLowerCase().includes(q) ||
-        item.queue_number.toLowerCase().includes(q) ||
-        (item.phone && item.phone.toLowerCase().includes(q))
-    ));
-}
-
-// ─── Queue list ───
-async function refreshQueues() {
-    const url = tab ? `/api/admin/today?status=${tab}` : '/api/admin/today';
-    try {
-        const res = await fetch(url);
-        allQueues = await res.json();
-        document.getElementById('q-search').value = '';
-        renderQueues(allQueues);
-    } catch(e) {}
-}
-
-function renderQueues(list) {
-    document.getElementById('q-total-lbl').textContent = `${list.length} antrian`;
-    const el = document.getElementById('q-list');
-    if (!list.length) {
-        el.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div>Tidak ada antrian</div>`;
-        return;
-    }
-    el.innerHTML = '';
-    list.forEach(q => {
-        const color = q.service_color || '#6366F1';
-        const div   = document.createElement('div');
-        div.className = 'q-row';
-        
-        let actions = '';
-        if (q.status === 'pending') {
-            actions = `<button class="btn btn-warning" onclick="updateStatus(${q.id},'admin')">Verif Admin</button>`;
-        } else if (q.status === 'admin') {
-            actions = `<button class="btn btn-primary" onclick="updateStatus(${q.id},'prodi')">Kirim ke Prodi</button>`;
-        } else if (q.status === 'prodi') {
-            actions = `<button class="btn btn-success" onclick="updateStatus(${q.id},'ready')">Siap Diambil</button>`;
-        } else if (q.status === 'ready') {
-            actions = `<button class="btn btn-ghost" onclick="updateStatus(${q.id},'done')">Selesaikan</button>`;
-        }
-
-        div.innerHTML = `
-            <div class="q-num" style="color:${color}">${q.queue_number}</div>
-            <div style="flex:1; min-width:0">
-                <div class="q-name">${q.patient_name}</div>
-                <div class="q-meta">
-                    <span style="color:${color};font-weight:600">${q.service_name}</span>
-                    ${q.phone ? ` · ${q.phone}` : ''}
-                    · ${q.created_at}
-                </div>
-            </div>
-            <div style="display:flex; align-items:center; gap:0.5rem">
-                <span class="badge badge-${q.status}">${q.status_label}</span>
-                <div style="display:flex; gap:0.3rem">
-                    ${actions}
-                    <button class="btn btn-ghost" style="padding:0.3rem 0.5rem; font-size:0.72rem" title="Tolak" onclick="updateStatus(${q.id},'rejected')">❌</button>
-                    ${q.phone ? `
-                    <a href="https://wa.me/${q.phone.startsWith('0') ? '62' + q.phone.substring(1) : q.phone.replace(/[^0-9]/g,'')}?text=Halo ${encodeURIComponent(q.patient_name)}, surat Anda (${q.service_name}) saat ini berstatus: ${q.status_label}."
-                       target="_blank" class="btn btn-success" style="padding:0.3rem 0.5rem; font-size:0.72rem" title="WhatsApp">
-                        <i class="fab fa-whatsapp"></i>
-                    </a>` : ''}
-                </div>
-            </div>
-        `;
-        el.appendChild(div);
-    });
-}
-
-// ─── Print ticket ───
-function printTicket(id, num, name, svc, counter) {
-    const now = new Date().toLocaleString('id-ID');
-    document.getElementById('print-area').innerHTML = `
-        <div style="font-family:monospace; text-align:center; padding:20px; max-width:300px; margin:0 auto; border:2px solid #000">
-            <div style="font-size:18px; font-weight:bold">PRODI — TIKET ANTRIAN</div>
-            <div style="border-top:1px dashed #000; margin:10px 0"></div>
-            <div style="font-size:60px; font-weight:900; letter-spacing:-2px">${num}</div>
-            <div style="border-top:1px dashed #000; margin:10px 0"></div>
-            <div style="font-size:13px; text-align:left; line-height:1.8">
-                <div><strong>Nama:</strong> ${name}</div>
-                <div><strong>Keperluan:</strong> ${svc}</div>
-                ${counter ? `<div><strong>Ruangan:</strong> ${counter}</div>` : ''}
-                <div><strong>Waktu:</strong> ${now}</div>
-            </div>
-            <div style="border-top:1px dashed #000; margin:10px 0"></div>
-            <div style="font-size:11px">Harap standby dan perhatikan layar display</div>
-        </div>
-    `;
-    window.print();
-}
-
-// ─── Call next ───
-async function callNext(counterId) {
-    const svcId = document.getElementById(`svc-${counterId}`).value;
-    const btn = event.target.closest('button');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    try {
-        const res  = await fetch('{{ route("admin.call-next") }}', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-            body: JSON.stringify({ counter_id: counterId, service_id: svcId || null }),
-        });
-        const data = await res.json();
-        showToast(data.message, data.success ? 'success' : 'warning');
-        if (data.success) setTimeout(() => location.reload(), 1200);
-    } catch(e) { showToast('Terjadi kesalahan', 'error'); }
-    finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-bell"></i> Panggil'; }
-}
-
-// ─── Update status ───
-async function updateStatus(id, status) {
-    try {
-        const res  = await fetch(`/admin/queue/${id}/status`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-            body: JSON.stringify({ status }),
-        });
-        const data = await res.json();
-        showToast(data.message, data.success ? 'success' : 'error');
-        if (data.success) { refreshQueues(); setTimeout(() => location.reload(), 1500); }
-    } catch(e) { showToast('Terjadi kesalahan', 'error'); }
-}
-
-// ─── Recall ───
-async function recall(id) {
-    try {
-        const res  = await fetch(`/admin/queue/${id}/recall`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-        });
-        const data = await res.json();
-        showToast(data.message, data.success ? 'success' : 'error');
-    } catch(e) { showToast('Terjadi kesalahan', 'error'); }
-}
-
-// ─── Reset ───
-async function resetToday() {
-    if (!confirm('⚠️ Reset semua antrian hari ini?\nTindakan ini tidak bisa dibatalkan.')) return;
-    try {
-        const res  = await fetch('{{ route("admin.reset-today") }}', {
-            method: 'DELETE', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-        });
-        const data = await res.json();
-        showToast(data.message, data.success ? 'success' : 'error');
-        if (data.success) setTimeout(() => location.reload(), 1500);
-    } catch(e) { showToast('Terjadi kesalahan', 'error'); }
-}
-
-// ─── Init ───
-refreshQueues();
-
-// ─── WebSocket ───
-try {
-    const echo = new window.Echo({
-        broadcaster: 'reverb',
+window.AdminConfig = {
+    routes: {
+        addManual: '{{ route("admin.add-manual") }}',
+        callNext: '{{ route("admin.call-next") }}',
+        resetToday: '{{ route("admin.reset-today") }}'
+    },
+    reverb: {
         key: '{{ env("VITE_REVERB_APP_KEY") }}',
-        wsHost: '{{ env("VITE_REVERB_HOST", "localhost") }}',
-        wsPort: {{ env("VITE_REVERB_PORT", 8080) }},
-        forceTLS: false,
-        enabledTransports: ['ws'],
-    });
-
-    echo.channel('queue-monitor').listen('.queue.updated', (e) => {
-        setWsStatus(true);
-        refreshQueues();
-        if (e.action === 'new' && e.queue) {
-            showToast(`Antrian baru: ${e.queue.queue_number} — ${e.queue.patient_name}`, 'info');
-        } else if (e.action === 'called' && e.queue) {
-            showToast(`Dipanggil: ${e.queue.queue_number} → ${e.queue.counter_name || 'ruangan'}`, 'warning');
-        }
-    });
-
-    echo.connector.socket.on('connect',    () => setWsStatus(true));
-    echo.connector.socket.on('disconnect', () => setWsStatus(false));
-} catch(e) { console.warn(e); }
-
-setInterval(refreshQueues, 15000);
+        host: '{{ env("VITE_REVERB_HOST", "localhost") }}',
+        port: {{ env("VITE_REVERB_PORT", 8080) }}
+    }
+};
 </script>
+<script src="{{ asset('js/admin-dashboard.js') }}"></script>
 @endpush

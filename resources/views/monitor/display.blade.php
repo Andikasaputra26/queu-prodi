@@ -262,14 +262,24 @@
     <div class="display-main" style="grid-template-columns: 1fr;">
         <!-- Tracking List -->
         <div class="tracking-wrap">
-            <div class="panel-label" style="margin-bottom: 1.5rem;">
-                <i class="fas fa-sync-alt fa-spin"></i> &nbsp;Live Update Progres Surat
+            <div class="panel-label" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <div><i class="fas fa-sync-alt fa-spin"></i> &nbsp;Live Update Progres Surat</div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="date" id="filter-date" onchange="refreshTracking()" value="{{ date('Y-m-d') }}" style="background: var(--surface-3); border: 1px solid var(--border); color: var(--text); font-size: 0.7rem; padding: 0.25rem 0.5rem; border-radius: 6px; outline: none; cursor: pointer;">
+                    <select id="filter-service" onchange="refreshTracking()" style="background: var(--surface-3); border: 1px solid var(--border); color: var(--text); font-size: 0.7rem; padding: 0.25rem 0.5rem; border-radius: 6px; outline: none; cursor: pointer;">
+                        <option value="">— Semua Kategori —</option>
+                        @foreach($services as $svc)
+                        <option value="{{ $svc->id }}">{{ $svc->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
             <div style="overflow-y: auto; flex: 1;">
                 <table class="tracking-table">
                     <thead>
                         <tr>
                             <th>ID Surat</th>
+                            <th>Tanggal</th>
                             <th>Nama Mahasiswa</th>
                             <th>Jenis Surat</th>
                             <th>Status Terkini</th>
@@ -312,83 +322,12 @@
     <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.3.0/dist/web/pusher.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
     <script>
-        // Clock
-        function tick() {
-            const now = new Date();
-            document.getElementById('clock').textContent = now.toLocaleTimeString('id-ID');
-            document.getElementById('date').textContent  = now.toLocaleDateString('id-ID', {
-                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-            });
-        }
-        setInterval(tick, 1000); tick();
-
-        function refreshTracking() {
-            fetch('/api/waiting').then(r => r.json()).then(list => {
-                const tbody = document.getElementById('tracking-list');
-                const empty = document.getElementById('empty-msg');
-                
-                if (list.length === 0) {
-                    tbody.innerHTML = '';
-                    empty.style.display = 'flex';
-                    return;
-                }
-                
-                empty.style.display = 'none';
-                tbody.innerHTML = '';
-                list.forEach(q => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${q.queue_number}</td>
-                        <td style="font-weight: 700;">${q.patient_name}</td>
-                        <td style="font-size: 0.9rem; color: var(--text-muted);">${q.service_name}</td>
-                        <td><span class="badge badge-${q.status}">${q.status_label}</span></td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            });
-        }
-
-        function refreshStats() {
-            fetch('/api/stats').then(r => r.json()).then(d => {
-                let p = 0, r = 0, done = 0;
-                if (d.services) Object.values(d.services).forEach(x => { p += x.prodi; r += x.ready; done += x.done; });
-                document.getElementById('f-prodi').textContent = p;
-                document.getElementById('f-ready').textContent = r;
-                document.getElementById('f-done').textContent  = done;
-            });
-        }
-
-        refreshTracking(); refreshStats();
-
-        try {
-            const echo = new window.Echo({
-                broadcaster: 'reverb',
-                key: '{{ env("VITE_REVERB_APP_KEY") }}',
-                wsHost: '{{ env("VITE_REVERB_HOST", "localhost") }}',
-                wsPort: {{ env("VITE_REVERB_PORT", 8080) }},
-                forceTLS: false,
-                enabledTransports: ['ws'],
-            });
-
-            echo.channel('queue-display').listen('.queue.called', (e) => {
-                refreshTracking(); refreshStats();
-            });
-
-            echo.channel('queue-monitor').listen('.queue.updated', () => {
-                refreshStats(); refreshTracking();
-            });
-
-            echo.connector.socket.on('connect', () => {
-                document.getElementById('ws-d').className = 'ws-d on';
-                document.getElementById('ws-t').textContent = 'Live — Terhubung';
-            });
-            echo.connector.socket.on('disconnect', () => {
-                document.getElementById('ws-d').className = 'ws-d';
-                document.getElementById('ws-t').textContent = 'Terputus';
-            });
-        } catch(e) { console.warn(e); }
-
-        setInterval(() => { refreshTracking(); refreshStats(); }, 15000);
+    window.QueueConfig = {
+        reverbKey: '{{ env("VITE_REVERB_APP_KEY") }}',
+        reverbHost: '{{ env("VITE_REVERB_HOST", "localhost") }}',
+        reverbPort: {{ env("VITE_REVERB_PORT", 8080) }},
+    };
     </script>
+    <script src="{{ asset('js/queue-monitor.js') }}"></script>
 </body>
 </html>

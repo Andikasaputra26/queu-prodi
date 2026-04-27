@@ -21,12 +21,12 @@ class AdminController extends Controller
         $services = QueueService::where('is_active', true)->get();
 
         $todayStats = [
-            'total'   => Queue::whereDate('queue_date', today())->count(),
-            'pending' => Queue::whereDate('queue_date', today())->where('status', 'pending')->count(),
-            'admin'   => Queue::whereDate('queue_date', today())->where('status', 'admin')->count(),
-            'prodi'   => Queue::whereDate('queue_date', today())->where('status', 'prodi')->count(),
-            'ready'   => Queue::whereDate('queue_date', today())->where('status', 'ready')->count(),
-            'done'    => Queue::whereDate('queue_date', today())->where('status', 'done')->count(),
+            'total'   => Queue::count(),
+            'pending' => Queue::where('status', 'pending')->count(),
+            'admin'   => Queue::where('status', 'admin')->count(),
+            'prodi'   => Queue::where('status', 'prodi')->count(),
+            'ready'   => Queue::where('status', 'ready')->count(),
+            'done'    => Queue::where('status', 'done')->count(),
         ];
 
         return view('admin.dashboard', compact('counters', 'services', 'todayStats'));
@@ -200,14 +200,24 @@ class AdminController extends Controller
      */
     public function todayList(Request $request)
     {
-        $query = Queue::with(['service', 'counter'])
-            ->whereDate('queue_date', today());
+        $query = Queue::with(['service', 'counter']);
+
+        if ($request->date) {
+            $query->whereDate('queue_date', $request->date);
+        }
+
+        if ($request->service_id) {
+            $query->where('service_id', $request->service_id);
+        }
 
         if ($request->status) {
             $query->where('status', $request->status);
         }
 
-        $queues = $query->orderBy('service_id')->orderBy('sequence')->get()
+        $queues = $query->orderBy('queue_date', 'desc')
+            ->orderBy('service_id')
+            ->orderBy('sequence')
+            ->get()
             ->map(fn($q) => [
                 'id'            => $q->id,
                 'queue_number'  => $q->queue_number,
@@ -219,7 +229,7 @@ class AdminController extends Controller
                 'service_color' => $q->service?->color,
                 'counter_name'  => $q->counter?->name,
                 'called_at'     => $q->called_at?->format('H:i:s'),
-                'created_at'    => $q->created_at->format('H:i:s'),
+                'created_at'    => $q->created_at->format('d/m/Y H:i'),
             ]);
 
         return response()->json($queues);

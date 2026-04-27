@@ -269,63 +269,14 @@
 <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.3.0/dist/web/pusher.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
 <script>
-    const MY_NUMBER = '{{ $queue->queue_number }}';
-
-    function updateWaiting() {
-        fetch('/api/waiting').then(r => r.json()).then(list => {
-            const myIdx = list.findIndex(q => q.queue_number === MY_NUMBER);
-            const before = myIdx >= 0 ? list.slice(0, myIdx).filter(q => q.status === 'waiting').length : 0;
-            document.getElementById('waiting-count').textContent = before;
-        }).catch(() => {});
+window.TicketConfig = {
+    myNumber: '{{ $queue->queue_number }}',
+    reverb: {
+        key: '{{ env("VITE_REVERB_APP_KEY") }}',
+        host: '{{ env("VITE_REVERB_HOST", "localhost") }}',
+        port: {{ env("VITE_REVERB_PORT", 8080) }}
     }
-
-    try {
-        const echo = new window.Echo({
-            broadcaster: 'reverb',
-            key: '{{ env("VITE_REVERB_APP_KEY") }}',
-            wsHost: '{{ env("VITE_REVERB_HOST", "localhost") }}',
-            wsPort: {{ env("VITE_REVERB_PORT", 8080) }},
-            forceTLS: false,
-            enabledTransports: ['ws'],
-        });
-
-        echo.channel('queue-monitor').listen('.queue.updated', () => {
-            setWsStatus(true);
-            updateWaiting();
-        });
-
-        echo.channel('queue-display').listen('.queue.called', (e) => {
-            setWsStatus(true);
-            if (e.queue_number === MY_NUMBER) {
-                document.getElementById('calling-overlay').style.display = 'flex';
-                document.getElementById('call-room').textContent =
-                    `Silakan menuju ${e.counter_name || 'ruangan dosen'}`;
-                document.getElementById('status-badge').textContent = '📢 Dipanggil';
-                document.getElementById('status-badge').className = 'badge badge-calling';
-                document.getElementById('live-icon').textContent = '📢';
-                document.getElementById('live-text').textContent = 'Anda dipanggil! Segera menuju ruangan.';
-                if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
-                // Notif suara
-                try {
-                    const ctx = new AudioContext();
-                    [523, 784, 1047].forEach((f, i) => {
-                        const o = ctx.createOscillator(), g = ctx.createGain();
-                        o.connect(g); g.connect(ctx.destination);
-                        o.frequency.value = f; o.type = 'sine';
-                        o.start(ctx.currentTime + i * 0.18);
-                        o.stop(ctx.currentTime + i * 0.18 + 0.15);
-                        g.gain.setValueAtTime(0.35, ctx.currentTime + i * 0.18);
-                        g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.18 + 0.14);
-                    });
-                } catch(e) {}
-            }
-        });
-
-        echo.connector.socket.on('connect',    () => setWsStatus(true));
-        echo.connector.socket.on('disconnect', () => setWsStatus(false));
-    } catch(err) { console.warn('WS:', err); }
-
-    updateWaiting();
-    setInterval(updateWaiting, 30000);
+};
 </script>
+<script src="{{ asset('js/queue-ticket.js') }}"></script>
 @endpush

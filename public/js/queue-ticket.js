@@ -1,0 +1,82 @@
+/**
+ * Queue Ticket Logic
+ */
+
+const Config = window.TicketConfig || {
+    myNumber: '',
+    reverb: { key: '', host: 'localhost', port: 8080 }
+};
+
+function updateWaiting() {
+    fetch('/api/waiting').then(r => r.json()).then(list => {
+        const myIdx = list.findIndex(q => q.queue_number === Config.myNumber);
+        const before = myIdx >= 0 ? list.slice(0, myIdx).filter(q => q.status === 'waiting').length : 0;
+        const countEl = document.getElementById('waiting-count');
+        if (countEl) countEl.textContent = before;
+    }).catch(() => {});
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateWaiting();
+    setInterval(updateWaiting, 30000);
+
+    try {
+        if (!window.Echo) return;
+
+        const echo = new window.Echo({
+            broadcaster: 'reverb',
+            key: Config.reverb.key,
+            wsHost: Config.reverb.host,
+            wsPort: Config.reverb.port,
+            forceTLS: false,
+            enabledTransports: ['ws'],
+        });
+
+        echo.channel('queue-monitor').listen('.queue.updated', () => {
+            if (typeof setWsStatus === 'function') setWsStatus(true);
+            updateWaiting();
+        });
+
+        echo.channel('queue-display').listen('.queue.called', (e) => {
+            if (typeof setWsStatus === 'function') setWsStatus(true);
+            if (e.queue_number === Config.myNumber) {
+                const overlay = document.getElementById('calling-overlay');
+                if (overlay) overlay.style.display = 'flex';
+                
+                const roomEl = document.getElementById('call-room');
+                if (roomEl) roomEl.textContent = `Silakan menuju ${e.counter_name || 'ruangan dosen'}`;
+                
+                const badgeEl = document.getElementById('status-badge');
+                if (badgeEl) {
+                    badgeEl.textContent = '📢 Dipanggil';
+                    badgeEl.className = 'badge badge-calling';
+                }
+                
+                const liveIcon = document.getElementById('live-icon');
+                if (liveIcon) liveIcon.textContent = '📢';
+                
+                const liveText = document.getElementById('live-text');
+                if (liveText) liveText.textContent = 'Anda dipanggil! Segera menuju ruangan.';
+                
+                if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
+                
+                // Audio notification
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    [523, 784, 1047].forEach((f, i) => {
+                        const o = ctx.createOscillator(), g = ctx.createGain();
+                        o.connect(g); g.connect(ctx.destination);
+                        o.frequency.value = f; o.type = 'sine';
+                        o.start(ctx.currentTime + i * 0.18);
+                        o.stop(ctx.currentTime + i * 0.18 + 0.15);
+                        g.gain.setValueAtTime(0.35, ctx.currentTime + i * 0.18);
+                        g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.18 + 0.14);
+                    });
+                } catch(err) {}
+            }
+        });
+
+        echo.connector.socket.on('connect',    () => { if (typeof setWsStatus === 'function') setWsStatus(true); });
+        echo.connector.socket.on('disconnect', () => { if (typeof setWsStatus === 'function') setWsStatus(false); });
+    } catch(err) { console.warn('WS:', err); }
+});

@@ -125,12 +125,22 @@ class QueueController extends Controller
     /**
      * API: get waiting list
      */
-    public function waitingList()
+    public function waitingList(Request $request)
     {
-        $queues = Queue::with(['service', 'counter'])
-            ->whereDate('queue_date', today())
-            ->whereIn('status', ['pending', 'admin', 'prodi', 'ready', 'calling', 'serving'])
-            ->orderBy('service_id')
+        $query = Queue::with(['service', 'counter'])
+            ->whereIn('status', ['pending', 'admin', 'prodi', 'ready', 'calling', 'serving']);
+
+        if ($request->date) {
+            $query->whereDate('queue_date', $request->date);
+        } else {
+            $query->whereDate('queue_date', '>=', today());
+        }
+
+        if ($request->service_id) {
+            $query->where('service_id', $request->service_id);
+        }
+
+        $queues = $query->orderBy('service_id')
             ->orderBy('sequence')
             ->get()
             ->map(fn($q) => [
@@ -144,6 +154,7 @@ class QueueController extends Controller
                 'service_color' => $q->service?->color,
                 'counter_name'  => $q->counter?->name,
                 'called_at'     => $q->called_at?->format('H:i:s'),
+                'queue_date'    => $q->queue_date->format('d/m/Y'),
                 'created_at'    => $q->created_at->format('H:i:s'),
             ]);
 
