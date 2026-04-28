@@ -368,6 +368,7 @@
                 <button class="tab-btn" onclick="switchTab('prodi', this)">🏛️ Prodi</button>
                 <button class="tab-btn" onclick="switchTab('ready', this)">🎁 Siap</button>
                 <button class="tab-btn" onclick="switchTab('done', this)">✅ Selesai</button>
+                <button class="tab-btn" onclick="switchTab('rejected', this)">❌ Ditolak</button>
                 <button class="tab-btn" onclick="switchTab('', this)">📋 Semua</button>
             </div>
 

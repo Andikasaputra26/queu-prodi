@@ -33,6 +33,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/add-manual', [AdminController::class, 'addManual'])->name('add-manual');
     Route::patch('/queue/{queue}/status', [AdminController::class, 'updateStatus'])->name('update-status');
     Route::post('/queue/{queue}/recall', [AdminController::class, 'recall'])->name('recall');
+    Route::post('/queue/{queue}/requeue', [AdminController::class, 'requeue'])->name('requeue');
     Route::delete('/reset-today', [AdminController::class, 'resetToday'])->name('reset-today');
 });
 

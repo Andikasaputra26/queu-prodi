@@ -91,7 +91,11 @@ class WhatsAppService
         } elseif ($queue->status === 'ready') {
             $message .= "🎉 *BERITA BAGUS!* Surat Anda sudah selesai dan *SIAP DIAMBIL* di loket Prodi.\n\nSilakan datang pada jam kerja dengan membawa KTM/Kartu Identitas.";
         } elseif ($queue->status === 'rejected') {
-            $message .= "❌ Mohon maaf, pengajuan Anda belum bisa diproses karena ada ketidaksesuaian berkas. Silakan hubungi loket admin untuk detailnya.";
+            $message .= "❌ Mohon maaf, pengajuan Anda belum bisa diproses karena ada ketidaksesuaian berkas.";
+            if ($queue->reject_reason) {
+                $message .=  "\n\n*Alasan Penolakan:*\n{$queue->reject_reason}";
+            }
+            $message .= "\n\nSilakan perbaiki dokumen Anda lalu hubungi loket admin untuk diantrikan ulang.";
         } else {
             $message .= "Silakan pantau terus perkembangannya secara berkala.";
         }

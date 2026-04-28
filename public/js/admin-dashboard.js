@@ -123,6 +123,8 @@ function renderQueues(list) {
             actions = `<button class="btn btn-success" onclick="updateStatus(${q.id},'ready')">Siap Diambil</button>`;
         } else if (q.status === 'ready') {
             actions = `<button class="btn btn-ghost" onclick="updateStatus(${q.id},'done')">Selesaikan</button>`;
+        } else if (q.status === 'rejected') {
+            actions = `<button class="btn btn-warning" onclick="requeue(${q.id})"><i class="fas fa-redo"></i> Antri Ulang</button>`;
         }
 
         div.innerHTML = `
@@ -208,11 +210,32 @@ async function callNext(counterId) {
 
 // ─── Update status ───
 async function updateStatus(id, status) {
+    let payload = { status };
+    if (status === 'rejected') {
+        const reason = prompt('Masukkan alasan penolakan (kosongkan jika tidak ada):');
+        if (reason === null) return; // User cancelled
+        payload.reject_reason = reason;
+    }
+
     try {
         const res  = await fetch(`/admin/queue/${id}/status`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-            body: JSON.stringify({ status }),
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        showToast(data.message, data.success ? 'success' : 'error');
+        if (data.success) { refreshQueues(); setTimeout(() => location.reload(), 1500); }
+    } catch(e) { showToast('Terjadi kesalahan', 'error'); }
+}
+
+// ─── Requeue ───
+async function requeue(id) {
+    if (!confirm('Mahasiswa sudah memperbaiki dokumen dan antrikan ulang surat ini?')) return;
+    try {
+        const res  = await fetch(`/admin/queue/${id}/requeue`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
         });
         const data = await res.json();
         showToast(data.message, data.success ? 'success' : 'error');

@@ -135,9 +135,13 @@ class AdminController extends Controller
     {
         $request->validate([
             'status' => 'required|string',
+            'reject_reason' => 'nullable|string',
         ]);
 
         $updates = ['status' => $request->status];
+        if ($request->has('reject_reason')) {
+            $updates['reject_reason'] = $request->reject_reason;
+        }
 
         if ($request->status === 'done' || $request->status === 'rejected') {
             $updates['done_at'] = now();
@@ -160,6 +164,31 @@ class AdminController extends Controller
         \App\Services\WhatsAppService::notifyStatusUpdate($queue);
 
         return response()->json(['success' => true, 'message' => 'Status surat diperbarui ke: ' . $queue->status_label]);
+    }
+
+    /**
+     * Antri ulang (Re-queue) tiket yang ditolak
+     */
+    public function requeue(Queue $queue)
+    {
+        if ($queue->status !== 'rejected') {
+            return response()->json(['success' => false, 'message' => 'Hanya antrian yang ditolak yang bisa diantrikan ulang.']);
+        }
+
+        $queue->update([
+            'status' => 'pending',
+            'reject_reason' => null,
+            'queue_date' => today(),
+            // Set done_at to null if it was set when rejected
+            'done_at' => null,
+        ]);
+
+        broadcast(new QueueUpdated('pending', $queue, $this->getStats()));
+
+        // Notifikasi WA
+        \App\Services\WhatsAppService::notifyStatusUpdate($queue);
+
+        return response()->json(['success' => true, 'message' => 'Antrian berhasil diantrikan ulang menjadi Pending.']);
     }
 
     /**

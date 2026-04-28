@@ -214,6 +214,13 @@
                         </span>
                     </span>
                 </div>
+                @if($queue->status === 'rejected' && $queue->reject_reason)
+                <div class="info-row" style="flex-direction: column; align-items: flex-start; gap: 0.5rem; background: rgba(239,68,68,0.05); padding: 1rem; border-radius: 8px; margin-top: 1rem; border: 1px solid rgba(239,68,68,0.2);">
+                    <span class="info-label" style="color: var(--danger); font-weight: 700;"><i class="fas fa-exclamation-triangle"></i> Alasan Penolakan</span>
+                    <span style="font-size: 0.85rem; color: var(--text);">{{ $queue->reject_reason }}</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">* Harap perbaiki dokumen Anda lalu temui admin untuk diantrikan ulang.</span>
+                </div>
+                @endif
             </div>
 
             <div class="ticket-dashes">
