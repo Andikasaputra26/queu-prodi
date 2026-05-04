@@ -105,9 +105,6 @@ class WhatsAppService
         return self::send($queue->phone, $message);
     }
 
-    /**
-     * Notifikasi saat dipanggil ke loket
-     */
     public static function notifyCalled(Queue $queue)
     {
         if (!$queue->phone) return;
