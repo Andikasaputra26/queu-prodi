@@ -38,8 +38,10 @@ function selectService(el) {
 
     const submitBtn = document.getElementById('submit-btn');
     const hintText = document.getElementById('hint-text');
+    const formInputs = document.getElementById('form-inputs');
     if (submitBtn) submitBtn.disabled = false;
     if (hintText) hintText.style.display = 'none';
+    if (formInputs) formInputs.style.display = 'block';
 }
 
 function updateStats(data) {

@@ -319,6 +319,7 @@
                 @csrf
                 <input type="hidden" name="service_id" id="service_id">
 
+                <div id="form-inputs" style="display: none;">
                 <div class="form-group">
                     <label class="form-label" for="patient_name">
                         Nama Lengkap <span style="color: var(--danger)">*</span>
@@ -362,10 +363,12 @@
                         disabled>
                     <i class="fas fa-paper-plane"></i> Kirim Pengajuan Surat
                 </button>
+                </div>
 
-                <p id="hint-text" style="text-align: center; color: var(--text-muted); font-size: 0.78rem; margin-top: 0.875rem;">
-                    <i class="fas fa-arrow-left"></i> Pilih jenis surat terlebih dahulu
-                </p>
+                <div id="hint-text" style="text-align: center; padding: 2.5rem 1rem;">
+                    <i class="fas fa-hand-pointer" style="font-size: 2.5rem; color: var(--border); margin-bottom: 1rem; display: block;"></i>
+                    <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 0;">Silakan pilih <strong>Jenis Surat</strong> di sebelah kiri terlebih dahulu untuk mulai mengisi form.</p>
+                </div>
             </form>
         <div class="card" style="margin-top: 1.5rem;">
             <div class="card-header">
