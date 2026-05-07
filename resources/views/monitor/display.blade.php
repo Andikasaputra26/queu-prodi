@@ -11,13 +11,13 @@
         :root {
             --surface: #F8FAFC;
             --surface-2: #FFFFFF;
-            --surface-3: #F1F5F9;
-            --border: #E2E8F0;
-            --text: #0F172A;
-            --text-muted: #64748B;
-            --primary: #2563EB;
-            --success: #10B981;
-            --warning: #F59E0B;
+            --surface-3: #E2E8F0;
+            --border: #CBD5E1;
+            --text: #020617;
+            --text-muted: #334155;
+            --primary: #1D4ED8;
+            --success: #047857;
+            --warning: #B45309;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }

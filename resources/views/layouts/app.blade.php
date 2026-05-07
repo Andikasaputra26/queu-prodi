@@ -13,19 +13,19 @@
     @stack('styles')
     <style>
         :root {
-            --primary: #2563EB;
-            --primary-dark: #1D4ED8;
-            --secondary: #3B82F6;
-            --accent: #0284C7;
-            --success: #10B981;
-            --warning: #F59E0B;
-            --danger: #EF4444;
+            --primary: #1D4ED8;
+            --primary-dark: #1E3A8A;
+            --secondary: #2563EB;
+            --accent: #0369A1;
+            --success: #047857;
+            --warning: #B45309;
+            --danger: #DC2626;
             --surface: #F8FAFC;
             --surface-2: #FFFFFF;
-            --surface-3: #F1F5F9;
-            --border: #E2E8F0;
-            --text: #0F172A;
-            --text-muted: #64748B;
+            --surface-3: #E2E8F0;
+            --border: #CBD5E1;
+            --text: #020617;
+            --text-muted: #334155;
             --glass: rgba(255, 255, 255, 0.85);
             --glow: 0 4px 20px rgba(37, 99, 235, 0.15);
         }
