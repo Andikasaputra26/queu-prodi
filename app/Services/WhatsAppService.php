@@ -99,7 +99,7 @@ class WhatsAppService
             $message .= "Silakan pantau terus perkembangannya secara berkala.";
         }
 
-        $message .= "\n\nTerima kasih,\n*Layanan Administrasi Prodi*";
+        $message .= "\n\nTerima kasih,\n*Layanan Administrasi Jurusan*";
 
         return self::send($queue->phone, $message);
     }
