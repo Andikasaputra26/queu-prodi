@@ -11,7 +11,6 @@
     .page-title { font-size: 1.6rem; font-weight: 900; }
     .page-sub   { color: var(--text-muted); font-size: 0.875rem; margin-top: 0.2rem; }
 
-    /* Stats */
     .stats-row {
         display: grid; grid-template-columns: repeat(6, 1fr);
         gap: 0.75rem; margin-bottom: 1.5rem;
@@ -47,14 +46,12 @@
 
     .mini-lbl { font-size: 0.65rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.25rem; }
 
-    /* Layout */
     .admin-layout {
         display: grid; grid-template-columns: 360px 1fr;
         gap: 1.5rem;
     }
     @media (max-width: 950px) { .admin-layout { grid-template-columns: 1fr; } }
 
-    /* Counter cards */
     .counter-block {
         background: var(--surface-2); border: 1px solid var(--border);
         border-radius: 14px; padding: 1.1rem;
@@ -101,7 +98,6 @@
         padding: 0.4rem 0.65rem; cursor: pointer; outline: none; flex: 1; min-width: 0;
     }
 
-    /* Queue table */
     .q-search-wrap {
         position: relative; margin-bottom: 0.75rem;
     }
@@ -145,7 +141,6 @@
         margin-top: 0.75rem; gap: 0.75rem;
     }
 
-    /* ── Modal ── */
     .modal-overlay {
         position: fixed; inset: 0;
         background: rgba(0,0,0,0.75);
@@ -183,7 +178,6 @@
 
     .modal-box { position: relative; }
 
-    /* ── Print styles ── */
     @media print {
         body > *:not(#print-area) { display: none !important; }
         #print-area {
@@ -200,10 +194,8 @@
 
 @section('content')
 
-<!-- Print area (hidden, shown on print only) -->
 <div id="print-area"></div>
 
-<!-- ── Modal Tambah Manual ── -->
 <div class="modal-overlay" id="manual-modal">
     <div class="modal-box">
         <button class="modal-close" onclick="closeModal()">×</button>
@@ -234,7 +226,6 @@
     </div>
 </div>
 
-<!-- ── Page header ── -->
 <div class="page-header">
     <div>
         <h1 class="page-title">📄 Pelacakan Surat Mahasiswa</h1>
@@ -254,7 +245,6 @@
     </div>
 </div>
 
-<!-- ── Stats ── -->
 <div class="stats-row">
     <div class="mini-stat ms-total">
         <div class="mini-num">{{ $todayStats['total'] }}</div>
@@ -282,7 +272,7 @@
     </div>
 </div>
 
-<!-    <!-- KIRI: Kontrol Administrasi -->
+<div class="admin-layout">
     <div>
         <div class="card">
             <div class="card-header">
@@ -321,13 +311,7 @@
             </div>
         </div>
     </div>
-</i> Reset
-                </button>
-            </div>
-        </div>
-    </div>
 
-    <!-- KANAN: Daftar Antrian -->
     <div>
         <div class="card" style="height:100%">
             <div class="card-header" style="flex-wrap:wrap; gap:0.5rem">
@@ -338,7 +322,6 @@
                 <span id="q-total-lbl" style="font-size:0.78rem; color:var(--text-muted)"></span>
             </div>
 
-            <!-- Filter -->
             <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
                 <input type="date" class="q-search" id="filter-date" 
                        style="flex: 1; padding-left: 1rem;" 
@@ -353,7 +336,6 @@
                 </select>
             </div>
 
-            <!-- Search -->
             <div class="q-search-wrap">
                 <i class="fas fa-search"></i>
                 <input type="text" class="q-search" id="q-search"
@@ -361,7 +343,6 @@
                        oninput="filterQueues()">
             </div>
 
-            <!-- Tabs -->
             <div class="tab-nav">
                 <button class="tab-btn active" onclick="switchTab('pending', this)">📥 Baru</button>
                 <button class="tab-btn" onclick="switchTab('admin', this)">🔍 Admin</button>

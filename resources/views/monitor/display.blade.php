@@ -172,7 +172,6 @@
         .badge-ready   { background: rgba(16,185,129,0.15); color: var(--success); }
         .badge-done    { background: rgba(16,185,129,0.25); color: var(--success); opacity: 0.7; }
 
-        /* Right panel: Counters */
         .right-panel {
             display: flex; flex-direction: column;
             overflow: hidden;
@@ -220,7 +219,6 @@
         .counter-patient { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem; }
         .counter-empty { font-size: 0.82rem; color: var(--text-muted); font-style: italic; }
 
-        /* Footer */
         .footer {
             background: var(--surface-2);
             border-top: 1px solid var(--border);
@@ -260,7 +258,6 @@
     </div>
 
     <div class="display-main" style="grid-template-columns: 1fr;">
-        <!-- Tracking List -->
         <div class="tracking-wrap">
             <div class="panel-label" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
                 <div><i class="fas fa-sync-alt fa-spin"></i> &nbsp;Live Update Progres Surat</div>
@@ -286,7 +283,6 @@
                         </tr>
                     </thead>
                     <tbody id="tracking-list">
-                        <!-- Data loaded via JS -->
                     </tbody>
                 </table>
                 <div id="empty-msg" class="welcome-panel" style="display: none;">

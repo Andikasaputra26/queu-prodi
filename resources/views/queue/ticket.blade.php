@@ -255,7 +255,6 @@
     </div>
 </div>
 
-<!-- Calling Overlay -->
 <div class="calling-overlay" id="calling-overlay">
     <div class="calling-popup">
         <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">📢</div>

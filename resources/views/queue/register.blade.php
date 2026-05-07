@@ -52,7 +52,6 @@
         .register-grid { grid-template-columns: 1fr; }
     }
 
-    /* ---- Konsultasi Cards ---- */
     .section-label {
         font-size: 0.72rem;
         font-weight: 700;
@@ -297,7 +296,6 @@
         </div>
     </div>
 
-    <!-- Kanan: Form Pendaftaran -->
     <div>
         <div class="card" style="position: sticky; top: 80px;">
             <div class="card-header">
@@ -340,7 +338,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="phone">NIM / No. HP (Opsional)</label>
+                    <label class="form-label" for="phone">No.HP/WA</label>
                     <div class="input-icon">
                         <i class="fas fa-id-card"></i>
                         <input type="text"
@@ -348,8 +346,12 @@
                                id="phone"
                                name="phone"
                                placeholder="Contoh: 2021001234 atau 08123456789"
-                               value="{{ old('phone') }}">
+                               value="{{ old('phone') }}"
+                               required>
                     </div>
+                    @error('phone')
+                        <small style="color: var(--danger); margin-top: 0.3rem; display: block">{{ $message }}</small>
+                    @enderror
                 </div>
 
                 @error('service_id')
@@ -395,12 +397,11 @@
             </form>
         </div>
 
-        <!-- Monitoring Antrian Publik -->
         <div class="card" style="margin-top: 1.5rem;">
             <div class="card-header" style="margin-bottom: 1rem;">
                 <h2 class="card-title">
                     <i class="fas fa-list-ul" style="color: var(--success)"></i>
-                    Monitoring Antrian Publik
+                    Monitoring Antrian
                 </h2>
             </div>
             

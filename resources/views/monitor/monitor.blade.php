@@ -4,7 +4,6 @@
 
 @push('styles')
 <style>
-    /* ── Top stat bar ── */
     .stat-bar {
         display: grid;
         grid-template-columns: repeat(5, 1fr);
@@ -111,7 +110,6 @@
 
     .no-call-msg { color: var(--text-muted); font-size: 0.9rem; }
 
-    /* ── Service breakdown bars ── */
     .svc-row {
         display: flex; align-items: center; gap: 0.875rem;
         padding: 0.7rem 0; border-bottom: 1px solid var(--border);
@@ -163,7 +161,6 @@
 
     .qnum-cell { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 0.95rem; }
 
-    /* ── Activity log ── */
     .log-list { max-height: 340px; overflow-y: auto; }
     .log-list::-webkit-scrollbar { width: 4px; }
     .log-list::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 99px; }
@@ -186,7 +183,6 @@
     .log-num  { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
     .log-time { font-size: 0.68rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; margin-top: 0.1rem; }
 
-    /* ── Counter grid ── */
     .counter-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -232,7 +228,6 @@
     }
     .live-pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); animation: pulse 2s infinite; }
 
-    /* ── Tab ── */
     .tab-strip { display: flex; gap: 0.35rem; margin-bottom: 1rem; }
     .t-btn {
         padding: 0.35rem 0.75rem; border-radius: 7px;
@@ -243,7 +238,6 @@
     .t-btn:hover  { color: var(--text); background: var(--surface-3); }
     .t-btn.active { color: var(--text); background: rgba(37,99,235,0.15); }
 
-    /* ── Wait time ── */
     .wait-bar {
         display: flex; align-items: center; gap: 0.75rem;
         padding: 0.75rem;
@@ -255,7 +249,6 @@
     .wait-num   { font-family: 'JetBrains Mono', monospace; font-size: 1.4rem; font-weight: 900; color: var(--accent); }
     .wait-label { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.1rem; }
 
-    /* empty */
     .empty-state { text-align: center; padding: 2rem; color: var(--text-muted); }
     .empty-icon  { font-size: 2.5rem; margin-bottom: 0.5rem; }
 </style>
@@ -263,7 +256,6 @@
 
 @section('content')
 
-<!-- ───── Top: Judul + controls ───── -->
 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
     <div>
         <h1 style="font-size:1.5rem; font-weight:900;">📊 Monitoring Progres Surat</h1>
@@ -286,7 +278,6 @@
     </div>
 </div>
 
-<!-- ───── Stat bar ───── -->
 <div class="stat-bar">
     <div class="stat-box s-total">
         <div class="stat-icon">📄</div>
@@ -315,7 +306,6 @@
     </div>
 </div>
 
-<!-- ───── Currently Called ───── -->
 <div class="calling-highlight card" id="calling-highlight" style="margin-bottom:1.5rem;">
     <div id="ch-no-call" style="display:flex; align-items:center; gap:0.75rem; color:var(--text-muted);">
         <span style="font-size:1.5rem">📄</span>
@@ -341,13 +331,10 @@
     </div>
 </div>
 
-<!-- ───── Main layout ───── -->
 <div class="monitor-layout">
 
-    <!-- ── Left column ── -->
     <div class="left-col">
 
-        <!-- Service Breakdown -->
         <div class="card">
             <div class="sec-hdr">
                 <div class="sec-title"><i class="fas fa-layer-group"></i> Rekap Per Jenis Surat</div>
@@ -356,7 +343,6 @@
             <div id="svc-breakdown">
                 <div class="empty-state"><div class="empty-icon">⏳</div>Memuat...</div>
             </div>
-            <!-- Wait time replacement -->
             <div class="wait-bar" style="background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.1);">
                 <div class="wait-bar-icon">✅</div>
                 <div>
@@ -366,7 +352,6 @@
             </div>
         </div>
 
-        <!-- Queue list -->
         <div class="card">
             <div class="sec-hdr">
                 <div class="sec-title"><i class="fas fa-list"></i> Daftar Pengajuan</div>
@@ -398,10 +383,8 @@
         </div>
     </div>
 
-    <!-- ── Right column ── -->
     <div class="right-col">
 
-        <!-- Counter grid -->
         <div class="card">
             <div class="sec-hdr">
                 <div class="sec-title"><i class="fas fa-door-open"></i> Status Ruang Dosen</div>
@@ -409,7 +392,6 @@
             <div class="counter-grid" id="cg-grid"></div>
         </div>
 
-        <!-- Activity Log -->
         <div class="card">
             <div class="sec-hdr">
                 <div class="sec-title"><i class="fas fa-history"></i> Log Aktivitas</div>
@@ -425,7 +407,6 @@
             </div>
         </div>
 
-        <!-- Connection status card -->
         <div class="card" id="ws-card" style="padding:0.875rem 1.25rem;">
             <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
                 <div style="display:flex; align-items:center; gap:0.625rem;">
