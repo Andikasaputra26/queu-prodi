@@ -217,8 +217,8 @@
             <input type="text" class="form-control" id="manual-name" placeholder="Nama lengkap mahasiswa">
         </div>
         <div class="form-group">
-            <label class="form-label">NIM / No. HP (Untuk Notifikasi)</label>
-            <input type="text" class="form-control" id="manual-phone" placeholder="Contoh: 08123456789">
+            <label class="form-label">No.HP/WA <span style="color:var(--danger)">*</span></label>
+            <input type="text" class="form-control" id="manual-phone" placeholder="Contoh: 08123456789" required>
         </div>
         <button class="btn btn-primary" style="width:100%; justify-content:center; padding:0.875rem;" onclick="submitManual()">
             <i class="fas fa-save"></i> Daftarkan Pengajuan

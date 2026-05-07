@@ -24,8 +24,6 @@ class AdminController extends Controller
             'total'   => Queue::count(),
             'pending' => Queue::where('status', 'pending')->count(),
             'admin'   => Queue::where('status', 'admin')->count(),
-            'prodi'   => Queue::where('status', 'prodi')->count(),
-            'ready'   => Queue::where('status', 'ready')->count(),
             'done'    => Queue::where('status', 'done')->count(),
         ];
 
@@ -39,7 +37,7 @@ class AdminController extends Controller
     {
         $request->validate([
             'patient_name' => 'required|string|max:100',
-            'phone'        => 'nullable|string|max:30',
+            'phone'        => 'required|string|max:30',
             'service_id'   => 'required|exists:queue_services,id',
         ]);
 

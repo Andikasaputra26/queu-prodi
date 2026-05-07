@@ -340,12 +340,12 @@
                 <div class="form-group">
                     <label class="form-label" for="phone">No.HP/WA</label>
                     <div class="input-icon">
-                        <i class="fas fa-id-card"></i>
+                        <i class="fab fa-whatsapp" style="color: #25D366;"></i>
                         <input type="text"
                                class="form-control"
                                id="phone"
                                name="phone"
-                               placeholder="Contoh: 2021001234 atau 08123456789"
+                               placeholder="Contoh: 08123456789 (Menerima Notifikasi WA)"
                                value="{{ old('phone') }}"
                                required>
                     </div>

@@ -27,7 +27,7 @@ class QueueController extends Controller
     {
         $request->validate([
             'patient_name' => 'required|string|max:100',
-            'phone'        => 'nullable|string|max:30',
+            'phone'        => 'required|string|max:30',
             'service_id'   => 'required|exists:queue_services,id',
         ]);
 

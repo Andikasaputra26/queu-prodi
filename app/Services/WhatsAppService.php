@@ -69,7 +69,7 @@ class WhatsAppService
     public static function notifyRegistration(Queue $queue)
     {
         $ticketUrl = route('queue.ticket', $queue->id);
-        $message = "✅ *PENGAJUAN TERDAFTAR*\n\nHalo, *{$queue->patient_name}*!\n\nPermohonan surat Anda telah diterima oleh sistem.\n\n🆔 ID Surat: *{$queue->queue_number}*\n📝 Jenis: {$queue->service->name}\n📅 Tanggal: " . now()->format('d/m/Y H:i') . "\n\nCek sisa antrian Anda di sini:\n" . $ticketUrl . "\n\nStatus saat ini: *Menunggu Verifikasi Admin*.\nKami akan mengabari Anda kembali melalui WhatsApp ini jika ada perkembangan.";
+        $message = "✅ *REGISTRASI BERHASIL*\n\nHalo, *{$queue->patient_name}*!\n\nRegistrasi antrian surat Anda berhasil dilakukan dan saat ini *SEDANG DIPROSES* oleh admin.\n\n🆔 ID Surat: *{$queue->queue_number}*\n📝 Jenis: {$queue->service->name}\n📅 Tanggal: " . now()->format('d/m/Y H:i') . "\n\nCek progress antrian Anda di sini:\n" . $ticketUrl . "\n\nKami akan mengabari Anda kembali melalui WhatsApp jika proses telah selesai.";
 
         return self::send($queue->phone, $message);
     }
