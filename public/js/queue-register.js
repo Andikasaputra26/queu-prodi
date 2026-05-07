@@ -45,20 +45,18 @@ function selectService(el) {
 }
 
 function updateStats(data) {
-    let total = 0, prodi = 0, ready = 0;
+    let total = 0, diproses = 0;
     if (data.services) {
         Object.values(data.services).forEach(s => {
             total += s.total;
-            prodi += s.prodi;
-            ready += s.ready;
+            diproses += s.admin;
         });
         
         document.querySelectorAll('.service-card').forEach(card => {
             const s = data.services[card.dataset.code];
             if (s) {
-                const diproses = s.admin + s.prodi;
                 const countEl = card.querySelector('.svc-count');
-                if (countEl) countEl.textContent = `Diproses: ${diproses}`;
+                if (countEl) countEl.textContent = `Diproses: ${s.admin}`;
             }
         });
     }

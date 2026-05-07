@@ -245,7 +245,7 @@
     </div>
 </div>
 
-<div class="stats-row">
+<div class="stats-row" style="grid-template-columns: repeat(4, 1fr);">
     <div class="mini-stat ms-total">
         <div class="mini-num">{{ $todayStats['total'] }}</div>
         <div class="mini-lbl">Total Semua</div>
@@ -256,15 +256,7 @@
     </div>
     <div class="mini-stat ms-admin">
         <div class="mini-num">{{ $todayStats['admin'] }}</div>
-        <div class="mini-lbl">Verif Admin</div>
-    </div>
-    <div class="mini-stat ms-prodi">
-        <div class="mini-num">{{ $todayStats['prodi'] }}</div>
-        <div class="mini-lbl">Di Prodi</div>
-    </div>
-    <div class="mini-stat ms-ready">
-        <div class="mini-num">{{ $todayStats['ready'] }}</div>
-        <div class="mini-lbl">Siap Ambil</div>
+        <div class="mini-lbl">Diproses</div>
     </div>
     <div class="mini-stat ms-done">
         <div class="mini-num">{{ $todayStats['done'] }}</div>
@@ -291,9 +283,8 @@
                     <div class="cb-title" style="margin-bottom: 0.5rem;">⚙️ Panduan Status</div>
                     <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.5rem;">
                         <div><span class="badge badge-pending">Diajukan</span> Mahasiswa baru saja mendaftar.</div>
-                        <div><span class="badge badge-calling">Verifikasi Admin</span> Surat sedang diperiksa berkasnya.</div>
-                        <div><span class="badge badge-serving">Proses di Prodi</span> Surat sedang menunggu tanda tangan/persetujuan.</div>
-                        <div><span class="badge badge-done">Siap Diambil</span> Surat sudah selesai dan menunggu mahasiswa.</div>
+                        <div><span class="badge badge-calling">Diproses</span> Surat sedang diperiksa & diproses.</div>
+                        <div><span class="badge badge-done">Selesai</span> Surat sudah selesai dan dapat diambil.</div>
                     </div>
                 </div>
 
@@ -345,9 +336,7 @@
 
             <div class="tab-nav">
                 <button class="tab-btn active" onclick="switchTab('pending', this)">📥 Baru</button>
-                <button class="tab-btn" onclick="switchTab('admin', this)">🔍 Admin</button>
-                <button class="tab-btn" onclick="switchTab('prodi', this)">🏛️ Prodi</button>
-                <button class="tab-btn" onclick="switchTab('ready', this)">🎁 Siap</button>
+                <button class="tab-btn" onclick="switchTab('admin', this)">🔍 Diproses</button>
                 <button class="tab-btn" onclick="switchTab('done', this)">✅ Selesai</button>
                 <button class="tab-btn" onclick="switchTab('rejected', this)">❌ Ditolak</button>
                 <button class="tab-btn" onclick="switchTab('', this)">📋 Semua</button>

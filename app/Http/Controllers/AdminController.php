@@ -135,11 +135,15 @@ class AdminController extends Controller
         $request->validate([
             'status' => 'required|string',
             'reject_reason' => 'nullable|string',
+            'document_number' => 'nullable|string',
         ]);
 
         $updates = ['status' => $request->status];
         if ($request->has('reject_reason')) {
             $updates['reject_reason'] = $request->reject_reason;
+        }
+        if ($request->has('document_number')) {
+            $updates['document_number'] = $request->document_number;
         }
 
         if ($request->status === 'done' || $request->status === 'rejected') {
@@ -152,7 +156,7 @@ class AdminController extends Controller
                     $counter->update(['current_queue_id' => null]);
                 }
             }
-        } elseif ($request->status === 'prodi') {
+        } elseif ($request->status === 'admin') {
             $updates['served_at'] = now();
         }
 

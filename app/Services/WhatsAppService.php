@@ -85,11 +85,10 @@ class WhatsAppService
         $message = "🔔 *UPDATE PROGRES SURAT*\n\nHalo, *{$queue->patient_name}*!\n\nAda perkembangan terbaru untuk surat Anda (*{$queue->queue_number}*).\n\n📍 *POSISI PROSES SEKARANG*:\n*{$statusLabel}*\n\n";
 
         if ($queue->status === 'admin') {
-            $message .= "Petugas administrasi sedang memeriksa kelengkapan berkas Anda. Mohon ditunggu.";
-        } elseif ($queue->status === 'prodi') {
-            $message .= "Berkas sudah lengkap dan sekarang sedang diproses di tingkat Program Studi (Ketua Prodi).";
-        } elseif ($queue->status === 'ready') {
-            $message .= "🎉 *BERITA BAGUS!* Surat Anda sudah selesai dan *SIAP DIAMBIL* di loket Prodi.\n\nSilakan datang pada jam kerja dengan membawa KTM/Kartu Identitas.";
+            $docNumMsg = $queue->document_number ? "\n*Nomor Surat Anda:* {$queue->document_number}\n" : "";
+            $message .= "Surat Anda telah diterima oleh petugas dan sedang diproses.{$docNumMsg}";
+        } elseif ($queue->status === 'done') {
+            $message .= "🎉 *BERITA BAGUS!* Proses pengajuan surat Anda telah *SELESAI*.\n\nSilakan datang ke loket atau cek aplikasi untuk informasi pengambilan/tindak lanjut berikutnya.";
         } elseif ($queue->status === 'rejected') {
             $message .= "❌ Mohon maaf, pengajuan Anda belum bisa diproses karena ada ketidaksesuaian berkas.";
             if ($queue->reject_reason) {

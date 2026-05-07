@@ -116,13 +116,9 @@ function renderQueues(list) {
         
         let actions = '';
         if (q.status === 'pending') {
-            actions = `<button class="btn btn-warning" onclick="updateStatus(${q.id},'admin')">Verif Admin</button>`;
+            actions = `<button class="btn btn-warning" onclick="updateStatus(${q.id},'admin')">Proses & Input No Surat</button>`;
         } else if (q.status === 'admin') {
-            actions = `<button class="btn btn-primary" onclick="updateStatus(${q.id},'prodi')">Kirim ke Prodi</button>`;
-        } else if (q.status === 'prodi') {
-            actions = `<button class="btn btn-success" onclick="updateStatus(${q.id},'ready')">Siap Diambil</button>`;
-        } else if (q.status === 'ready') {
-            actions = `<button class="btn btn-ghost" onclick="updateStatus(${q.id},'done')">Selesaikan</button>`;
+            actions = `<button class="btn btn-success" onclick="updateStatus(${q.id},'done')">Selesai</button>`;
         } else if (q.status === 'rejected') {
             actions = `<button class="btn btn-warning" onclick="requeue(${q.id})"><i class="fas fa-redo"></i> Antri Ulang</button>`;
         }
@@ -134,6 +130,7 @@ function renderQueues(list) {
                 <div class="q-meta">
                     <span style="color:${color};font-weight:600">${q.service_name}</span>
                     ${q.phone ? ` · ${q.phone}` : ''}
+                    ${q.document_number ? ` · <span style="font-weight:700; color:var(--text)">Surat: ${q.document_number}</span>` : ''}
                     · ${q.created_at}
                 </div>
             </div>
@@ -215,6 +212,10 @@ async function updateStatus(id, status) {
         const reason = prompt('Masukkan alasan penolakan (kosongkan jika tidak ada):');
         if (reason === null) return; // User cancelled
         payload.reject_reason = reason;
+    } else if (status === 'admin') {
+        const docNum = prompt('Masukkan Nomor Surat:');
+        if (docNum === null) return; // User cancelled
+        payload.document_number = docNum;
     }
 
     try {

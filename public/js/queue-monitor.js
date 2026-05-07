@@ -118,8 +118,8 @@ function renderBreakdown(services) {
                 <div style="font-size:0.62rem;color:var(--text-muted);margin-top:0.15rem;text-align:right">${pct}% selesai</div>
             </div>
             <div class="svc-nums">
-                <span class="svc-w" title="Pending">📥${s.pending}</span>
-                <span class="svc-a" title="Proses">⚙️${s.admin + s.prodi}</span>
+                <span class="svc-w" title="Diajukan">📥${s.pending}</span>
+                <span class="svc-a" title="Diproses">⚙️${s.admin}</span>
                 <span class="svc-d" title="Selesai">✅${s.done}</span>
             </div>
         `;
@@ -136,38 +136,28 @@ function renderBreakdown(services) {
 function refreshStats() {
     fetch('/api/stats').then(r => r.json()).then(data => {
         // Shared logic for both pages
-        let total = 0, waiting = 0, calling = 0, serving = 0, done = 0;
-        let p = 0, r_stat = 0, d_stat = 0;
+        let total = 0, pending = 0, admin = 0, done = 0;
 
         if (data.services) {
             Object.values(data.services).forEach(s => {
                 total   += s.total;
-                waiting += s.waiting;
-                serving += s.serving;
+                pending += s.pending;
+                admin   += s.admin;
                 done    += s.done;
-                
-                // For display page
-                p += s.prodi; 
-                r_stat += s.ready; 
-                d_stat += s.done;
             });
         }
 
         // Monitor page elements
-        calling = serving;
         setStatNum('st-total',   total);
-        setStatNum('st-waiting', waiting);
-        setStatNum('st-calling', calling);
-        setStatNum('st-serving', serving);
+        setStatNum('st-pending', pending);
+        setStatNum('st-admin',   admin);
         setStatNum('st-done',    done);
 
-        // Display page elements
-        const fProdi = document.getElementById('f-prodi');
-        const fReady = document.getElementById('f-ready');
+        // Display page elements (if they exist)
+        const fAdmin = document.getElementById('f-admin');
         const fDone  = document.getElementById('f-done');
-        if (fProdi) fProdi.textContent = p;
-        if (fReady) fReady.textContent = r_stat;
-        if (fDone)  fDone.textContent  = d_stat;
+        if (fAdmin) fAdmin.textContent = admin;
+        if (fDone)  fDone.textContent  = done;
 
         renderBreakdown(data.services);
         showCallingHighlight(data.calling);
@@ -191,20 +181,8 @@ function refreshQueues() {
     const tbody = document.getElementById('q-tbody');
     if (!tbody) return; // Only for monitor page
 
-    let url;
-    if (qTab === 'active')   url = '/api/admin/today?status=calling';
-    else if (qTab === 'waiting') url = '/api/admin/today?status=waiting';
-    else if (qTab === 'done')    url = '/api/admin/today?status=done';
-    else url = '/api/admin/today';
-
-    if (qTab === 'active') {
-        Promise.all([
-            fetch('/api/admin/today?status=waiting').then(r => r.json()),
-            fetch('/api/admin/today?status=calling').then(r => r.json()),
-            fetch('/api/admin/today?status=serving').then(r => r.json()),
-        ]).then(([w, c, s]) => renderQueues([...c, ...s, ...w]));
-        return;
-    }
+    let url = '/api/admin/today';
+    if (qTab) url += `?status=${qTab}`;
 
     fetch(url).then(r => r.json()).then(renderQueues).catch(() => {});
 }

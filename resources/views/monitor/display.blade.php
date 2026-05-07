@@ -297,12 +297,8 @@
     <div class="footer">
         <div class="foot-stats">
             <div class="foot-stat">
-                <div class="foot-num" id="f-prodi">0</div>
-                <div class="foot-label">Di Prodi</div>
-            </div>
-            <div class="foot-stat">
-                <div class="foot-num" id="f-ready">0</div>
-                <div class="foot-label">Siap Ambil</div>
+                <div class="foot-num" id="f-admin">0</div>
+                <div class="foot-label">Diproses</div>
             </div>
             <div class="foot-stat">
                 <div class="foot-num" id="f-done">0</div>

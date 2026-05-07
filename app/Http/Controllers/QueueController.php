@@ -102,8 +102,6 @@ class QueueController extends Controller
                 'color'        => $service->color,
                 'pending'      => $service->queues->where('status', 'pending')->count(),
                 'admin'        => $service->queues->where('status', 'admin')->count(),
-                'prodi'        => $service->queues->where('status', 'prodi')->count(),
-                'ready'        => $service->queues->where('status', 'ready')->count(),
                 'done'         => $service->queues->where('status', 'done')->count(),
                 'total'        => $service->queues->count(),
             ];
@@ -142,7 +140,7 @@ class QueueController extends Controller
     public function waitingList(Request $request)
     {
         $query = Queue::with(['service', 'counter'])
-            ->whereIn('status', ['pending', 'admin', 'prodi', 'ready', 'calling', 'serving']);
+            ->whereIn('status', ['pending', 'admin', 'calling', 'serving']);
 
         if ($request->date) {
             $query->whereDate('queue_date', $request->date);

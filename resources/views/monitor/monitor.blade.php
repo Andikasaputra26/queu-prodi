@@ -6,7 +6,7 @@
 <style>
     .stat-bar {
         display: grid;
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         gap: 1rem;
         margin-bottom: 1.5rem;
     }
@@ -31,9 +31,8 @@
         height: 2px;
     }
     .s-total::after  { background: linear-gradient(90deg, var(--primary), var(--secondary)); }
-    .s-wait::after   { background: #64748B; }
-    .s-call::after   { background: var(--warning); }
-    .s-serve::after  { background: var(--accent); }
+    .s-pending::after { background: #94A3B8; }
+    .s-admin::after   { background: var(--warning); }
     .s-done::after   { background: var(--success); }
 
     .stat-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
@@ -44,9 +43,8 @@
         transition: all 0.4s;
     }
     .s-total .stat-num  { color: var(--primary); }
-    .s-wait  .stat-num  { color: #94A3B8; }
-    .s-call  .stat-num  { color: var(--warning); }
-    .s-serve .stat-num  { color: var(--accent); }
+    .s-pending  .stat-num  { color: #94A3B8; }
+    .s-admin  .stat-num  { color: var(--warning); }
     .s-done  .stat-num  { color: var(--success); }
 
     .stat-lbl { font-size: 0.68rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.3rem; }
@@ -292,17 +290,12 @@
     <div class="stat-box s-admin">
         <div class="stat-icon">🔍</div>
         <div class="stat-num" id="st-admin">0</div>
-        <div class="stat-lbl">Verif Admin</div>
+        <div class="stat-lbl">Diproses</div>
     </div>
-    <div class="stat-box s-prodi">
-        <div class="stat-icon">🏛️</div>
-        <div class="stat-num" id="st-prodi">0</div>
-        <div class="stat-lbl">Di Prodi</div>
-    </div>
-    <div class="stat-box s-ready">
-        <div class="stat-icon">🎁</div>
-        <div class="stat-num" id="st-ready">0</div>
-        <div class="stat-lbl">Siap Ambil</div>
+    <div class="stat-box s-done">
+        <div class="stat-icon">✅</div>
+        <div class="stat-num" id="st-done">0</div>
+        <div class="stat-lbl">Selesai</div>
     </div>
 </div>
 
@@ -359,9 +352,7 @@
             </div>
             <div class="tab-strip">
                 <button class="t-btn active" onclick="switchTab('pending', this)">📥 Baru</button>
-                <button class="t-btn" onclick="switchTab('admin', this)">🔍 Admin</button>
-                <button class="t-btn" onclick="switchTab('prodi', this)">🏛️ Prodi</button>
-                <button class="t-btn" onclick="switchTab('ready', this)">🎁 Siap</button>
+                <button class="t-btn" onclick="switchTab('admin', this)">🔍 Diproses</button>
                 <button class="t-btn" onclick="switchTab('done', this)">✅ Selesai</button>
                 <button class="t-btn" onclick="switchTab('', this)">📋 Semua</button>
             </div>
