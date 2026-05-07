@@ -63,9 +63,8 @@ class QueueController extends Controller
     public function ticket(Queue $queue)
     {
         $waitingBefore = Queue::where('service_id', $queue->service_id)
-            ->whereDate('queue_date', today())
             ->whereIn('status', ['pending', 'admin', 'prodi'])
-            ->where('sequence', '<', $queue->sequence)
+            ->where('created_at', '<', $queue->created_at)
             ->count();
 
         return view('queue.ticket', compact('queue', 'waitingBefore'));
@@ -79,7 +78,7 @@ class QueueController extends Controller
         $request->validate(['queue_number' => 'required|string']);
         
         $queue = Queue::where('queue_number', strtoupper($request->queue_number))
-            ->whereDate('queue_date', today())
+            ->orderBy('created_at', 'desc')
             ->first();
 
         if (!$queue) {
@@ -94,9 +93,7 @@ class QueueController extends Controller
      */
     public function getStats(): array
     {
-        $services = QueueService::where('is_active', true)->with(['queues' => function ($q) {
-            $q->whereDate('queue_date', today());
-        }])->get();
+        $services = QueueService::where('is_active', true)->with('queues')->get();
 
         $stats = [];
         foreach ($services as $service) {
@@ -113,7 +110,6 @@ class QueueController extends Controller
         }
 
         $calling = Queue::with(['service', 'counter'])
-            ->whereDate('queue_date', today())
             ->where('status', 'calling')
             ->latest('called_at')
             ->first();
@@ -150,8 +146,6 @@ class QueueController extends Controller
 
         if ($request->date) {
             $query->whereDate('queue_date', $request->date);
-        } else {
-            $query->whereDate('queue_date', '>=', today());
         }
 
         if ($request->service_id) {

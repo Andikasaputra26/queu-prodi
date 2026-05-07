@@ -13,21 +13,21 @@
     @stack('styles')
     <style>
         :root {
-            --primary: #6366F1;
-            --primary-dark: #4F46E5;
-            --secondary: #8B5CF6;
-            --accent: #06B6D4;
+            --primary: #2563EB;
+            --primary-dark: #1D4ED8;
+            --secondary: #3B82F6;
+            --accent: #0284C7;
             --success: #10B981;
             --warning: #F59E0B;
             --danger: #EF4444;
-            --surface: #0F172A;
-            --surface-2: #1E293B;
-            --surface-3: #334155;
-            --border: rgba(255,255,255,0.08);
-            --text: #F1F5F9;
-            --text-muted: #94A3B8;
-            --glass: rgba(30, 41, 59, 0.8);
-            --glow: 0 0 30px rgba(99, 102, 241, 0.3);
+            --surface: #F8FAFC;
+            --surface-2: #FFFFFF;
+            --surface-3: #F1F5F9;
+            --border: #E2E8F0;
+            --text: #0F172A;
+            --text-muted: #64748B;
+            --glass: rgba(255, 255, 255, 0.85);
+            --glow: 0 4px 20px rgba(37, 99, 235, 0.15);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -46,8 +46,8 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             background:
-                radial-gradient(ellipse at 20% 20%, rgba(99,102,241,0.12) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(139,92,246,0.08) 0%, transparent 50%);
+                radial-gradient(ellipse at 20% 20%, rgba(37, 99, 235, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(56, 189, 248, 0.08) 0%, transparent 50%);
             pointer-events: none;
             z-index: 0;
         }

@@ -70,8 +70,40 @@ function updateStats(data) {
     if (readyEl) readyEl.textContent = ready;
 }
 
+function refreshPublicTracking() {
+    const tbody = document.getElementById('public-tracking-list');
+    if (!tbody) return;
+
+    fetch('/api/waiting')
+        .then(r => r.json())
+        .then(list => {
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 1.5rem; color: var(--text-muted);">Belum ada antrian yang sedang diproses.</td></tr>`;
+                return;
+            }
+            
+            tbody.innerHTML = '';
+            list.forEach(q => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-weight: 700; color: ${q.service_color || 'var(--primary)'};">${q.queue_number}</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">
+                        <div style="font-weight: 600;">${q.patient_name}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">${q.service_name}</div>
+                    </td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">
+                        <span class="badge badge-${q.status}">${q.status_label}</span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        })
+        .catch(() => {});
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     fetch('/api/stats').then(r => r.json()).then(updateStats).catch(() => {});
+    refreshPublicTracking();
 
     try {
         if (!window.Echo) return;
@@ -88,6 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
         echo.channel('queue-monitor').listen('.queue.updated', (e) => {
             if (typeof setWsStatus === 'function') setWsStatus(true);
             if (e.stats) updateStats(e.stats);
+            refreshPublicTracking();
             if (e.action === 'new' && e.queue) {
                 if (typeof showToast === 'function') showToast(`Antrian baru: ${e.queue.queue_number}`, 'info', 3000);
             }

@@ -25,7 +25,7 @@
         font-size: clamp(1.8rem, 4.5vw, 3rem);
         font-weight: 900;
         line-height: 1.15;
-        background: linear-gradient(135deg, #fff 0%, #A5B4FC 50%, #8B5CF6 100%);
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -76,7 +76,7 @@
 
     .service-card {
         position: relative;
-        background: rgba(30, 41, 59, 0.6);
+        background: var(--surface-2);
         border: 2px solid var(--border);
         border-radius: 14px;
         padding: 1.1rem;
@@ -103,7 +103,7 @@
 
     .service-card.selected {
         border-color: var(--svc-color, var(--primary)) !important;
-        background: color-mix(in srgb, var(--svc-color, var(--primary)) 8%, rgba(30,41,59,0.8));
+        background: color-mix(in srgb, var(--svc-color, var(--primary)) 8%, var(--surface-2));
     }
 
     .service-card.selected::after { opacity: 1; }
@@ -163,7 +163,7 @@
     }
 
     .stat-card {
-        background: rgba(30,41,59,0.6);
+        background: var(--surface-2);
         border: 1px solid var(--border);
         border-radius: 12px;
         padding: 1rem;
@@ -390,6 +390,31 @@
                     Lihat Progres Surat
                 </button>
             </form>
+        </div>
+
+        <!-- Monitoring Antrian Publik -->
+        <div class="card" style="margin-top: 1.5rem;">
+            <div class="card-header" style="margin-bottom: 1rem;">
+                <h2 class="card-title">
+                    <i class="fas fa-list-ul" style="color: var(--success)"></i>
+                    Monitoring Antrian Publik
+                </h2>
+            </div>
+            
+            <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                    <thead style="position: sticky; top: 0; background: var(--surface-2); z-index: 1;">
+                        <tr>
+                            <th style="padding: 0.75rem; text-align: left; color: var(--text-muted); border-bottom: 1px solid var(--border);">No. Surat</th>
+                            <th style="padding: 0.75rem; text-align: left; color: var(--text-muted); border-bottom: 1px solid var(--border);">Nama / Jenis</th>
+                            <th style="padding: 0.75rem; text-align: left; color: var(--text-muted); border-bottom: 1px solid var(--border);">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="public-tracking-list">
+                        <tr><td colspan="3" style="text-align: center; padding: 1.5rem; color: var(--text-muted);">Memuat data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

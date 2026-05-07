@@ -92,8 +92,7 @@ class AdminController extends Controller
         }
 
         // Ambil antrian waiting berikutnya
-        $query = Queue::whereDate('queue_date', today())
-            ->where('status', 'waiting')
+        $query = Queue::whereIn('status', ['waiting', 'pending'])
             ->orderBy('created_at'); // FIFO murni
 
         if ($request->service_id) {

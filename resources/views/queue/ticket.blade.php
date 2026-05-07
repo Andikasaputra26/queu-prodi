@@ -121,14 +121,14 @@
         width: 44px; height: 44px; border-radius: 11px;
         display: flex; align-items: center; justify-content: center;
         font-size: 1.4rem; flex-shrink: 0;
-        background: rgba(99,102,241,0.1);
+        background: rgba(37,99,235,0.1);
         transition: all 0.3s;
     }
 
     /* Calling overlay */
     .calling-overlay {
         position: fixed; inset: 0;
-        background: rgba(0,0,0,0.88);
+        background: rgba(255,255,255,0.88);
         backdrop-filter: blur(12px);
         display: none;
         align-items: center; justify-content: center;

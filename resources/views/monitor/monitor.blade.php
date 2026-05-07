@@ -156,9 +156,9 @@
         transition: background 0.3s;
     }
     .q-table tr:last-child td { border-bottom: none; }
-    .q-table tr:hover td { background: rgba(99,102,241,0.04); }
+    .q-table tr:hover td { background: rgba(37,99,235,0.04); }
     .q-table tr.row-new td { animation: rowHighlight 2.5s ease forwards; }
-    @keyframes rowHighlight { 0% { background: rgba(99,102,241,0.25); } 100% { background: transparent; } }
+    @keyframes rowHighlight { 0% { background: rgba(37,99,235,0.25); } 100% { background: transparent; } }
     .q-table tr.row-calling td { background: rgba(245,158,11,0.08); }
 
     .qnum-cell { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 0.95rem; }
@@ -241,7 +241,7 @@
         color: var(--text-muted); background: transparent; transition: all 0.2s;
     }
     .t-btn:hover  { color: var(--text); background: var(--surface-3); }
-    .t-btn.active { color: var(--text); background: rgba(99,102,241,0.15); }
+    .t-btn.active { color: var(--text); background: rgba(37,99,235,0.15); }
 
     /* ── Wait time ── */
     .wait-bar {

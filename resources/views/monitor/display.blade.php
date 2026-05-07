@@ -9,13 +9,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         :root {
-            --surface: #040B18;
-            --surface-2: #0C1526;
-            --surface-3: #162035;
-            --border: rgba(255,255,255,0.07);
-            --text: #F1F5F9;
+            --surface: #F8FAFC;
+            --surface-2: #FFFFFF;
+            --surface-3: #F1F5F9;
+            --border: #E2E8F0;
+            --text: #0F172A;
             --text-muted: #64748B;
-            --primary: #6366F1;
+            --primary: #2563EB;
             --success: #10B981;
             --warning: #F59E0B;
         }
@@ -44,10 +44,10 @@
 
         .brand-logo {
             width: 48px; height: 48px;
-            background: linear-gradient(135deg, #6366F1, #8B5CF6);
+            background: linear-gradient(135deg, var(--primary), #3B82F6);
             border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.4rem;
+            font-size: 1.4rem; color: #FFFFFF;
         }
 
         .header-title { font-size: 1.15rem; font-weight: 800; }
@@ -74,7 +74,7 @@
             align-items: center; justify-content: center;
             padding: 2rem 3rem;
             position: relative; overflow: hidden;
-            background: radial-gradient(ellipse at center, rgba(99,102,241,0.06) 0%, transparent 70%);
+            background: radial-gradient(ellipse at center, rgba(37,99,235,0.06) 0%, transparent 70%);
         }
 
         .calling-label {
@@ -166,9 +166,9 @@
             display: inline-block; padding: 0.35rem 0.875rem; border-radius: 99px;
             font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
         }
-        .badge-pending { background: rgba(148,163,184,0.15); color: #94A3B8; }
+        .badge-pending { background: rgba(148,163,184,0.15); color: #64748B; }
         .badge-admin   { background: rgba(245,158,11,0.15); color: var(--warning); }
-        .badge-prodi   { background: rgba(99,102,241,0.15); color: var(--primary); }
+        .badge-prodi   { background: rgba(37,99,235,0.15); color: var(--primary); }
         .badge-ready   { background: rgba(16,185,129,0.15); color: var(--success); }
         .badge-done    { background: rgba(16,185,129,0.25); color: var(--success); opacity: 0.7; }
 
@@ -265,7 +265,7 @@
             <div class="panel-label" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
                 <div><i class="fas fa-sync-alt fa-spin"></i> &nbsp;Live Update Progres Surat</div>
                 <div style="display: flex; gap: 0.5rem;">
-                    <input type="date" id="filter-date" onchange="refreshTracking()" value="{{ date('Y-m-d') }}" style="background: var(--surface-3); border: 1px solid var(--border); color: var(--text); font-size: 0.7rem; padding: 0.25rem 0.5rem; border-radius: 6px; outline: none; cursor: pointer;">
+                    <input type="date" id="filter-date" onchange="refreshTracking()" style="background: var(--surface-3); border: 1px solid var(--border); color: var(--text); font-size: 0.7rem; padding: 0.25rem 0.5rem; border-radius: 6px; outline: none; cursor: pointer;">
                     <select id="filter-service" onchange="refreshTracking()" style="background: var(--surface-3); border: 1px solid var(--border); color: var(--text); font-size: 0.7rem; padding: 0.25rem 0.5rem; border-radius: 6px; outline: none; cursor: pointer;">
                         <option value="">— Semua Kategori —</option>
                         @foreach($services as $svc)

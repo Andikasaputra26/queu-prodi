@@ -60,7 +60,7 @@
         border-radius: 14px; padding: 1.1rem;
         margin-bottom: 0.875rem; transition: all 0.25s;
     }
-    .counter-block:hover     { border-color: rgba(99,102,241,0.25); }
+    .counter-block:hover     { border-color: rgba(37,99,235,0.25); }
     .counter-block.is-serving { border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.04); }
 
     .cb-hdr {
@@ -107,7 +107,7 @@
     }
     .q-search-wrap i { position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem; }
     .q-search { width: 100%; padding: 0.6rem 1rem 0.6rem 2.5rem; background: var(--surface-3); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: inherit; font-size: 0.875rem; outline: none; transition: all 0.2s; }
-    .q-search:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+    .q-search:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
 
     .tab-nav {
         display: flex; gap: 0.35rem; margin-bottom: 0.875rem;
@@ -119,7 +119,7 @@
         cursor: pointer; color: var(--text-muted); background: transparent; transition: all 0.2s;
     }
     .tab-btn:hover  { color: var(--text); background: var(--surface-3); }
-    .tab-btn.active { color: var(--text); background: rgba(99,102,241,0.15); }
+    .tab-btn.active { color: var(--text); background: rgba(37,99,235,0.15); }
 
     .q-row {
         display: flex; align-items: center; gap: 0.75rem;
