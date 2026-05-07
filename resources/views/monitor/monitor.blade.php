@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Monitoring Real-time — Queu')
+@section('title', 'Monitoring Real-time — SI-PINTER')
 
 @push('styles')
 <style>

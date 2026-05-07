@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Panel Dosen / Staf — Queu')
+@section('title', 'Panel Dosen / Staf — SI-PINTER')
 
 @push('styles')
 <style>

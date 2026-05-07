@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Pengajuan Surat Mahasiswa — Queu')
+@section('title', 'Pengajuan Surat Mahasiswa — SI-PINTER')
 
 @push('styles')
 <style>

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Tiket {{ $queue->queue_number }} — Queu')
+@section('title', 'Tiket {{ $queue->queue_number }} — SI-PINTER')
 
 @push('styles')
 <style>

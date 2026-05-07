@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Queu') — Antrian Konsultasi Prodi</title>
+    <title>@yield('title', 'SI-PINTER') — Antrian Konsultasi Prodi</title>
     <meta name="description" content="Sistem antrian konsultasi digital Program Studi berbasis WebSocket real-time">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -297,7 +297,7 @@
         <a href="{{ route('queue.register') }}" class="navbar-brand">
             <div class="brand-icon">🎓</div>
             <div>
-                <div class="brand-text">Queu</div>
+                <div class="brand-text">SI-PINTER</div>
                 <span class="brand-sub">Antrian Konsultasi Program Studi</span>
             </div>
         </a>
