@@ -32,7 +32,6 @@
             grid-template-rows: auto 1fr auto;
         }
 
-        /* Header */
         .header {
             background: var(--surface-2);
             border-bottom: 1px solid var(--border);
@@ -60,14 +59,12 @@
 
         .clock-date { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; text-align: right; }
 
-        /* Main */
         .display-main {
             display: grid;
             grid-template-columns: 1.5fr 1fr;
             overflow: hidden;
         }
 
-        /* Calling panel */
         .calling-panel {
             border-right: 1px solid var(--border);
             display: flex; flex-direction: column;
@@ -133,7 +130,6 @@
             margin-top: 0.5rem; text-align: center;
         }
 
-        /* No call / Welcome */
         .welcome-panel {
             flex: 1; display: flex; flex-direction: column;
             align-items: center; justify-content: center;
@@ -143,7 +139,6 @@
         .welcome-text { font-size: 1.5rem; font-weight: 800; color: var(--text); }
         .welcome-sub { font-size: 1rem; margin-top: 0.5rem; }
 
-        /* Tracking Table */
         .tracking-wrap {
             padding: 1.5rem 2.5rem; flex: 1; overflow: hidden;
             display: flex; flex-direction: column;

@@ -11,18 +11,12 @@ use Illuminate\Support\Facades\DB;
 
 class QueueController extends Controller
 {
-    /**
-     * Halaman pendaftaran antrian (pasien)
-     */
     public function index()
     {
         $services = QueueService::where('is_active', true)->get();
         return view('queue.register', compact('services'));
     }
 
-    /**
-     * Daftarkan pasien ke antrian
-     */
     public function register(Request $request)
     {
         $request->validate([
@@ -32,7 +26,6 @@ class QueueController extends Controller
         ]);
 
         $queue = DB::transaction(function () use ($request) {
-            // Lock the service row to prevent concurrent sequence generation
             $service     = QueueService::where('id', $request->service_id)->lockForUpdate()->firstOrFail();
             $sequence    = $service->getNextSequence();
             $queueNumber = $service->code . str_pad($sequence, 3, '0', STR_PAD_LEFT);
@@ -48,18 +41,13 @@ class QueueController extends Controller
             ]);
         });
 
-        // Notifikasi WA (Opsional/Background)
         \App\Services\WhatsAppService::notifyRegistration($queue);
 
-        // Broadcast update ke monitor
         broadcast(new QueueUpdated(action: 'new', queueItem: $queue, stats: $this->getStats()))->toOthers();
 
         return redirect()->route('queue.ticket', $queue->id);
     }
 
-    /**
-     * Tampilan tiket antrian
-     */
     public function ticket(Queue $queue)
     {
         $waitingBefore = Queue::where('service_id', $queue->service_id)
@@ -70,9 +58,6 @@ class QueueController extends Controller
         return view('queue.ticket', compact('queue', 'waitingBefore'));
     }
 
-    /**
-     * Cari tiket berdasarkan nomor antrian
-     */
     public function search(Request $request)
     {
         $request->validate(['queue_number' => 'required|string']);
@@ -88,9 +73,6 @@ class QueueController extends Controller
         return redirect()->route('queue.ticket', $queue->id);
     }
 
-    /**
-     * Ambil statistik antrian hari ini
-     */
     public function getStats(): array
     {
         $services = QueueService::where('is_active', true)->with('queues')->get();
@@ -126,17 +108,11 @@ class QueueController extends Controller
         ];
     }
 
-    /**
-     * API: get current queue stats
-     */
     public function stats()
     {
         return response()->json($this->getStats());
     }
 
-    /**
-     * API: get waiting list
-     */
     public function waitingList(Request $request)
     {
         $query = Queue::with(['service', 'counter'])

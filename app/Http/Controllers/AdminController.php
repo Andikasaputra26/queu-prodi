@@ -12,9 +12,6 @@ use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
-    /**
-     * Dashboard Admin
-     */
     public function index()
     {
         $counters = QueueCounter::with(['currentQueue.service'])->where('is_active', true)->get();
@@ -30,9 +27,6 @@ class AdminController extends Controller
         return view('admin.dashboard', compact('counters', 'services', 'todayStats'));
     }
 
-    /**
-     * Tambah Mahasiswa Manual (dari admin)
-     */
     public function addManual(Request $request)
     {
         $request->validate([
@@ -68,9 +62,6 @@ class AdminController extends Controller
         ]);
     }
 
-    /**
-     * Panggil antrian berikutnya
-     */
     public function callNext(Request $request)
     {
         $request->validate([
@@ -80,7 +71,6 @@ class AdminController extends Controller
 
         $counter = QueueCounter::findOrFail($request->counter_id);
 
-        // Selesaikan antrian yang sedang dilayani
         if ($counter->current_queue_id) {
             $current = Queue::find($counter->current_queue_id);
             if ($current && in_array($current->status, ['calling', 'serving'])) {
@@ -89,9 +79,8 @@ class AdminController extends Controller
             }
         }
 
-        // Ambil antrian waiting berikutnya
         $query = Queue::whereIn('status', ['waiting', 'pending'])
-            ->orderBy('created_at'); // FIFO murni
+            ->orderBy('created_at');
 
         if ($request->service_id) {
             $query->where('service_id', $request->service_id);
@@ -114,7 +103,6 @@ class AdminController extends Controller
         broadcast(new QueueCalled($nextQueue));
         broadcast(new QueueUpdated('called', $nextQueue, $this->getStats()));
 
-        // Notifikasi WA Panggilan
         \App\Services\WhatsAppService::notifyCalled($nextQueue);
 
         return response()->json([
@@ -125,9 +113,6 @@ class AdminController extends Controller
         ]);
     }
 
-    /**
-     * Ubah status antrian
-     */
     public function updateStatus(Request $request, Queue $queue)
     {
         $request->validate([
@@ -147,7 +132,6 @@ class AdminController extends Controller
         if ($request->status === 'done' || $request->status === 'rejected') {
             $updates['done_at'] = now();
             
-            // Lepas dari loket jika ada
             if ($queue->counter_id) {
                 $counter = QueueCounter::find($queue->counter_id);
                 if ($counter && $counter->current_queue_id === $queue->id) {
@@ -161,15 +145,11 @@ class AdminController extends Controller
         $queue->update($updates);
         broadcast(new QueueUpdated($request->status, $queue, $this->getStats()));
 
-        // Notifikasi WA Update Status
         \App\Services\WhatsAppService::notifyStatusUpdate($queue);
 
         return response()->json(['success' => true, 'message' => 'Status surat diperbarui ke: ' . $queue->status_label]);
     }
 
-    /**
-     * Antri ulang (Re-queue) tiket yang ditolak
-     */
     public function requeue(Queue $queue)
     {
         if ($queue->status !== 'rejected') {
@@ -180,24 +160,18 @@ class AdminController extends Controller
             'status' => 'pending',
             'reject_reason' => null,
             'queue_date' => today(),
-            // Set done_at to null if it was set when rejected
             'done_at' => null,
         ]);
 
         broadcast(new QueueUpdated('pending', $queue, $this->getStats()));
 
-        // Notifikasi WA
         \App\Services\WhatsAppService::notifyStatusUpdate($queue);
 
         return response()->json(['success' => true, 'message' => 'Antrian berhasil diantrikan ulang menjadi Pending.']);
     }
 
-    /**
-     * Panggil ulang
-     */
     public function recall(Queue $queue)
     {
-        // Allow recall for calling status, or re-call a waiting queue
         if (!in_array($queue->status, ['calling', 'serving'])) {
             return response()->json(['success' => false, 'message' => 'Antrian tidak bisa dipanggil ulang']);
         }
@@ -206,15 +180,11 @@ class AdminController extends Controller
         broadcast(new QueueCalled($queue));
         broadcast(new QueueUpdated('called', $queue, $this->getStats()));
 
-        // Notifikasi WA Panggilan
         \App\Services\WhatsAppService::notifyCalled($queue);
 
         return response()->json(['success' => true, 'message' => "Memanggil ulang {$queue->queue_number}"]);
     }
 
-    /**
-     * Reset antrian hari ini
-     */
     public function resetToday()
     {
         Queue::whereDate('queue_date', today())->delete();
@@ -225,9 +195,6 @@ class AdminController extends Controller
         return response()->json(['success' => true, 'message' => 'Antrian hari ini telah direset']);
     }
 
-    /**
-     * API: daftar antrian hari ini
-     */
     public function todayList(Request $request)
     {
         $query = Queue::with(['service', 'counter']);
@@ -265,17 +232,11 @@ class AdminController extends Controller
         return response()->json($queues);
     }
 
-    /**
-     * Get Queue stats - shared between admin & monitor
-     */
     public function getStats(): array
     {
         return app(QueueController::class)->getStats();
     }
 
-    /**
-     * API stats endpoint
-     */
     public function statsApi()
     {
         return response()->json($this->getStats());

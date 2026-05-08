@@ -7,9 +7,6 @@ use Illuminate\Support\Facades\Log;
 
 class WhatsAppService
 {
-    /**
-     * Kirim notifikasi WhatsApp Real melalui Fonnte Gateway
-     */
     public static function send($to, $message)
     {
         // Bersihkan nomor
@@ -38,7 +35,7 @@ class WhatsAppService
             CURLOPT_POSTFIELDS => array(
                 'target' => $to,
                 'message' => $message,
-                'countryCode' => '62', // default Indonesia
+                'countryCode' => '62', 
             ),
             CURLOPT_HTTPHEADER => array(
                 "Authorization: $token"
@@ -53,7 +50,6 @@ class WhatsAppService
             Log::error("Fonnte Error: " . $err);
             return false;
         } else {
-            // Jika token salah, catat di log
             $resJson = json_decode($response, true);
             if (isset($resJson['status']) && $resJson['status'] === false) {
                 Log::warning("Fonnte Warning: " . ($resJson['reason'] ?? 'Unknown Error'));
@@ -63,9 +59,6 @@ class WhatsAppService
         }
     }
 
-    /**
-     * Notifikasi saat baru mendaftar (Pengajuan Surat)
-     */
     public static function notifyRegistration(Queue $queue)
     {
         $ticketUrl = route('queue.ticket', $queue->id);
@@ -74,9 +67,6 @@ class WhatsAppService
         return self::send($queue->phone, $message);
     }
 
-    /**
-     * Notifikasi saat status diperbarui
-     */
     public static function notifyStatusUpdate(Queue $queue)
     {
         if (!$queue->phone) return;
@@ -114,9 +104,6 @@ class WhatsAppService
         return self::send($queue->phone, $message);
     }
 
-    /**
-     * Generasikan URL WhatsApp Click-to-Chat
-     */
     public static function getLink($to, $message)
     {
         $to = preg_replace('/[^0-9]/', '', $to);

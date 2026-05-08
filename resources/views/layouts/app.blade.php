@@ -123,7 +123,6 @@
             margin: 0 auto;
         }
 
-        /* Cards */
         .card {
             background: var(--glass);
             backdrop-filter: blur(10px);
@@ -146,7 +145,6 @@
             display: flex; align-items: center; gap: 0.5rem;
         }
 
-        /* Buttons */
         .btn {
             padding: 0.625rem 1.25rem;
             border-radius: 10px;
@@ -183,7 +181,6 @@
 
         .btn:active { transform: scale(0.97); }
 
-        /* Status badges */
         .badge {
             padding: 0.25rem 0.75rem;
             border-radius: 99px;
@@ -202,7 +199,6 @@
             50% { opacity: 0.6; }
         }
 
-        /* Form elements */
         .form-group { margin-bottom: 1.25rem; }
         .form-label {
             display: block;
@@ -230,7 +226,6 @@
             box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
         }
 
-        /* Toast */
         .toast-container {
             position: fixed;
             top: 1.5rem; right: 1.5rem;
@@ -280,7 +275,6 @@
         .ws-dot.connected { background: var(--success); box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }
         .ws-dot.error     { background: var(--danger);  box-shadow: 0 0 8px var(--danger);  }
 
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 99px; }
