@@ -229,7 +229,7 @@
 <div class="page-header">
     <div>
         <h1 class="page-title">📄 Pelacakan Surat Mahasiswa</h1>
-        <div class="page-sub">Panel Administrasi Prodi — Semua Riwayat</div>
+        <div class="page-sub">Panel Administrasi Jurusan — Semua Riwayat</div>
     </div>
     <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
         <div class="ws-status"><div class="ws-dot" id="ws-dot"></div><span id="ws-text">Live</span></div>
