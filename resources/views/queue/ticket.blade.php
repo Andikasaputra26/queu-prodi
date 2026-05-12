@@ -261,7 +261,7 @@
         <div class="calling-num-big">{{ $queue->queue_number }}</div>
         <div style="font-size: 1.1rem; font-weight: 700; margin: 0.875rem 0 0.4rem;">Giliran Anda!</div>
         <div style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.5rem;" id="call-room">
-            Silakan ke ruangan yang ditunjuk
+            Silahkan ke ruangan yang ditunjuk
         </div>
         <button class="btn btn-primary" style="width: 100%; justify-content: center; font-size: 1rem;"
                 onclick="document.getElementById('calling-overlay').style.display='none'">

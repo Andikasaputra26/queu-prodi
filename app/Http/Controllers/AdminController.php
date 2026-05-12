@@ -232,6 +232,72 @@ class AdminController extends Controller
         return response()->json($queues);
     }
 
+    public function export(Request $request)
+    {
+        $query = Queue::with(['service', 'counter']);
+
+        if ($request->date) {
+            $query->whereDate('queue_date', $request->date);
+        }
+
+        if ($request->service_id) {
+            $query->where('service_id', $request->service_id);
+        }
+
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        $queues = $query->orderBy('queue_date', 'desc')
+            ->orderBy('service_id')
+            ->orderBy('sequence')
+            ->get();
+
+        $headers = [
+            'Content-Type'        => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="Laporan_Antrian_Mahasiswa.csv"',
+        ];
+
+        $callback = function () use ($queues) {
+            $file = fopen('php://output', 'w');
+
+            // Header for CSV
+            fputcsv($file, [
+                'Tanggal Antrian',
+                'Nomor Antrian',
+                'Nama Mahasiswa',
+                'No. HP/WA',
+                'Jenis Surat',
+                'Status',
+                'Waktu Pengajuan',
+                'Waktu Diproses',
+                'Waktu Selesai/Ditolak',
+                'Nomor Dokumen',
+                'Alasan Penolakan'
+            ]);
+
+            foreach ($queues as $q) {
+                fputcsv($file, [
+                    $q->queue_date ? $q->queue_date->format('Y-m-d') : '-',
+                    $q->queue_number,
+                    $q->patient_name,
+                    "'" . $q->phone, // Prevent scientific notation for long phone numbers
+                    $q->service?->name ?? '-',
+                    $q->status_label,
+                    $q->created_at ? $q->created_at->format('H:i:s') : '-',
+                    $q->served_at ? $q->served_at->format('H:i:s') : '-',
+                    $q->done_at ? $q->done_at->format('H:i:s') : '-',
+                    $q->document_number ?? '-',
+                    $q->reject_reason ?? '-'
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
     public function getStats(): array
     {
         return app(QueueController::class)->getStats();

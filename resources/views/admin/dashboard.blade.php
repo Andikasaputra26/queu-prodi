@@ -325,6 +325,9 @@
                     <option value="{{ $svc->id }}">{{ $svc->name }}</option>
                     @endforeach
                 </select>
+                <button class="btn btn-success" onclick="exportReport()" style="padding: 0.6rem 1rem; border-radius: 10px; flex: 0 0 auto;">
+                    <i class="fas fa-file-excel"></i> Export Report
+                </button>
             </div>
 
             <div class="q-search-wrap">

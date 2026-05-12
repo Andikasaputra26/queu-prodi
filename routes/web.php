@@ -22,6 +22,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::patch('/queue/{queue}/status', [AdminController::class, 'updateStatus'])->name('update-status');
     Route::post('/queue/{queue}/recall', [AdminController::class, 'recall'])->name('recall');
     Route::post('/queue/{queue}/requeue', [AdminController::class, 'requeue'])->name('requeue');
+    Route::get('/export', [AdminController::class, 'export'])->name('export');
     Route::delete('/reset-today', [AdminController::class, 'resetToday'])->name('reset-today');
 });
 

@@ -97,6 +97,21 @@ async function refreshQueues() {
     } catch(e) {}
 }
 
+function exportReport() {
+    const dateEl = document.getElementById('filter-date');
+    const svcEl  = document.getElementById('filter-service');
+    
+    const date = dateEl ? dateEl.value : '';
+    const svc  = svcEl ? svcEl.value : '';
+    
+    let url = '/admin/export?';
+    if (tab) url += `status=${tab}&`;
+    if (date) url += `date=${date}&`;
+    if (svc) url += `service_id=${svc}&`;
+
+    window.location.href = url;
+}
+
 function renderQueues(list) {
     const totalLbl = document.getElementById('q-total-lbl');
     if (totalLbl) totalLbl.textContent = `${list.length} antrian`;
