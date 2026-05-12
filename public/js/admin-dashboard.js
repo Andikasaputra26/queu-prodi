@@ -16,8 +16,9 @@ const Config = window.AdminConfig || {
 };
 
 const CSRF = document.querySelector('meta[name="csrf-token"]').content;
-let tab = 'pending';
+let tab = ''; // default empty to fetch all
 let allQueues = [];
+let dtTable;
 
 // ─── Modal ───
 function openModal()  { document.getElementById('manual-modal').classList.add('open'); }
@@ -57,24 +58,18 @@ async function submitManual() {
     } catch(e) { showToast('Terjadi kesalahan', 'error'); }
 }
 
-// ─── Tab & search ───
+// ─── Tab & search (Tabs are removed, this is a fallback if needed) ───
 function switchTab(s, btn) {
     tab = s;
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
+    if (btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
     refreshQueues();
 }
 
 function filterQueues() {
-    const searchEl = document.getElementById('q-search');
-    if (!searchEl) return;
-    
-    const q = searchEl.value.toLowerCase();
-    renderQueues(allQueues.filter(item =>
-        item.patient_name.toLowerCase().includes(q) ||
-        item.queue_number.toLowerCase().includes(q) ||
-        (item.phone && item.phone.toLowerCase().includes(q))
-    ));
+    // DataTable handles global search
 }
 
 // ─── Queue list ───
@@ -116,54 +111,11 @@ function renderQueues(list) {
     const totalLbl = document.getElementById('q-total-lbl');
     if (totalLbl) totalLbl.textContent = `${list.length} antrian`;
     
-    const el = document.getElementById('q-list');
-    if (!el) return;
-
-    if (!list.length) {
-        el.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div>Tidak ada antrian</div>`;
-        return;
+    if (dtTable) {
+        dtTable.clear();
+        dtTable.rows.add(list);
+        dtTable.draw();
     }
-    el.innerHTML = '';
-    list.forEach(q => {
-        const color = q.service_color || '#6366F1';
-        const div   = document.createElement('div');
-        div.className = 'q-row';
-        
-        let actions = '';
-        if (q.status === 'pending') {
-            actions = `<button class="btn btn-warning" onclick="updateStatus(${q.id},'admin')">Proses & Input No Surat</button>`;
-        } else if (q.status === 'admin') {
-            actions = `<button class="btn btn-success" onclick="updateStatus(${q.id},'done')">Selesai</button>`;
-        } else if (q.status === 'rejected') {
-            actions = `<button class="btn btn-warning" onclick="requeue(${q.id})"><i class="fas fa-redo"></i> Antri Ulang</button>`;
-        }
-
-        div.innerHTML = `
-            <div class="q-num" style="color:${color}">${q.queue_number}</div>
-            <div style="flex:1; min-width:0">
-                <div class="q-name">${q.patient_name}</div>
-                <div class="q-meta">
-                    <span style="color:${color};font-weight:600">${q.service_name}</span>
-                    ${q.phone ? ` · ${q.phone}` : ''}
-                    ${q.document_number ? ` · <span style="font-weight:700; color:var(--text)">Surat: ${q.document_number}</span>` : ''}
-                    · ${q.created_at}
-                </div>
-            </div>
-            <div style="display:flex; align-items:center; gap:0.5rem">
-                <span class="badge badge-${q.status}">${q.status_label}</span>
-                <div style="display:flex; gap:0.3rem">
-                    ${actions}
-                    <button class="btn btn-ghost" style="padding:0.3rem 0.5rem; font-size:0.72rem" title="Tolak" onclick="updateStatus(${q.id},'rejected')">❌</button>
-                    ${q.phone ? `
-                    <a href="https://wa.me/${q.phone.startsWith('0') ? '62' + q.phone.substring(1) : q.phone.replace(/[^0-9]/g,'')}?text=Halo ${encodeURIComponent(q.patient_name)}, surat Anda (${q.service_name}) saat ini berstatus: ${q.status_label}."
-                       target="_blank" class="btn btn-success" style="padding:0.3rem 0.5rem; font-size:0.72rem" title="WhatsApp">
-                        <i class="fab fa-whatsapp"></i>
-                    </a>` : ''}
-                </div>
-            </div>
-        `;
-        el.appendChild(div);
-    });
 }
 
 // ─── Print ticket ───
@@ -293,6 +245,60 @@ function setWsStatus(connected) {
 
 // ─── Init ───
 document.addEventListener('DOMContentLoaded', () => {
+    dtTable = $('#queues-table').DataTable({
+        language: {
+            url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json"
+        },
+        order: [[0, 'desc']], // Sort by time desc
+        columns: [
+            { data: 'created_at' },
+            { 
+                data: 'queue_number', 
+                render: (data, type, row) => `<span style="color:${row.service_color || '#6366F1'}; font-weight: 900; font-family: 'JetBrains Mono', monospace;">${data}</span>` 
+            },
+            { data: 'patient_name', render: (data) => `<span style="font-weight: 600;">${data}</span>` },
+            { 
+                data: 'phone', 
+                render: (data, type, row) => {
+                    if (!data) return '-';
+                    const num = data.startsWith('0') ? '62' + data.substring(1) : data.replace(/[^0-9]/g,'');
+                    return `<a href="https://wa.me/${num}?text=Halo ${encodeURIComponent(row.patient_name)}, surat Anda (${row.service_name}) saat ini berstatus: ${row.status_label}." target="_blank" class="btn btn-success" style="padding:0.3rem 0.5rem; font-size:0.72rem; border-radius: 6px;"><i class="fab fa-whatsapp"></i> ${data}</a>`;
+                } 
+            },
+            { 
+                data: 'service_name', 
+                render: (data, type, row) => `<span style="color:${row.service_color || '#6366F1'}; font-weight: 600;">${data || '-'}</span>` 
+            },
+            { 
+                data: 'document_number', 
+                render: data => data ? `<span style="font-weight: 700;">${data}</span>` : '-' 
+            },
+            { 
+                data: 'status', 
+                render: (data, type, row) => `<span class="badge badge-${data}">${row.status_label}</span>` 
+            },
+            { 
+                data: 'id', 
+                orderable: false,
+                render: (data, type, row) => {
+                    let actions = '<div style="display: flex; gap: 0.3rem; flex-wrap: wrap;">';
+                    if (row.status === 'pending') {
+                        actions += `<button class="btn btn-warning" style="padding: 0.3rem 0.5rem; font-size: 0.72rem;" onclick="updateStatus(${data},'admin')">Proses</button>`;
+                    } else if (row.status === 'admin') {
+                        actions += `<button class="btn btn-success" style="padding: 0.3rem 0.5rem; font-size: 0.72rem;" onclick="updateStatus(${data},'done')">Selesai</button>`;
+                    } else if (row.status === 'rejected') {
+                        actions += `<button class="btn btn-warning" style="padding: 0.3rem 0.5rem; font-size: 0.72rem;" onclick="requeue(${data})"><i class="fas fa-redo"></i> Ulang</button>`;
+                    }
+                    if (row.status !== 'done' && row.status !== 'rejected') {
+                        actions += `<button class="btn btn-danger" style="padding: 0.3rem 0.5rem; font-size: 0.72rem;" onclick="updateStatus(${data},'rejected')">❌ Tolak</button>`;
+                    }
+                    actions += '</div>';
+                    return actions;
+                }
+            }
+        ]
+    });
+
     refreshQueues();
 
     // WebSocket

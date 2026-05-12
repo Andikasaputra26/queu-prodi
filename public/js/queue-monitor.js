@@ -12,10 +12,12 @@ const Config = window.QueueConfig || {
 // ──────────────────────────────
 // State
 // ──────────────────────────────
-let qTab = 'pending';
+let qTab = '';
 const LOG_MAX = 50;
 let activityLog = [];
 let lastCalledData = null;
+let dtMonitorTable = null;
+let svcChart = null;
 
 // ──────────────────────────────
 // Clock
@@ -86,45 +88,78 @@ function showCallingHighlight(data) {
 }
 
 // ──────────────────────────────
-// Service breakdown
+// Service breakdown (Chart.js)
 // ──────────────────────────────
 function renderBreakdown(services) {
-    const el = document.getElementById('svc-breakdown');
+    const el = document.getElementById('svc-chart');
     if (!el) return;
 
+    let totalDone = 0;
+    
     if (!services || !Object.keys(services).length) {
-        el.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div>Belum ada data</div>';
+        if(svcChart) {
+            svcChart.destroy();
+            svcChart = null;
+        }
+        const emptyEl = document.getElementById('svc-chart-empty');
+        if (emptyEl) emptyEl.style.display = 'flex';
+        const doneTodayEl = document.getElementById('done-today');
+        if (doneTodayEl) doneTodayEl.textContent = 0;
         return;
     }
 
-    let totalDone = 0;
-    Object.values(services).forEach(s => { totalDone += s.done; });
+    const emptyEl = document.getElementById('svc-chart-empty');
+    if (emptyEl) emptyEl.style.display = 'none';
 
-    el.innerHTML = '';
+    let categories = [];
+    let totalData = [];
+    let bgColors = [];
+
     Object.entries(services).forEach(([code, s]) => {
-        const pct = s.total > 0 ? Math.round((s.done / s.total) * 100) : 0;
-        const row = document.createElement('div');
-        row.className = 'svc-row';
-        row.innerHTML = `
-            <div class="svc-dot" style="background:${s.color}"></div>
-            <div class="svc-info">
-                <div class="svc-name-text">${s.service_name}</div>
-                <div class="svc-code-text">${code}</div>
-            </div>
-            <div class="svc-bar-wrap">
-                <div class="svc-bar-bg">
-                    <div class="svc-bar-fill" style="width:${pct}%;background:${s.color}"></div>
-                </div>
-                <div style="font-size:0.62rem;color:var(--text-muted);margin-top:0.15rem;text-align:right">${pct}% selesai</div>
-            </div>
-            <div class="svc-nums">
-                <span class="svc-w" title="Diajukan">📥${s.pending}</span>
-                <span class="svc-a" title="Diproses">⚙️${s.admin}</span>
-                <span class="svc-d" title="Selesai">✅${s.done}</span>
-            </div>
-        `;
-        el.appendChild(row);
+        totalDone += s.done;
+        categories.push(s.service_name.length > 20 ? s.service_name.substring(0, 20) + '...' : s.service_name);
+        totalData.push(s.total);
+        bgColors.push(s.color || '#3B82F6');
     });
+
+    if (!svcChart) {
+        svcChart = new Chart(el, {
+            type: 'doughnut',
+            data: {
+                labels: categories,
+                datasets: [
+                    { 
+                        label: 'Total Pengajuan', 
+                        data: totalData, 
+                        backgroundColor: bgColors,
+                        borderColor: '#ffffff',
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%', // Menyesuaikan ukuran lubang donat
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { font: { family: "'Inter', sans-serif", size: 11 } }
+                    },
+                    tooltip: {
+                        titleFont: { family: "'Inter', sans-serif" },
+                        bodyFont: { family: "'Inter', sans-serif" }
+                    }
+                }
+            }
+        });
+    } else {
+        svcChart.data.labels = categories;
+        svcChart.data.datasets[0].data = totalData;
+        svcChart.data.datasets[0].backgroundColor = bgColors;
+        svcChart.data.datasets[0].borderColor = '#ffffff';
+        svcChart.update();
+    }
 
     const doneTodayEl = document.getElementById('done-today');
     if (doneTodayEl) doneTodayEl.textContent = totalDone;
@@ -172,8 +207,10 @@ function refreshStats() {
 // ──────────────────────────────
 function switchTab(tab, btn) {
     qTab = tab;
-    document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
+    if (btn) {
+        document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
     refreshQueues();
 }
 
@@ -188,35 +225,14 @@ function refreshQueues() {
 }
 
 function renderQueues(list) {
-    const tbody = document.getElementById('q-tbody');
-    if (!tbody) return;
-
     const countLbl = document.getElementById('q-count-lbl');
     if (countLbl) countLbl.textContent = `${list.length} antrian`;
     
-    tbody.innerHTML = '';
-    if (!list.length) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted)"><div style="font-size:2rem">📭</div>Tidak ada antrian</td></tr>`;
-        return;
+    if (dtMonitorTable) {
+        dtMonitorTable.clear();
+        dtMonitorTable.rows.add(list);
+        dtMonitorTable.draw();
     }
-    list.forEach(q => {
-        const color = q.service_color || '#6366F1';
-        const tr = document.createElement('tr');
-        if (q.status === 'calling') tr.className = 'row-calling';
-        tr.innerHTML = `
-            <td class="qnum-cell" style="color:${color}">${q.queue_number}</td>
-            <td style="font-weight:600">${q.patient_name}</td>
-            <td style="color:var(--text-muted);font-size:0.78rem;font-family:'JetBrains Mono',monospace">${q.phone || '—'}</td>
-            <td>
-                <span style="background:${color}18;color:${color};padding:0.2rem 0.6rem;border-radius:99px;font-size:0.72rem;font-weight:700;white-space:nowrap">
-                    ${q.service_name}
-                </span>
-            </td>
-            <td><span class="badge badge-${q.status}">${q.status_label}</span></td>
-            <td style="color:var(--text-muted);font-size:0.75rem;font-family:'JetBrains Mono',monospace">${q.created_at}</td>
-        `;
-        tbody.appendChild(tr);
-    });
 }
 
 // ──────────────────────────────
@@ -368,6 +384,28 @@ function setWsStatus(connected) {
 // Init
 // ──────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+    // initialize DataTables for monitor page if it exists
+    const qTable = $('#monitor-q-table');
+    if (qTable.length) {
+        dtMonitorTable = qTable.DataTable({
+            language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json" },
+            order: [[0, 'desc']], // Waktu desc
+            columns: [
+                { data: 'created_at', render: (data) => `<span style="color:var(--text-muted);font-size:0.75rem;font-family:'JetBrains Mono',monospace">${data}</span>` },
+                { data: 'queue_number', render: (data, type, row) => `<span style="color:${row.service_color || '#6366F1'}; font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 0.95rem;">${data}</span>` },
+                { data: 'patient_name', render: (data) => `<span style="font-weight:600">${data}</span>` },
+                { data: 'phone', render: (data) => `<span style="color:var(--text-muted);font-size:0.78rem;font-family:'JetBrains Mono',monospace">${data || '—'}</span>` },
+                { data: 'service_name', render: (data, type, row) => `<span style="background:${row.service_color || '#6366F1'}18;color:${row.service_color || '#6366F1'};padding:0.2rem 0.6rem;border-radius:99px;font-size:0.72rem;font-weight:700;white-space:nowrap">${data}</span>` },
+                { data: 'status', render: (data, type, row) => `<span class="badge badge-${data}">${row.status_label}</span>` }
+            ],
+            createdRow: function(row, data, dataIndex) {
+                if (data.status === 'calling') {
+                    $(row).addClass('row-calling');
+                }
+            }
+        });
+    }
+
     refreshAll();
 
     try {

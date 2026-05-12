@@ -189,7 +189,20 @@
     }
 
     #print-area { display: none; }
+
+    /* DataTable Overrides */
+    .dataTables_wrapper { padding: 1rem; font-size: 0.85rem; }
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.6rem; margin-left: 0.5rem; outline: none;
+    }
+    .dataTables_wrapper .dataTables_length select {
+        border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem; outline: none;
+    }
+    table.dataTable.no-footer { border-bottom: 1px solid var(--border); }
+    table.dataTable thead th, table.dataTable thead td { border-bottom: 2px solid var(--border); }
+    table.dataTable tbody th, table.dataTable tbody td { border-bottom: 1px solid var(--border); vertical-align: middle; }
 </style>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 @endpush
 
 @section('content')
@@ -330,28 +343,31 @@
                 </button>
             </div>
 
-            <div class="q-search-wrap">
-                <i class="fas fa-search"></i>
-                <input type="text" class="q-search" id="q-search"
-                       placeholder="Cari nama, nomor antrian, atau NIM..."
-                       oninput="filterQueues()">
+            <div class="table-responsive">
+                <table id="queues-table" class="display" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>No. Antrian</th>
+                            <th>Nama</th>
+                            <th>No. HP/WA</th>
+                            <th>Jenis Surat</th>
+                            <th>No. Dokumen</th>
+                            <th>Status</th>
+                            <th style="width: 150px;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
-
-            <div class="tab-nav">
-                <button class="tab-btn active" onclick="switchTab('pending', this)">📥 Baru</button>
-                <button class="tab-btn" onclick="switchTab('admin', this)">🔍 Diproses</button>
-                <button class="tab-btn" onclick="switchTab('done', this)">✅ Selesai</button>
-                <button class="tab-btn" onclick="switchTab('rejected', this)">❌ Ditolak</button>
-                <button class="tab-btn" onclick="switchTab('', this)">📋 Semua</button>
-            </div>
-
-            <div class="scrollable" id="q-list"></div>
         </div>
     </div>
 </div>
 @endsection
 
 @push('scripts')
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.3.0/dist/web/pusher.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
 <script>

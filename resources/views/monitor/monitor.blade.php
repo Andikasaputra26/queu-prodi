@@ -249,7 +249,20 @@
 
     .empty-state { text-align: center; padding: 2rem; color: var(--text-muted); }
     .empty-icon  { font-size: 2.5rem; margin-bottom: 0.5rem; }
+
+    /* DataTable Overrides */
+    .dataTables_wrapper { padding: 0.5rem; font-size: 0.85rem; }
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.6rem; margin-left: 0.5rem; outline: none;
+    }
+    .dataTables_wrapper .dataTables_length select {
+        border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem; outline: none;
+    }
+    table.dataTable.no-footer { border-bottom: 1px solid var(--border); }
+    table.dataTable thead th, table.dataTable thead td { border-bottom: 2px solid var(--border); }
+    table.dataTable tbody th, table.dataTable tbody td { border-bottom: 1px solid var(--border); vertical-align: middle; }
 </style>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 @endpush
 
 @section('content')
@@ -333,8 +346,9 @@
                 <div class="sec-title"><i class="fas fa-layer-group"></i> Rekap Per Jenis Surat</div>
                 <div class="live-pill"><div class="live-pill-dot"></div>Auto-update</div>
             </div>
-            <div id="svc-breakdown">
-                <div class="empty-state"><div class="empty-icon">⏳</div>Memuat...</div>
+            <div style="min-height: 250px; margin-top: 1rem; position: relative;">
+                <canvas id="svc-chart"></canvas>
+                <div class="empty-state" id="svc-chart-empty" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column;"><div class="empty-icon">⏳</div>Memuat Grafik...</div>
             </div>
             <div class="wait-bar" style="background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.1);">
                 <div class="wait-bar-icon">✅</div>
@@ -350,22 +364,16 @@
                 <div class="sec-title"><i class="fas fa-list"></i> Daftar Pengajuan</div>
                 <span id="q-count-lbl" style="font-size:0.75rem; color:var(--text-muted)"></span>
             </div>
-            <div class="tab-strip">
-                <button class="t-btn active" onclick="switchTab('pending', this)">📥 Baru</button>
-                <button class="t-btn" onclick="switchTab('admin', this)">🔍 Diproses</button>
-                <button class="t-btn" onclick="switchTab('done', this)">✅ Selesai</button>
-                <button class="t-btn" onclick="switchTab('', this)">📋 Semua</button>
-            </div>
-            <div class="queue-table-wrap">
-                <table class="q-table">
+            <div class="table-responsive">
+                <table class="q-table display" id="monitor-q-table" style="width:100%">
                     <thead>
                         <tr>
+                            <th>Waktu</th>
                             <th>ID Surat</th>
                             <th>Mahasiswa</th>
                             <th>NIM/HP</th>
                             <th>Jenis Surat</th>
                             <th>Status</th>
-                            <th>Waktu Daftar</th>
                         </tr>
                     </thead>
                     <tbody id="q-tbody"></tbody>
@@ -416,6 +424,9 @@
 @endsection
 
 @push('scripts')
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.3.0/dist/web/pusher.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
 <script>
