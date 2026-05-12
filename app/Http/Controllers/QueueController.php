@@ -51,8 +51,9 @@ class QueueController extends Controller
     public function ticket(Queue $queue)
     {
         $waitingBefore = Queue::where('service_id', $queue->service_id)
-            ->whereIn('status', ['pending', 'admin', 'prodi'])
-            ->where('created_at', '<', $queue->created_at)
+            ->where('queue_date', $queue->queue_date)
+            ->whereIn('status', ['pending', 'admin'])
+            ->where('sequence', '<', $queue->sequence)
             ->count();
 
         return view('queue.ticket', compact('queue', 'waitingBefore'));
@@ -118,15 +119,16 @@ class QueueController extends Controller
         $query = Queue::with(['service', 'counter'])
             ->whereIn('status', ['pending', 'admin', 'calling', 'serving']);
 
-        if ($request->date) {
-            $query->whereDate('queue_date', $request->date);
-        }
+        // Default to today if no date provided
+        $date = $request->date ?: today()->format('Y-m-d');
+        $query->whereDate('queue_date', $date);
 
         if ($request->service_id) {
             $query->where('service_id', $request->service_id);
         }
 
-        $queues = $query->orderBy('service_id')
+        // Order: Admin (Diproses) first, then Pending (Diajukan)
+        $queues = $query->orderByRaw("FIELD(status, 'admin', 'calling', 'serving', 'pending')")
             ->orderBy('sequence')
             ->get()
             ->map(fn($q) => [

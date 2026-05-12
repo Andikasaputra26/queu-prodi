@@ -17,6 +17,7 @@ const LOG_MAX = 50;
 let activityLog = [];
 let lastCalledData = null;
 let dtMonitorTable = null;
+let dtTrackingTable = null;
 let svcChart = null;
 
 // ──────────────────────────────
@@ -255,24 +256,30 @@ function refreshTracking() {
         const empty = document.getElementById('empty-msg');
         
         if (list.length === 0) {
-            tbody.innerHTML = '';
+            if (dtTrackingTable) dtTrackingTable.clear().draw();
             if (empty) empty.style.display = 'flex';
             return;
         }
         
         if (empty) empty.style.display = 'none';
-        tbody.innerHTML = '';
-        list.forEach(q => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${q.queue_number}</td>
-                <td style="font-size: 0.9rem; color: var(--warning);">${q.queue_date}</td>
-                <td style="font-weight: 700;">${q.patient_name}</td>
-                <td style="font-size: 0.9rem; color: var(--text-muted);">${q.service_name}</td>
-                <td><span class="badge badge-${q.status}">${q.status_label}</span></td>
-            `;
-            tbody.appendChild(tr);
-        });
+        
+        if (dtTrackingTable) {
+            dtTrackingTable.clear().rows.add(list).draw();
+        } else {
+            // Fallback if DataTable not initialized
+            tbody.innerHTML = '';
+            list.forEach(q => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${q.queue_number}</td>
+                    <td style="font-weight: 700;">${q.patient_name}</td>
+                    <td style="font-size: 0.9rem; color: var(--text-muted);">${q.service_name}</td>
+                    <td><span class="badge badge-${q.status}">${q.status_label}</span></td>
+                    <td>${q.created_at}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
     });
 }
 
@@ -403,6 +410,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     $(row).addClass('row-calling');
                 }
             }
+        });
+    }
+
+    // initialize DataTables for tracking display page if it exists
+    const tTable = $('#tracking-table');
+    if (tTable.length) {
+        dtTrackingTable = tTable.DataTable({
+            paging: false,
+            searching: false,
+            info: false,
+            order: [], // Handled by server-side orderByRaw
+            columns: [
+                { data: 'queue_number', render: (data) => `<span style="color:var(--warning); font-weight:900; font-family:'JetBrains Mono',monospace; font-size:1.4rem;">${data}</span>` },
+                { data: 'patient_name', render: (data) => `<span style="font-weight:700">${data}</span>` },
+                { data: 'service_name', render: (data) => `<span style="font-size:0.95rem; color:var(--text-muted)">${data}</span>` },
+                { data: 'status', render: (data, type, row) => `<span class="badge badge-${data}">${row.status_label}</span>` },
+                { data: 'created_at', render: (data) => `<span style="font-size:0.9rem; color:var(--text-muted); font-family:'JetBrains Mono',monospace">${data}</span>` }
+            ]
         });
     }
 

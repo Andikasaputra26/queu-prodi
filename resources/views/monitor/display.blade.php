@@ -235,7 +235,15 @@
         .ws-ind { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: var(--text-muted); }
         .ws-d { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); }
         .ws-d.on { background: var(--success); box-shadow: 0 0 6px var(--success); animation: pulse 2s infinite; }
+
+        /* DataTable Overrides for Display */
+        .dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_paginate {
+            display: none !important;
+        }
+        table.dataTable.no-footer { border-bottom: none; }
+        .tracking-table thead th { background: var(--surface); position: sticky; top: 0; z-index: 10; }
     </style>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 </head>
 <body>
     <div class="header">
@@ -267,14 +275,14 @@
                 </div>
             </div>
             <div style="overflow-y: auto; flex: 1;">
-                <table class="tracking-table">
+                <table class="tracking-table display" id="tracking-table" style="width:100%">
                     <thead>
                         <tr>
                             <th>ID Surat</th>
-                            <th>Tanggal</th>
                             <th>Nama Mahasiswa</th>
                             <th>Jenis Surat</th>
                             <th>Status Terkini</th>
+                            <th>Waktu Antri</th>
                         </tr>
                     </thead>
                     <tbody id="tracking-list">
@@ -306,6 +314,8 @@
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.3.0/dist/web/pusher.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
     <script>
