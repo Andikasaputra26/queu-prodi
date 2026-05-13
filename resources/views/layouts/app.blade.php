@@ -305,9 +305,13 @@
             <li><a href="{{ route('monitor.monitor') }}" class="{{ request()->routeIs('monitor.monitor') ? 'active' : '' }}">
                 <i class="fas fa-chart-bar"></i> Monitor
             </a></li>
-            <li><a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.*') ? 'active' : '' }}">
+
+            <?php if (auth()->check() && auth()->user()->role === 'admin'): ?>
+              <li><a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.*') ? 'active' : '' }}">
                 <i class="fas fa-user-cog"></i> Panel Dosen / Staf
-            </a></li>
+                </a></li>
+            <?php endif; ?>
+          
         </ul>
         <div class="ws-status">
             <div class="ws-dot" id="ws-dot"></div>

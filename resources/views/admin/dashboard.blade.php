@@ -255,6 +255,12 @@
         <button class="btn btn-primary" onclick="openModal()">
             <i class="fas fa-plus"></i> Tambah Manual
         </button>
+        <form action="{{ route('logout') }}" method="POST" style="display:inline;">
+            @csrf
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </form>
     </div>
 </div>
 
