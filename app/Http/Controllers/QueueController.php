@@ -119,7 +119,6 @@ class QueueController extends Controller
         $query = Queue::with(['service', 'counter'])
             ->whereIn('status', ['pending', 'admin', 'calling', 'serving']);
 
-        // Default to today if no date provided
         $date = $request->date ?: today()->format('Y-m-d');
         $query->whereDate('queue_date', $date);
 
@@ -127,7 +126,6 @@ class QueueController extends Controller
             $query->where('service_id', $request->service_id);
         }
 
-        // Order: Admin (Diproses) first, then Pending (Diajukan)
         $queues = $query->orderByRaw("FIELD(status, 'admin', 'calling', 'serving', 'pending')")
             ->orderBy('sequence')
             ->get()
