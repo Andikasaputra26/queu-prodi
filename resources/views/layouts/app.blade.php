@@ -302,11 +302,12 @@
             <li><a href="{{ route('monitor.display') }}" class="{{ request()->routeIs('monitor.display') ? 'active' : '' }}" target="_blank">
                 <i class="fas fa-tv"></i> Display Antrian
             </a></li>
+            
+            <?php if (auth()->check() && auth()->user()->role === 'admin'): ?>
             <li><a href="{{ route('monitor.monitor') }}" class="{{ request()->routeIs('monitor.monitor') ? 'active' : '' }}">
                 <i class="fas fa-chart-bar"></i> Monitor
             </a></li>
 
-            <?php if (auth()->check() && auth()->user()->role === 'admin'): ?>
               <li><a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.*') ? 'active' : '' }}">
                 <i class="fas fa-user-cog"></i> Panel Dosen / Staf
                 </a></li>
