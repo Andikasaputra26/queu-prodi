@@ -10,7 +10,7 @@ class Queue extends Model
     protected $fillable = [
         'queue_number', 'patient_name', 'phone', 'service_id',
         'counter_id', 'status', 'reject_reason', 'called_at', 'served_at', 'done_at',
-        'sequence', 'queue_date', 'document_number',
+        'sequence', 'queue_date', 'document_number', 'file_path',
     ];
 
     protected $casts = [

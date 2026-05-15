@@ -39,9 +39,18 @@ function selectService(el) {
     const submitBtn = document.getElementById('submit-btn');
     const hintText = document.getElementById('hint-text');
     const formInputs = document.getElementById('form-inputs');
+    const fileGroup = document.getElementById('file-upload-group');
+    const fileInput = document.getElementById('file');
+
     if (submitBtn) submitBtn.disabled = false;
     if (hintText) hintText.style.display = 'none';
     if (formInputs) formInputs.style.display = 'block';
+
+    if (fileGroup) {
+        const isSeminar = ['SP', 'SH', 'ST'].includes(selectedService.code);
+        fileGroup.style.display = isSeminar ? 'block' : 'none';
+        if (fileInput) fileInput.required = isSeminar;
+    }
 }
 
 function updateStats(data) {

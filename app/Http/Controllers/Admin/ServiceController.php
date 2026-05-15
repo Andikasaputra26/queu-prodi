@@ -57,4 +57,10 @@ class ServiceController extends Controller
         $service->delete();
         return redirect()->route('admin.services.index')->with('success', 'Jenis Surat berhasil dihapus.');
     }
+
+    public function toggleActive(QueueService $service)
+    {
+        $service->update(['is_active' => !$service->is_active]);
+        return redirect()->back()->with('success', 'Status jenis surat berhasil diubah.');
+    }
 }

@@ -33,7 +33,15 @@
                     <td style="padding: 1rem; font-weight: bold;">{{ $svc->code }}</td>
                     <td style="padding: 1rem;">{{ $svc->name }}</td>
                     <td style="padding: 1rem;"><span style="display:inline-block; width:20px; height:20px; border-radius:50%; background-color:var(--{{ $svc->color }}, {{ $svc->color }});"></span> {{ $svc->color }}</td>
-                    <td style="padding: 1rem;">{{ $svc->is_active ? 'Aktif' : 'Non-Aktif' }}</td>
+                    <td style="padding: 1rem;">
+                        <form action="{{ route('admin.services.toggle-active', $svc->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="btn {{ $svc->is_active ? 'btn-success' : 'btn-secondary' }}" style="padding: 0.2rem 0.6rem; font-size: 0.8rem; border-radius: 20px; border: none; cursor: pointer; background-color: {{ $svc->is_active ? '#10b981' : '#6b7280' }}; color: white;">
+                                {{ $svc->is_active ? 'Aktif' : 'Non-Aktif' }}
+                            </button>
+                        </form>
+                    </td>
                     <td style="padding: 1rem; display: flex; gap: 0.5rem;">
                         <a href="{{ route('admin.services.edit', $svc->id) }}" class="btn btn-warning" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Edit</a>
                         <form action="{{ route('admin.services.destroy', $svc->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus?')">

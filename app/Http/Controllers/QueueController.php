@@ -13,7 +13,7 @@ class QueueController extends Controller
 {
     public function index()
     {
-        $services = QueueService::where('is_active', true)->get();
+        $services = QueueService::orderByDesc('is_active')->get();
         return view('queue.register', compact('services'));
     }
 
@@ -23,12 +23,25 @@ class QueueController extends Controller
             'patient_name' => 'required|string|max:100',
             'phone'        => 'required|string|max:30',
             'service_id'   => 'required|exists:queue_services,id',
+            'file'         => 'nullable|file|mimes:pdf|max:5120', // Max 5MB
         ]);
 
-        $queue = DB::transaction(function () use ($request) {
-            $service     = QueueService::where('id', $request->service_id)->lockForUpdate()->firstOrFail();
+        $service = QueueService::findOrFail($request->service_id);
+        
+        // Validation for seminar services
+        if (in_array($service->code, ['SP', 'SH', 'ST']) && !$request->hasFile('file')) {
+            return back()->withErrors(['file' => 'File PDF wajib diunggah untuk layanan ini.'])->withInput();
+        }
+
+        $queue = DB::transaction(function () use ($request, $service) {
+            $service->lockForUpdate();
             $sequence    = $service->getNextSequence();
             $queueNumber = $service->code . str_pad($sequence, 3, '0', STR_PAD_LEFT);
+
+            $filePath = null;
+            if ($request->hasFile('file')) {
+                $filePath = $request->file('file')->store('queue_files', 'public');
+            }
 
             return Queue::create([
                 'queue_number' => $queueNumber,
@@ -38,6 +51,7 @@ class QueueController extends Controller
                 'status'       => 'pending',
                 'sequence'     => $sequence,
                 'queue_date'   => today(),
+                'file_path'    => $filePath,
             ]);
         });
 

@@ -251,22 +251,27 @@
         <div class="section-label"><i class="fas fa-file-alt"></i> Pilih Jenis Surat</div>
         <div class="service-cards" id="service-cards">
             @foreach($services as $service)
-            <div class="service-card"
-                 style="--svc-color: {{ $service->color }}"
+            <div class="service-card {{ !$service->is_active ? 'disabled' : '' }}"
+                 style="--svc-color: {{ $service->color }}; {{ !$service->is_active ? 'opacity: 0.6; cursor: not-allowed;' : '' }}"
                  data-id="{{ $service->id }}"
                  data-name="{{ $service->name }}"
                  data-code="{{ $service->code }}"
                  data-desc="{{ $service->description }}"
                  data-color="{{ $service->color }}"
-                 onclick="selectService(this)">
+                 data-active="{{ $service->is_active ? '1' : '0' }}"
+                 onclick="{{ $service->is_active ? 'selectService(this)' : '' }}">
                 <div class="svc-code" style="background: {{ $service->color }}20; color: {{ $service->color }}">
                     {{ $service->code }}
                 </div>
-                <div class="svc-name">{{ $service->name }}</div>
+                <div class="svc-name">{{ $service->name }} {{ !$service->is_active ? '(Tidak Aktif)' : '' }}</div>
                 <div class="svc-desc">{{ $service->description }}</div>
                 <div class="svc-meta">
-                    <span class="svc-count">Diproses: —</span>
-                    <div class="svc-check">✓</div>
+                    @if($service->is_active)
+                        <span class="svc-count">Diproses: —</span>
+                        <div class="svc-check">✓</div>
+                    @else
+                        <span class="svc-count" style="background: var(--surface-4);">Tutup</span>
+                    @endif
                 </div>
             </div>
             @endforeach
@@ -312,7 +317,7 @@
                 </div>
             </div>
 
-            <form action="{{ route('queue.store') }}" method="POST" id="register-form">
+            <form action="{{ route('queue.store') }}" method="POST" id="register-form" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="service_id" id="service_id">
 
@@ -349,6 +354,26 @@
                                required>
                     </div>
                     @error('phone')
+                        <small style="color: var(--danger); margin-top: 0.3rem; display: block">{{ $message }}</small>
+                    @enderror
+                </div>
+
+                <div class="form-group" id="file-upload-group" style="display: none;">
+                    <label class="form-label" for="file">
+                        Upload File PDF <span style="color: var(--danger)">*</span>
+                    </label>
+                    <div class="input-icon">
+                        <i class="fas fa-file-pdf" style="color: #F40F02;"></i>
+                        <input type="file"
+                               class="form-control"
+                               id="file"
+                               name="file"
+                               accept=".pdf">
+                    </div>
+                    <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.4rem; display: block;">
+                        Wajib upload file proposal/hasil/tutup dalam format <strong>PDF</strong>.
+                    </small>
+                    @error('file')
                         <small style="color: var(--danger); margin-top: 0.3rem; display: block">{{ $message }}</small>
                     @enderror
                 </div>

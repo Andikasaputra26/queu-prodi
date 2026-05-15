@@ -53,4 +53,10 @@ class CounterController extends Controller
         $counter->delete();
         return redirect()->route('admin.counters.index')->with('success', 'Dosen/Loket berhasil dihapus.');
     }
+
+    public function toggleActive(QueueCounter $counter)
+    {
+        $counter->update(['is_active' => !$counter->is_active]);
+        return redirect()->back()->with('success', 'Status loket berhasil diubah.');
+    }
 }

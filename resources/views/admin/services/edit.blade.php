@@ -27,7 +27,30 @@
         </div>
         <div class="form-group">
             <label class="form-label">Warna (Badge/Token)</label>
-            <input type="text" name="color" class="form-control" value="{{ $service->color }}" required>
+            @php 
+                $isHex = preg_match('/^#[0-9A-F]{6}$/i', $service->color);
+                $pickerColor = $isHex ? $service->color : '#000000';
+            @endphp
+            <div style="display: flex; gap: 0.5rem;">
+                <input type="color" id="colorPicker" class="form-control" style="width: 50px; padding: 0.2rem; cursor: pointer; height: 38px;" value="{{ $pickerColor }}">
+                <input type="text" name="color" id="colorInput" class="form-control" value="{{ $service->color }}" required placeholder="Contoh: #FF0000 atau primary" style="flex: 1;">
+            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const picker = document.getElementById('colorPicker');
+                    const input = document.getElementById('colorInput');
+                    
+                    picker.addEventListener('input', function() {
+                        input.value = this.value;
+                    });
+                    
+                    input.addEventListener('input', function() {
+                        if(/^#[0-9A-F]{6}$/i.test(this.value)) {
+                            picker.value = this.value;
+                        }
+                    });
+                });
+            </script>
         </div>
         <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
             <input type="checkbox" name="is_active" id="is_active" value="1" {{ $service->is_active ? 'checked' : '' }}>
