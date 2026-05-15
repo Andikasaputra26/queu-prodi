@@ -18,7 +18,11 @@ Route::post('/lacak', [QueueController::class, 'search'])->name('queue.search');
 Route::get('/tiket/{queue}', [QueueController::class, 'ticket'])->name('queue.ticket');
 
 Route::get('/display', [MonitorController::class, 'display'])->name('monitor.display');
-Route::get('/monitor', [MonitorController::class, 'monitor'])->name('monitor.monitor');
+
+
+Route::middleware(['admin.whitelist'])->group(function () {
+    Route::get('/monitor', [MonitorController::class, 'monitor'])->name('monitor.monitor');
+});
 
 Route::prefix('admin')->name('admin.')->middleware(['admin.whitelist'])->group(function () {
     Route::get('/', [AdminController::class, 'index'])->name('dashboard');

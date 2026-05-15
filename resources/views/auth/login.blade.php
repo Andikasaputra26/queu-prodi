@@ -128,106 +128,57 @@
             
             <div class="relative z-10 text-center flex flex-col items-center gsap-mascot">
                 
-                <div class="w-64 h-64 bg-white rounded-[3rem] flex flex-col items-center justify-center shadow-xl border border-slate-100 subtle-float relative overflow-hidden" id="mascot">
-                    <div class="flex gap-8 mt-6" id="eyes-container">
-                        <div class="w-14 h-16 bg-slate-50 rounded-[50%] relative overflow-hidden shadow-[inset_0_4px_8px_rgba(0,0,0,0.05)] flex items-center justify-center border border-slate-100">
-                            <div class="w-6 h-6 bg-slate-800 rounded-full pupil"></div>
-                            <div class="w-full h-[120%] bg-indigo-500 absolute -top-[120%] left-0 rounded-b-full eyelid border-b-4 border-indigo-600 shadow-lg"></div>
+                <div class="w-64 h-64 subtle-float relative" id="mascot-container">
+                    <div class="absolute -top-3 left-6 w-16 h-16 bg-white border border-slate-100 rounded-tl-3xl shadow-sm transform -rotate-12 z-0 overflow-hidden">
+                        <div class="absolute bottom-0 right-0 w-12 h-12 bg-pink-50 rounded-tl-2xl transform translate-x-2 translate-y-2"></div>
+                    </div>
+                    <div class="absolute -top-3 right-6 w-16 h-16 bg-white border border-slate-100 rounded-tr-3xl shadow-sm transform rotate-12 z-0 overflow-hidden">
+                        <div class="absolute bottom-0 left-0 w-12 h-12 bg-pink-50 rounded-tr-2xl transform -translate-x-2 translate-y-2"></div>
+                    </div>
+                    
+                    <div class="w-full h-full bg-white rounded-[3rem] flex flex-col items-center justify-center shadow-xl border border-slate-100 relative z-10" id="mascot">
+                        <div class="flex gap-8 mt-4" id="eyes-container">
+                            <div class="w-14 h-16 bg-slate-50 rounded-[50%] relative overflow-hidden shadow-[inset_0_4px_8px_rgba(0,0,0,0.05)] flex items-center justify-center border border-slate-100">
+                                <div class="w-7 h-9 bg-slate-800 rounded-full pupil relative flex justify-center items-center">
+                                    <div class="w-2.5 h-3 bg-white rounded-full absolute top-1.5 right-1.5"></div>
+                                </div>
+                                <div class="w-full h-[120%] bg-white absolute -top-[120%] left-0 rounded-b-full eyelid border-b-2 border-slate-200 shadow-sm z-20"></div>
+                            </div>
+                            <div class="w-14 h-16 bg-slate-50 rounded-[50%] relative overflow-hidden shadow-[inset_0_4px_8px_rgba(0,0,0,0.05)] flex items-center justify-center border border-slate-100">
+                                <div class="w-7 h-9 bg-slate-800 rounded-full pupil relative flex justify-center items-center">
+                                    <div class="w-2.5 h-3 bg-white rounded-full absolute top-1.5 right-1.5"></div>
+                                </div>
+                                <div class="w-full h-[120%] bg-white absolute -top-[120%] left-0 rounded-b-full eyelid border-b-2 border-slate-200 shadow-sm z-20"></div>
+                            </div>
                         </div>
-                        <div class="w-14 h-16 bg-slate-50 rounded-[50%] relative overflow-hidden shadow-[inset_0_4px_8px_rgba(0,0,0,0.05)] flex items-center justify-center border border-slate-100">
-                            <div class="w-6 h-6 bg-slate-800 rounded-full pupil"></div>
-                            <div class="w-full h-[120%] bg-indigo-500 absolute -top-[120%] left-0 rounded-b-full eyelid border-b-4 border-indigo-600 shadow-lg"></div>
+                        
+                        <div class="flex flex-col items-center mt-3 z-10 relative">
+                            <div class="w-3.5 h-2.5 bg-pink-300 rounded-full mb-1"></div>
+                            <div class="w-10 h-3 border-b-4 border-slate-700 rounded-b-full transition-all duration-300" id="mouth"></div>
+                        </div>
+
+                        <div class="absolute top-[110px] left-4 flex flex-col gap-3">
+                            <div class="w-10 h-[2px] bg-slate-200 rounded-full transform rotate-12"></div>
+                            <div class="w-12 h-[2px] bg-slate-200 rounded-full -ml-2"></div>
+                            <div class="w-10 h-[2px] bg-slate-200 rounded-full transform -rotate-12"></div>
+                        </div>
+                        <div class="absolute top-[110px] right-4 flex flex-col gap-3 items-end">
+                            <div class="w-10 h-[2px] bg-slate-200 rounded-full transform -rotate-12"></div>
+                            <div class="w-12 h-[2px] bg-slate-200 rounded-full -mr-2"></div>
+                            <div class="w-10 h-[2px] bg-slate-200 rounded-full transform rotate-12"></div>
                         </div>
                     </div>
-                    <div class="w-12 h-3 border-b-4 border-slate-700 rounded-b-full mt-8 transition-all duration-300" id="mouth"></div>
                 </div>
 
-                <div class="mt-10 bg-white/80 backdrop-blur-md px-6 py-3.5 rounded-2xl border border-slate-200 shadow-sm inline-block">
-                    <p class="text-slate-600 font-medium text-sm" id="mascot-text">Keamanan data Anda adalah prioritas kami.</p>
+                <div class="mt-10 bg-white/80 backdrop-blur-md px-6 py-3.5 rounded-2xl border border-slate-200 shadow-sm inline-block z-10 relative">
+                    <p class="text-slate-600 font-medium text-sm" id="mascot-text">Meong! Keamanan data Anda adalah prioritas kami 🐾</p>
                 </div>
             </div>
         </div>
         
     </div>
 
-    <script>
-        const togglePassword = document.querySelector('#togglePassword');
-        const passwordInput = document.querySelector('#password');
-        const emailInput = document.querySelector('#email');
-        
-        const eyelids = document.querySelectorAll('.eyelid');
-        const pupils = document.querySelectorAll('.pupil');
-        const mouth = document.querySelector('#mouth');
-        const mascotText = document.querySelector('#mascot-text');
-
-        document.addEventListener("DOMContentLoaded", () => {
-            gsap.to("body", { opacity: 1, duration: 0.4, ease: "power2.inOut" });
-
-            const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-
-            tl.from(".gsap-container", { y: 40, opacity: 0, duration: 0.8 })
-              .from(".gsap-item", { x: -20, opacity: 0, duration: 0.5, stagger: 0.1 }, "-=0.4")
-              .from(".gsap-mascot", { scale: 0.8, opacity: 0, duration: 0.8, ease: "back.out(1.5)" }, "-=0.6");
-        });
-
-        emailInput.addEventListener('focus', () => {
-            gsap.to(pupils, { x: -10, y: 5, duration: 0.3 });
-            gsap.to(mouth, { width: 48, height: 12, borderRadius: "0 0 100px 100px", borderTop: "none", borderBottom: "4px solid #334155", duration: 0.3 });
-            gsap.to(eyelids, { top: "-120%", duration: 0.3 }); 
-            mascotText.innerText = "Ketik email dengan perlahan...";
-        });
-
-        emailInput.addEventListener('input', (e) => {
-            let progress = Math.min(e.target.value.length / 30, 1);
-            let moveX = -10 + (progress * 20); 
-            gsap.to(pupils, { x: moveX, duration: 0.1 });
-        });
-
-        const resetMascot = () => {
-            if (document.activeElement !== emailInput && document.activeElement !== passwordInput) {
-                gsap.to(pupils, { x: 0, y: 0, duration: 0.3 });
-                gsap.to(eyelids, { top: "-120%", duration: 0.4, ease: "power2.out" });
-                gsap.to(mouth, { width: 48, height: 12, borderRadius: "0 0 100px 100px", borderTop: "none", borderBottom: "4px solid #334155", duration: 0.3 });
-                mascotText.innerText = "Keamanan data Anda adalah prioritas kami.";
-            }
-        };
-
-        emailInput.addEventListener('blur', resetMascot);
-        passwordInput.addEventListener('blur', resetMascot);
-
-        passwordInput.addEventListener('focus', () => {
-            if (passwordInput.getAttribute('type') === 'password') {
-                gsap.to(pupils, { x: 0, y: 0, duration: 0.3 });
-                gsap.to(eyelids, { top: "0%", duration: 0.4, ease: "bounce.out" });
-                gsap.to(mouth, { width: 20, height: 20, borderRadius: "50%", border: "4px solid #334155", duration: 0.3 });
-                mascotText.innerText = "Saya tidak ngintip kok! 🙈";
-            } else {
-                gsap.to(eyelids, { top: "-60%", duration: 0.3, ease: "power2.out" });
-                gsap.to(mouth, { width: 30, height: 12, borderRadius: "0 0 100px 100px", borderTop: "none", borderBottom: "4px solid #334155", duration: 0.3 });
-                mascotText.innerText = "Hati-hati, password Anda terlihat!";
-            }
-        });
-
-        togglePassword.addEventListener('click', function () {
-            const isPassword = passwordInput.getAttribute('type') === 'password';
-            
-            passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
-            this.querySelector('i').classList.toggle('fa-eye');
-            this.querySelector('i').classList.toggle('fa-eye-slash');
-
-            if (document.activeElement === passwordInput) {
-                if (isPassword) {
-                    gsap.to(eyelids, { top: "-60%", duration: 0.3, ease: "power2.out" });
-                    gsap.to(mouth, { width: 30, height: 12, borderRadius: "0 0 100px 100px", borderTop: "none", borderBottom: "4px solid #334155", duration: 0.3 });
-                    mascotText.innerText = "Hati-hati, password Anda terlihat!";
-                } else {
-                    gsap.to(eyelids, { top: "0%", duration: 0.3, ease: "bounce.out" });
-                    gsap.to(mouth, { width: 20, height: 20, borderRadius: "50%", border: "4px solid #334155", duration: 0.3 });
-                    mascotText.innerText = "Saya tidak ngintip kok! 🙈";
-                }
-            }
-        });
-    </script>
+<script src="{{ asset('js/login-animasi.js') }}"></script>
 </body>
 </html>
 

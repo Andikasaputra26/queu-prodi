@@ -303,16 +303,28 @@
                 <i class="fas fa-tv"></i> Display Antrian
             </a></li>
             
-            <?php if (auth()->check() && auth()->user()->role === 'admin'): ?>
+            @auth
             <li><a href="{{ route('monitor.monitor') }}" class="{{ request()->routeIs('monitor.monitor') ? 'active' : '' }}">
                 <i class="fas fa-chart-bar"></i> Monitor
             </a></li>
 
-              <li><a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.*') ? 'active' : '' }}">
+            <li><a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.*') ? 'active' : '' }}">
                 <i class="fas fa-user-cog"></i> Panel Dosen / Staf
-                </a></li>
-            <?php endif; ?>
-          
+            </a></li>
+
+            <li>
+                <form action="{{ route('logout') }}" method="POST" id="logout-form" style="display: none;">
+                    @csrf
+                </form>
+                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <i class="fas fa-sign-out-alt"></i> Keluar
+                </a>
+            </li>
+            @else
+            <li><a href="{{ route('login') }}" class="{{ request()->routeIs('login') ? 'active' : '' }}">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </a></li>
+            @endauth
         </ul>
         <div class="ws-status">
             <div class="ws-dot" id="ws-dot"></div>

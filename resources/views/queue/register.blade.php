@@ -247,7 +247,6 @@
 </div>
 
 <div class="register-grid">
-    <!-- Kiri: Pilih Jenis Konsultasi -->
     <div>
         <div class="section-label"><i class="fas fa-file-alt"></i> Pilih Jenis Surat</div>
         <div class="service-cards" id="service-cards">
