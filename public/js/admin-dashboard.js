@@ -179,8 +179,8 @@ async function updateStatus(id, status) {
         const reason = prompt('Masukkan alasan penolakan (kosongkan jika tidak ada):');
         if (reason === null) return; // User cancelled
         payload.reject_reason = reason;
-    } else if (status === 'admin') {
-        const docNum = prompt('Masukkan Nomor Surat:');
+    } else if (status === 'done') {
+        const docNum = prompt('Masukkan Nomor Surat / Dokumen:', allQueues.find(q => q.id === id).document_number || '');
         if (docNum === null) return; // User cancelled
         payload.document_number = docNum;
     }
@@ -267,7 +267,13 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             { 
                 data: 'service_name', 
-                render: (data, type, row) => `<span style="color:${row.service_color || '#6366F1'}; font-weight: 600;">${data || '-'}</span>` 
+                render: (data, type, row) => {
+                    let html = `<span style="color:${row.service_color || '#6366F1'}; font-weight: 600;">${data || '-'}</span>`;
+                    if (row.file_path) {
+                        html += `<br><a href="${row.file_path}" target="_blank" class="btn btn-ghost" style="padding: 0.2rem 0.4rem; font-size: 0.65rem; margin-top: 0.3rem; border-color: #F40F02; color: #F40F02;"><i class="fas fa-file-pdf"></i> Lihat PDF</a>`;
+                    }
+                    return html;
+                }
             },
             { 
                 data: 'document_number', 

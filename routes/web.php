@@ -33,6 +33,12 @@ Route::prefix('admin')->name('admin.')->middleware(['admin.whitelist'])->group(f
     Route::post('/queue/{queue}/requeue', [AdminController::class, 'requeue'])->name('requeue');
     Route::get('/export', [AdminController::class, 'export'])->name('export');
     Route::delete('/reset-today', [AdminController::class, 'resetToday'])->name('reset-today');
+
+    Route::patch('services/{service}/toggle-active', [\App\Http\Controllers\Admin\ServiceController::class, 'toggleActive'])->name('services.toggle-active');
+    Route::resource('services', \App\Http\Controllers\Admin\ServiceController::class);
+    
+    Route::patch('counters/{counter}/toggle-active', [\App\Http\Controllers\Admin\CounterController::class, 'toggleActive'])->name('counters.toggle-active');
+    Route::resource('counters', \App\Http\Controllers\Admin\CounterController::class);
 });
 
 Route::prefix('api')->name('api.')->group(function () {

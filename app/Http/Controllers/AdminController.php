@@ -224,7 +224,10 @@ class AdminController extends Controller
                 'status_label'  => $q->status_label,
                 'service_name'  => $q->service?->name,
                 'service_color' => $q->service?->color,
+                'service_code'  => $q->service?->code,
                 'counter_name'  => $q->counter?->name,
+                'document_number' => $q->document_number,
+                'file_path'     => $q->file_path ? asset('storage/' . $q->file_path) : null,
                 'called_at'     => $q->called_at?->format('H:i:s'),
                 'created_at'    => $q->created_at->format('d/m/Y H:i'),
             ]);
