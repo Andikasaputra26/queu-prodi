@@ -23,14 +23,14 @@ class QueueController extends Controller
             'patient_name' => 'required|string|max:100',
             'phone'        => 'required|string|max:30',
             'service_id'   => 'required|exists:queue_services,id',
-            'file'         => 'nullable|file|mimes:pdf|max:5120', // Max 5MB
+            'file'         => 'nullable|file|mimes:pdf,doc,docx|max:5120', // Max 5MB
         ]);
 
         $service = QueueService::findOrFail($request->service_id);
         
         // Validation for seminar services
         if (in_array($service->code, ['SP', 'SH', 'ST']) && !$request->hasFile('file')) {
-            return back()->withErrors(['file' => 'File PDF wajib diunggah untuk layanan ini.'])->withInput();
+            return back()->withErrors(['file' => 'File (PDF/Word) wajib diunggah untuk layanan ini.'])->withInput();
         }
 
         $queue = DB::transaction(function () use ($request, $service) {

@@ -35,7 +35,7 @@ class WhatsAppService
             CURLOPT_POSTFIELDS => array(
                 'target' => $to,
                 'message' => $message,
-                'countryCode' => '62', 
+                'countryCode' => '62',
             ),
             CURLOPT_HTTPHEADER => array(
                 "Authorization: $token"
@@ -62,14 +62,15 @@ class WhatsAppService
     public static function notifyRegistration(Queue $queue)
     {
         $ticketUrl = route('queue.ticket', $queue->id);
-        $message = "✅ *REGISTRASI BERHASIL*\n\nHalo, *{$queue->patient_name}*!\n\nRegistrasi antrian surat Anda berhasil dilakukan dan saat ini *SEDANG DIPROSES* oleh admin.\n\n🆔 ID Surat: *{$queue->queue_number}*\n📝 Jenis: {$queue->service->name}\n📅 Tanggal: " . now()->format('d/m/Y H:i') . "\n\nCek progress antrian Anda di sini:\n" . $ticketUrl . "\n\nKami akan mengabari Anda kembali melalui WhatsApp jika proses telah selesai.";
+        $message = "✅ *Yay, REGISTRASI ANDA BERHASIL*\n\nHalo, *{$queue->patient_name}*!\n\nRegistrasi antrian surat Anda berhasil dilakukan dan saat ini *SEDANG DIPROSES* oleh admin.\n\n🆔 ID Surat: *{$queue->queue_number}*\n📝 Jenis: {$queue->service->name}\n📅 Tanggal: " . now()->format('d/m/Y H:i') . "\n\nCek progress antrian Anda di sini:\n" . $ticketUrl . "\n\nKami akan mengabari Anda kembali melalui WhatsApp jika proses telah selesai.";
 
         return self::send($queue->phone, $message);
     }
 
     public static function notifyStatusUpdate(Queue $queue)
     {
-        if (!$queue->phone) return;
+        if (!$queue->phone)
+            return;
 
         $statusLabel = $queue->status_label;
         $message = "🔔 *UPDATE PROGRES SURAT*\n\nHalo, *{$queue->patient_name}*!\n\nAda perkembangan terbaru untuk surat Anda (*{$queue->queue_number}*).\n\n📍 *POSISI PROSES SEKARANG*:\n*{$statusLabel}*\n\n";
@@ -82,7 +83,7 @@ class WhatsAppService
         } elseif ($queue->status === 'rejected') {
             $message .= "❌ Mohon maaf, pengajuan Anda belum bisa diproses karena ada ketidaksesuaian berkas.";
             if ($queue->reject_reason) {
-                $message .=  "\n\n*Alasan Penolakan:*\n{$queue->reject_reason}";
+                $message .= "\n\n*Alasan Penolakan:*\n{$queue->reject_reason}";
             }
             $message .= "\n\nSilakan perbaiki dokumen Anda lalu hubungi loket admin untuk diantrikan ulang.";
         } else {
@@ -96,7 +97,8 @@ class WhatsAppService
 
     public static function notifyCalled(Queue $queue)
     {
-        if (!$queue->phone) return;
+        if (!$queue->phone)
+            return;
 
         $counterName = $queue->counter ? $queue->counter->name : 'Loket Administrasi';
         $message = "📢 *PANGGILAN ANTRIAN*\n\nHalo, *{$queue->patient_name}*!\n\nNomor antrian Anda *{$queue->queue_number}* sedang dipanggil di *{$counterName}*.\n\nSilakan segera menuju ke loket tersebut.\nTerima kasih.";

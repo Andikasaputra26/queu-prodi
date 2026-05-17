@@ -127,6 +127,19 @@ class AdminController extends Controller
         }
         if ($request->has('document_number')) {
             $updates['document_number'] = $request->document_number;
+
+            if ($queue->file_path && str_ends_with(strtolower($queue->file_path), 'docx')) {
+                try {
+                    $absolutePath = storage_path('app/public/' . $queue->file_path);
+                    if (file_exists($absolutePath)) {
+                        $templateProcessor = new \PhpOffice\PhpWord\TemplateProcessor($absolutePath);
+                        $templateProcessor->setValue('NOMOR_SURAT', $request->document_number);
+                        $templateProcessor->saveAs($absolutePath);
+                    }
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Word template error: ' . $e->getMessage());
+                }
+            }
         }
 
         if ($request->status === 'done' || $request->status === 'rejected') {

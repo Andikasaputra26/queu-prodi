@@ -776,13 +776,6 @@
 
             <div class="card">
                 <div class="sec-hdr">
-                    <div class="sec-title"><i class="fas fa-door-open"></i> Status Ruang Dosen</div>
-                </div>
-                <div class="counter-grid" id="cg-grid"></div>
-            </div>
-
-            <div class="card">
-                <div class="sec-hdr">
                     <div class="sec-title"><i class="fas fa-history"></i> Log Aktivitas</div>
                     <button onclick="clearLog()" class="btn btn-ghost" style="padding:0.3rem 0.6rem; font-size:0.72rem;">
                         <i class="fas fa-trash-alt"></i> Hapus

@@ -270,7 +270,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 render: (data, type, row) => {
                     let html = `<span style="color:${row.service_color || '#6366F1'}; font-weight: 600;">${data || '-'}</span>`;
                     if (row.file_path) {
-                        html += `<br><a href="${row.file_path}" target="_blank" class="btn btn-ghost" style="padding: 0.2rem 0.4rem; font-size: 0.65rem; margin-top: 0.3rem; border-color: #F40F02; color: #F40F02;"><i class="fas fa-file-pdf"></i> Lihat PDF</a>`;
+                        const isWord = row.file_path.toLowerCase().endsWith('.doc') || row.file_path.toLowerCase().endsWith('.docx');
+                        const icon = isWord ? 'fa-file-word' : 'fa-file-pdf';
+                        const color = isWord ? '#2B579A' : '#F40F02';
+                        const text = isWord ? 'Unduh Word' : 'Lihat PDF';
+                        html += `<br><a href="${row.file_path}" target="_blank" class="btn btn-ghost" style="padding: 0.2rem 0.4rem; font-size: 0.65rem; margin-top: 0.3rem; border-color: ${color}; color: ${color};"><i class="fas ${icon}"></i> ${text}</a>`;
                     }
                     return html;
                 }
