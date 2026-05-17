@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,9 @@
     <meta name="description" content="Sistem antrian konsultasi digital Program Studi berbasis WebSocket real-time">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     @stack('styles')
     <style>
@@ -30,7 +33,11 @@
             --glow: 0 4px 20px rgba(37, 99, 235, 0.15);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Inter', sans-serif;
@@ -43,8 +50,10 @@
         body::before {
             content: '';
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background:
                 radial-gradient(ellipse at 20% 20%, rgba(37, 99, 235, 0.08) 0%, transparent 50%),
                 radial-gradient(ellipse at 80% 80%, rgba(56, 189, 248, 0.08) 0%, transparent 50%);
@@ -53,7 +62,9 @@
         }
 
         .navbar {
-            position: sticky; top: 0; z-index: 100;
+            position: sticky;
+            top: 0;
+            z-index: 100;
             background: var(--glass);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
@@ -64,15 +75,20 @@
         }
 
         .navbar-brand {
-            display: flex; align-items: center; gap: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
             text-decoration: none;
         }
 
         .brand-icon {
-            width: 42px; height: 42px;
+            width: 42px;
+            height: 42px;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 1.3rem;
             box-shadow: var(--glow);
         }
@@ -96,7 +112,8 @@
         }
 
         .nav-links {
-            display: flex; gap: 0.25rem;
+            display: flex;
+            gap: 0.25rem;
             list-style: none;
         }
 
@@ -108,16 +125,20 @@
             font-size: 0.825rem;
             font-weight: 500;
             transition: all 0.2s;
-            display: flex; align-items: center; gap: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
         }
 
-        .nav-links a:hover, .nav-links a.active {
+        .nav-links a:hover,
+        .nav-links a.active {
             color: var(--text);
             background: rgba(99, 102, 241, 0.15);
         }
 
         .main-content {
-            position: relative; z-index: 1;
+            position: relative;
+            z-index: 1;
             padding: 2rem;
             max-width: 1400px;
             margin: 0 auto;
@@ -132,17 +153,23 @@
             transition: all 0.3s;
         }
 
-        .card:hover { border-color: rgba(99,102,241,0.25); }
+        .card:hover {
+            border-color: rgba(99, 102, 241, 0.25);
+        }
 
         .card-header {
-            display: flex; align-items: center; justify-content: space-between;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 1.5rem;
         }
 
         .card-title {
             font-size: 0.95rem;
             font-weight: 600;
-            display: flex; align-items: center; gap: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .btn {
@@ -153,7 +180,9 @@
             font-size: 0.875rem;
             font-weight: 600;
             cursor: pointer;
-            display: inline-flex; align-items: center; gap: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
             transition: all 0.2s;
             text-decoration: none;
         }
@@ -161,25 +190,43 @@
         .btn-primary {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            box-shadow: 0 4px 15px rgba(99,102,241,0.3);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(99,102,241,0.4);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
         }
 
-        .btn-success { background: var(--success); color: white; }
-        .btn-warning { background: var(--warning); color: white; }
-        .btn-danger  { background: var(--danger);  color: white; }
-        .btn-ghost   {
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-ghost {
             background: transparent;
             color: var(--text-muted);
             border: 1px solid var(--border);
         }
-        .btn-ghost:hover { color: var(--text); border-color: var(--primary); }
 
-        .btn:active { transform: scale(0.97); }
+        .btn-ghost:hover {
+            color: var(--text);
+            border-color: var(--primary);
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
 
         .badge {
             padding: 0.25rem 0.75rem;
@@ -188,18 +235,48 @@
             font-weight: 600;
         }
 
-        .badge-waiting  { background: rgba(100,116,139,0.3); color: #94A3B8; }
-        .badge-calling  { background: rgba(245,158,11,0.2);  color: #FCD34D; animation: pulse-badge 1.5s infinite; }
-        .badge-serving  { background: rgba(59,130,246,0.2);  color: #60A5FA; }
-        .badge-done     { background: rgba(16,185,129,0.2);  color: #34D399; }
-        .badge-skip     { background: rgba(239,68,68,0.2);   color: #F87171; }
-
-        @keyframes pulse-badge {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
+        .badge-waiting {
+            background: rgba(100, 116, 139, 0.3);
+            color: #94A3B8;
         }
 
-        .form-group { margin-bottom: 1.25rem; }
+        .badge-calling {
+            background: rgba(245, 158, 11, 0.2);
+            color: #FCD34D;
+            animation: pulse-badge 1.5s infinite;
+        }
+
+        .badge-serving {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60A5FA;
+        }
+
+        .badge-done {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34D399;
+        }
+
+        .badge-skip {
+            background: rgba(239, 68, 68, 0.2);
+            color: #F87171;
+        }
+
+        @keyframes pulse-badge {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
         .form-label {
             display: block;
             font-size: 0.85rem;
@@ -223,14 +300,17 @@
 
         .form-control:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
         }
 
         .toast-container {
             position: fixed;
-            top: 1.5rem; right: 1.5rem;
+            top: 1.5rem;
+            right: 1.5rem;
             z-index: 9999;
-            display: flex; flex-direction: column; gap: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
         }
 
         .toast {
@@ -238,92 +318,159 @@
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 1rem 1.25rem;
-            display: flex; align-items: center; gap: 0.75rem;
-            min-width: 280px; max-width: 360px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 280px;
+            max-width: 360px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             animation: slideIn 0.3s ease;
         }
 
         @keyframes slideIn {
-            from { transform: translateX(100px); opacity: 0; }
-            to   { transform: translateX(0);    opacity: 1; }
+            from {
+                transform: translateX(100px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
-        .toast-success { border-left: 3px solid var(--success); }
-        .toast-warning { border-left: 3px solid var(--warning); }
-        .toast-error   { border-left: 3px solid var(--danger);  }
-        .toast-info    { border-left: 3px solid var(--primary); }
+        .toast-success {
+            border-left: 3px solid var(--success);
+        }
+
+        .toast-warning {
+            border-left: 3px solid var(--warning);
+        }
+
+        .toast-error {
+            border-left: 3px solid var(--danger);
+        }
+
+        .toast-info {
+            border-left: 3px solid var(--primary);
+        }
 
         /* Pulse */
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .pulse { animation: pulse 2s infinite; }
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
 
         /* WS indicator */
         .ws-status {
-            display: flex; align-items: center; gap: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
             font-size: 0.75rem;
             color: var(--text-muted);
         }
 
         .ws-dot {
-            width: 8px; height: 8px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background: var(--text-muted);
             transition: background 0.3s;
         }
 
-        .ws-dot.connected { background: var(--success); box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }
-        .ws-dot.error     { background: var(--danger);  box-shadow: 0 0 8px var(--danger);  }
+        .ws-dot.connected {
+            background: var(--success);
+            box-shadow: 0 0 8px var(--success);
+            animation: pulse 2s infinite;
+        }
 
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 99px; }
+        .ws-dot.error {
+            background: var(--danger);
+            box-shadow: 0 0 8px var(--danger);
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--surface-3);
+            border-radius: 99px;
+        }
 
         @media (max-width: 768px) {
-            .navbar { padding: 0.875rem 1rem; }
-            .main-content { padding: 1rem; }
-            .nav-links { display: none; }
+            .navbar {
+                padding: 0.875rem 1rem;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
         }
     </style>
 </head>
+
 <body>
     <nav class="navbar">
         <a href="{{ route('queue.register') }}" class="navbar-brand">
             <div class="brand-icon">🎓</div>
             <div>
                 <div class="brand-text">SI-PINTER</div>
-                <span class="brand-sub">Antrian Konsultasi Program Studi</span>
+                <span class="brand-sub">Sistem pelayanan persuratan terintegrasi</span>
             </div>
         </a>
         <ul class="nav-links">
-            <li><a href="{{ route('queue.register') }}" class="{{ request()->routeIs('queue.register') ? 'active' : '' }}">
-                <i class="fas fa-ticket-alt"></i> Ambil Nomor
-            </a></li>
-            <li><a href="{{ route('monitor.display') }}" class="{{ request()->routeIs('monitor.display') ? 'active' : '' }}" target="_blank">
-                <i class="fas fa-tv"></i> Display Antrian
-            </a></li>
-            
+            <li><a href="{{ route('queue.register') }}"
+                    class="{{ request()->routeIs('queue.register') ? 'active' : '' }}">
+                    <i class="fas fa-ticket-alt"></i> Ambil Nomor
+                </a></li>
+            <li><a href="{{ route('monitor.display') }}"
+                    class="{{ request()->routeIs('monitor.display') ? 'active' : '' }}" target="_blank">
+                    <i class="fas fa-tv"></i> Display Antrian
+                </a></li>
+
             @auth
-            <li><a href="{{ route('monitor.monitor') }}" class="{{ request()->routeIs('monitor.monitor') ? 'active' : '' }}">
-                <i class="fas fa-chart-bar"></i> Monitor
-            </a></li>
+                <li><a href="{{ route('monitor.monitor') }}"
+                        class="{{ request()->routeIs('monitor.monitor') ? 'active' : '' }}">
+                        <i class="fas fa-chart-bar"></i> Monitor
+                    </a></li>
 
-            <li><a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.*') ? 'active' : '' }}">
-                <i class="fas fa-user-cog"></i> Panel Dosen / Staf
-            </a></li>
+                <li><a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.*') ? 'active' : '' }}">
+                        <i class="fas fa-user-cog"></i> Panel Dosen / Staf
+                    </a></li>
 
-            <li>
-                <form action="{{ route('logout') }}" method="POST" id="logout-form" style="display: none;">
-                    @csrf
-                </form>
-                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <i class="fas fa-sign-out-alt"></i> Keluar
-                </a>
-            </li>
+                <li>
+                    <form action="{{ route('logout') }}" method="POST" id="logout-form" style="display: none;">
+                        @csrf
+                    </form>
+                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                        <i class="fas fa-sign-out-alt"></i> Keluar
+                    </a>
+                </li>
             @else
-            <li><a href="{{ route('login') }}" class="{{ request()->routeIs('login') ? 'active' : '' }}">
-                <i class="fas fa-sign-in-alt"></i> Login
-            </a></li>
+                <li><a href="{{ route('login') }}" class="{{ request()->routeIs('login') ? 'active' : '' }}">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a></li>
             @endauth
         </ul>
         <div class="ws-status">
@@ -354,7 +501,7 @@
         }
 
         function setWsStatus(connected) {
-            const dot  = document.getElementById('ws-dot');
+            const dot = document.getElementById('ws-dot');
             const text = document.getElementById('ws-text');
             if (!dot) return;
             if (connected) {
@@ -367,4 +514,5 @@
         }
     </script>
 </body>
+
 </html>

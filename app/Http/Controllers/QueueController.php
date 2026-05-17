@@ -133,10 +133,11 @@ class QueueController extends Controller
         $query = Queue::with(['service', 'counter'])
             ->whereIn('status', ['pending', 'admin', 'calling', 'serving']);
 
-        $date = $request->date ?: today()->format('Y-m-d');
-        $query->whereDate('queue_date', $date);
+        if ($request->filled('date')) {
+            $query->whereDate('queue_date', $request->date);
+        }
 
-        if ($request->service_id) {
+        if ($request->filled('service_id')) {
             $query->where('service_id', $request->service_id);
         }
 

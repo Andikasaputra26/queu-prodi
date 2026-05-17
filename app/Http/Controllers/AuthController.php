@@ -53,7 +53,7 @@ class AuthController extends Controller
 
     protected function ensureIsNotRateLimited(Request $request)
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey($request), 5)) {
+        if (!RateLimiter::tooManyAttempts($this->throttleKey($request), 5)) {
             return;
         }
 
@@ -66,6 +66,6 @@ class AuthController extends Controller
 
     protected function throttleKey(Request $request)
     {
-        return Str::transliterate(Str::lower($request->input('email')).'|'.$request->ip());
+        return Str::transliterate(Str::lower($request->input('email')) . '|' . $request->ip());
     }
 }

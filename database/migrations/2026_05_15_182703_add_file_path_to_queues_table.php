@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('queues', function (Blueprint $table) {
-            //
+            $table->dropColumn('file_path');
         });
     }
 };
