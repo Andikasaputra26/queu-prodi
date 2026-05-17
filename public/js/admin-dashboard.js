@@ -296,10 +296,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         actions += `<button class="btn btn-warning" style="padding: 0.3rem 0.5rem; font-size: 0.72rem;" onclick="updateStatus(${data},'admin')">Proses</button>`;
                     } else if (row.status === 'admin') {
                         actions += `<button class="btn btn-success" style="padding: 0.3rem 0.5rem; font-size: 0.72rem;" onclick="updateStatus(${data},'done')">Selesai</button>`;
+                    } else if (row.status === 'done') {
+                        actions += `<button class="btn btn-primary" style="padding: 0.3rem 0.5rem; font-size: 0.72rem;" onclick="updateStatus(${data},'picked_up')"><i class="fas fa-hand-holding"></i> Diambil</button>`;
                     } else if (row.status === 'rejected') {
                         actions += `<button class="btn btn-warning" style="padding: 0.3rem 0.5rem; font-size: 0.72rem;" onclick="requeue(${data})"><i class="fas fa-redo"></i> Ulang</button>`;
                     }
-                    if (row.status !== 'done' && row.status !== 'rejected') {
+                    if (row.status !== 'done' && row.status !== 'rejected' && row.status !== 'picked_up') {
                         actions += `<button class="btn btn-danger" style="padding: 0.3rem 0.5rem; font-size: 0.72rem;" onclick="updateStatus(${data},'rejected')">❌ Tolak</button>`;
                     }
                     actions += '</div>';

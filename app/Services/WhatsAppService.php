@@ -59,46 +59,94 @@ class WhatsAppService
         }
     }
 
+    private static function getGreeting()
+    {
+        $hour = (int) now()->format('H');
+        if ($hour < 12) return "Selamat Pagi!";
+        if ($hour < 15) return "Selamat Siang!";
+        if ($hour < 18) return "Selamat Sore!";
+        return "Selamat Malam!";
+    }
+
     public static function notifyRegistration(Queue $queue)
     {
         $ticketUrl = route('queue.ticket', $queue->id);
-        $message = "✅ *Yay, REGISTRASI ANDA BERHASIL*\n\nHalo, *{$queue->patient_name}*!\n\nRegistrasi antrian surat Anda berhasil dilakukan dan saat ini *SEDANG DIPROSES* oleh admin.\n\n🆔 ID Surat: *{$queue->queue_number}*\n📝 Jenis: {$queue->service->name}\n📅 Tanggal: " . now()->format('d/m/Y H:i') . "\n\nCek progress antrian Anda di sini:\n" . $ticketUrl . "\n\nKami akan mengabari Anda kembali melalui WhatsApp jika proses telah selesai.";
+        $greeting = self::getGreeting();
+        
+        $message = "🎉 *Yay, registrasi Anda berhasil!*\n\n";
+        $message .= "Halo, *{$queue->patient_name}*! 👋\n";
+        $message .= "{$greeting}\n";
+        $message .= "Permohonan surat yang Anda ajukan telah berhasil dan sedang dalam proses verfikasi nih😊\n\n";
+        $message .= "📝 Jenis Surat: {$queue->service->name}\n";
+        $message .= "🎟️ Nomor Antrean: *{$queue->queue_number}*\n\n";
+        $message .= "Anda dapat memantau perkembangan antrean melalui tautan berikut:\n{$ticketUrl}\n\n";
+        $message .= "Mohon ditunggu yah! Kami akan segera menginformasikan melalui WhatsApp jika surat telah selesai dan siap untuk diambil🚀\n\n";
+        $message .= "Salam hangat,\n\n*Admin SI-PINTER*";
 
         return self::send($queue->phone, $message);
     }
 
     public static function notifyStatusUpdate(Queue $queue)
     {
-        if (!$queue->phone)
-            return;
+        if (!$queue->phone) return;
 
-        $statusLabel = $queue->status_label;
-        $message = "🔔 *UPDATE PROGRES SURAT*\n\nHalo, *{$queue->patient_name}*!\n\nAda perkembangan terbaru untuk surat Anda (*{$queue->queue_number}*).\n\n📍 *POSISI PROSES SEKARANG*:\n*{$statusLabel}*\n\n";
-
-        if ($queue->status === 'admin') {
-            $docNumMsg = $queue->document_number ? "\n*Nomor Surat Anda:* {$queue->document_number}\n" : "";
-            $message .= "Surat Anda telah diterima oleh petugas dan sedang diproses.{$docNumMsg}";
-        } elseif ($queue->status === 'done') {
-            $message .= "🎉 *BERITA BAGUS!* Proses pengajuan surat Anda telah *SELESAI*.\n\nSilakan datang ke loket atau cek aplikasi untuk informasi pengambilan/tindak lanjut berikutnya.";
+        if ($queue->status === 'done') {
+            $message = "🥳 *Hore! Surat Anda sudah siap!*\n\n";
+            $message .= "Halo, *{$queue->patient_name}*! 👋\n";
+            $message .= "Ada kabar gembira nih! Permohonan surat Anda telah selesai diproses dan siap untuk diambil✨\n\n";
+            $message .= "📝 Jenis Surat: {$queue->service->name}\n";
+            $message .= "🎟️ Nomor Antrean: *{$queue->queue_number}*\n\n";
+            $message .= "Silakan mengunjungi ruang Jurusan Ilmu Administrasi pada jam kerja untuk pengambilan surat. Mohon tunjukkan pesan WhatsApp ini saat pengambilan surat, ya 📱\n\n";
+            $message .= "Kami menantikan kedatangan Anda! 😊\n\n";
+            $message .= "Salam hangat,\n\n*Admin SI-PINTER*";
         } elseif ($queue->status === 'rejected') {
-            $message .= "❌ Mohon maaf, pengajuan Anda belum bisa diproses karena ada ketidaksesuaian berkas.";
+            $message = "🔔 *UPDATE PROGRES SURAT*\n\nHalo, *{$queue->patient_name}*! 👋\n\n❌ Mohon maaf, pengajuan Anda belum bisa diproses karena ada ketidaksesuaian berkas.\n";
             if ($queue->reject_reason) {
-                $message .= "\n\n*Alasan Penolakan:*\n{$queue->reject_reason}";
+                $message .= "\n*Alasan Penolakan:*\n{$queue->reject_reason}\n";
             }
-            $message .= "\n\nSilakan perbaiki dokumen Anda lalu hubungi loket admin untuk diantrikan ulang.";
+            $message .= "\nSilakan perbaiki dokumen Anda lalu hubungi loket admin untuk diantrikan ulang.\n\nSalam hangat,\n\n*Admin SI-PINTER*";
+        } elseif ($queue->status === 'admin') {
+            $docNumMsg = $queue->document_number ? "\n*Nomor Surat Anda:* {$queue->document_number}\n" : "";
+            $message = "🔔 *UPDATE PROGRES SURAT*\n\nHalo, *{$queue->patient_name}*! 👋\n\nSurat Anda telah diterima oleh petugas dan sedang diproses.{$docNumMsg}\nSilakan pantau terus perkembangannya secara berkala.\n\nSalam hangat,\n\n*Admin SI-PINTER*";
         } else {
-            $message .= "Silakan pantau terus perkembangannya secara berkala.";
+            return true; // don't send for other random statuses
         }
 
-        $message .= "\n\nTerima kasih,\n*Layanan Administrasi Jurusan*";
+        return self::send($queue->phone, $message);
+    }
+
+    public static function notifyReminder(Queue $queue)
+    {
+        if (!$queue->phone) return;
+
+        $message = "🔔 *Pengingat pengambilan surat* ⏰\n\n";
+        $message .= "Halo, *{$queue->patient_name}*! 👋\n";
+        $message .= "Kami ingin mengingatkan kembali bahwa surat permohonan Anda dengan nomor antrean *{$queue->queue_number}* telah tersedia di ruang Jurusan Ilmu Administrasi. Jangan sampai terlewat ya karena dokumen ini penting untuk keperluan administrasi Anda 📑\n\n";
+        $message .= "Kami menunggu kehadiran Anda!😊\n\n";
+        $message .= "Salam hangat,\n\n*Admin SI-PINTER*";
+
+        return self::send($queue->phone, $message);
+    }
+
+    public static function notifySurvey(Queue $queue, $surveyLink)
+    {
+        if (!$queue->phone) return;
+
+        $message = "🔔 *Yuk, Bantu Kami Menjadi Lebih Baik!* ⭐\n\n";
+        $message .= "Hallo, *{$queue->patient_name}*! 👋\n";
+        $message .= "Terima kasih telah menggunakan SI-PINTER. Kami berharap pengalaman layanan yang Anda terima berjalan dengan baik dan menyenangkan.\n\n";
+        $message .= "Untuk mendukung peningkatan kualitas layanan, kami mengundang Anda untuk mengisi survei kepuasan singkat melalui tautan berikut:\n";
+        $message .= "🔗 {$surveyLink}\n\n";
+        $message .= "Setiap masukan yang Anda berikan sangat berarti bagi pengembangan layanan di Jurusan Ilmu Administrasi 💡\n\n";
+        $message .= "Terima kasih atas partisipasi Anda! 😊\n\n";
+        $message .= "Salam hangat,\n\n*Admin SI-PINTER*";
 
         return self::send($queue->phone, $message);
     }
 
     public static function notifyCalled(Queue $queue)
     {
-        if (!$queue->phone)
-            return;
+        if (!$queue->phone) return;
 
         $counterName = $queue->counter ? $queue->counter->name : 'Loket Administrasi';
         $message = "📢 *PANGGILAN ANTRIAN*\n\nHalo, *{$queue->patient_name}*!\n\nNomor antrian Anda *{$queue->queue_number}* sedang dipanggil di *{$counterName}*.\n\nSilakan segera menuju ke loket tersebut.\nTerima kasih.";

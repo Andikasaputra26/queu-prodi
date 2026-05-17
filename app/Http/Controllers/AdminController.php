@@ -18,10 +18,10 @@ class AdminController extends Controller
         $services = QueueService::where('is_active', true)->get();
 
         $todayStats = [
-            'total'   => Queue::count(),
+            'total' => Queue::count(),
             'pending' => Queue::where('status', 'pending')->count(),
-            'admin'   => Queue::where('status', 'admin')->count(),
-            'done'    => Queue::where('status', 'done')->count(),
+            'admin' => Queue::where('status', 'admin')->count(),
+            'done' => Queue::where('status', 'done')->count(),
         ];
 
         return view('admin.dashboard', compact('counters', 'services', 'todayStats'));
@@ -31,23 +31,23 @@ class AdminController extends Controller
     {
         $request->validate([
             'patient_name' => 'required|string|max:100',
-            'phone'        => 'required|string|max:30',
-            'service_id'   => 'required|exists:queue_services,id',
+            'phone' => 'required|string|max:30',
+            'service_id' => 'required|exists:queue_services,id',
         ]);
 
         $queue = DB::transaction(function () use ($request) {
-            $service  = QueueService::where('id', $request->service_id)->lockForUpdate()->firstOrFail();
+            $service = QueueService::where('id', $request->service_id)->lockForUpdate()->firstOrFail();
             $sequence = $service->getNextSequence();
             $queueNumber = $service->code . str_pad($sequence, 3, '0', STR_PAD_LEFT);
 
             return Queue::create([
                 'queue_number' => $queueNumber,
                 'patient_name' => $request->patient_name,
-                'phone'        => $request->phone,
-                'service_id'   => $service->id,
-                'status'       => 'pending',
-                'sequence'     => $sequence,
-                'queue_date'   => today(),
+                'phone' => $request->phone,
+                'service_id' => $service->id,
+                'status' => 'pending',
+                'sequence' => $sequence,
+                'queue_date' => today(),
             ]);
         });
 
@@ -56,9 +56,9 @@ class AdminController extends Controller
         broadcast(new QueueUpdated('new', $queue, $this->getStats()));
 
         return response()->json([
-            'success'      => true,
+            'success' => true,
             'queue_number' => $queue->queue_number,
-            'message'      => "Antrian {$queue->queue_number} berhasil dibuat",
+            'message' => "Antrian {$queue->queue_number} berhasil dibuat",
         ]);
     }
 
@@ -93,9 +93,9 @@ class AdminController extends Controller
         }
 
         $nextQueue->update([
-            'status'     => 'calling',
+            'status' => 'calling',
             'counter_id' => $counter->id,
-            'called_at'  => now(),
+            'called_at' => now(),
         ]);
 
         $counter->update(['current_queue_id' => $nextQueue->id]);
@@ -106,10 +106,10 @@ class AdminController extends Controller
         \App\Services\WhatsAppService::notifyCalled($nextQueue);
 
         return response()->json([
-            'success'      => true,
+            'success' => true,
             'queue_number' => $nextQueue->queue_number,
             'patient_name' => $nextQueue->patient_name,
-            'message'      => "Memanggil {$nextQueue->queue_number} — {$nextQueue->patient_name}",
+            'message' => "Memanggil {$nextQueue->queue_number} — {$nextQueue->patient_name}",
         ]);
     }
 
@@ -144,7 +144,7 @@ class AdminController extends Controller
 
         if ($request->status === 'done' || $request->status === 'rejected') {
             $updates['done_at'] = now();
-            
+
             if ($queue->counter_id) {
                 $counter = QueueCounter::find($queue->counter_id);
                 if ($counter && $counter->current_queue_id === $queue->id) {
@@ -159,6 +159,11 @@ class AdminController extends Controller
         broadcast(new QueueUpdated($request->status, $queue, $this->getStats()));
 
         \App\Services\WhatsAppService::notifyStatusUpdate($queue);
+
+        if ($request->status === 'done') {
+            $surveyLink = env('SURVEY_LINK', 'https://forms.gle/contoh-link-survey');
+            \App\Services\WhatsAppService::notifySurvey($queue, $surveyLink);
+        }
 
         return response()->json(['success' => true, 'message' => 'Status surat diperbarui ke: ' . $queue->status_label]);
     }
@@ -229,20 +234,20 @@ class AdminController extends Controller
             ->orderBy('sequence')
             ->get()
             ->map(fn($q) => [
-                'id'            => $q->id,
-                'queue_number'  => $q->queue_number,
-                'patient_name'  => $q->patient_name,
-                'phone'         => $q->phone,
-                'status'        => $q->status,
-                'status_label'  => $q->status_label,
-                'service_name'  => $q->service?->name,
+                'id' => $q->id,
+                'queue_number' => $q->queue_number,
+                'patient_name' => $q->patient_name,
+                'phone' => $q->phone,
+                'status' => $q->status,
+                'status_label' => $q->status_label,
+                'service_name' => $q->service?->name,
                 'service_color' => $q->service?->color,
-                'service_code'  => $q->service?->code,
-                'counter_name'  => $q->counter?->name,
+                'service_code' => $q->service?->code,
+                'counter_name' => $q->counter?->name,
                 'document_number' => $q->document_number,
-                'file_path'     => $q->file_path ? asset('storage/' . $q->file_path) : null,
-                'called_at'     => $q->called_at?->format('H:i:s'),
-                'created_at'    => $q->created_at->format('d/m/Y H:i'),
+                'file_path' => $q->file_path ? asset('storage/' . $q->file_path) : null,
+                'called_at' => $q->called_at?->format('H:i:s'),
+                'created_at' => $q->created_at->format('d/m/Y H:i'),
             ]);
 
         return response()->json($queues);
@@ -270,7 +275,7 @@ class AdminController extends Controller
             ->get();
 
         $headers = [
-            'Content-Type'        => 'text/csv',
+            'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="Laporan_Antrian_Mahasiswa.csv"',
         ];
 

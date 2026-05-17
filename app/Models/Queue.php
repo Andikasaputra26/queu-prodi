@@ -36,6 +36,7 @@ class Queue extends Model
             'pending' => 'Diajukan',
             'admin'   => 'Diproses',
             'done'    => 'Selesai',
+            'picked_up'=> 'Selesai & Diambil',
             'rejected'=> 'Ditolak',
             default   => ucfirst($this->status),
         };
@@ -47,6 +48,7 @@ class Queue extends Model
             'pending' => 'waiting',
             'admin'   => 'calling',
             'done'    => 'done',
+            'picked_up'=> 'done', // you can reuse done or another color like success
             'rejected'=> 'danger',
             default   => 'secondary',
         };
