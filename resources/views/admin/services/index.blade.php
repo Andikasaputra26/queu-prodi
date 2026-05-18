@@ -2,53 +2,121 @@
 
 @section('title', 'Kelola Jenis Surat — SI-PINTER')
 
+@push('styles')
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <style>
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+        }
+        .page-sub {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .dataTables_wrapper {
+            padding: 1rem;
+            font-size: 0.85rem;
+        }
+        .dataTables_wrapper .dataTables_filter input {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.4rem 0.8rem;
+            outline: none;
+        }
+        .dataTables_wrapper .dataTables_filter input:focus {
+            border-color: var(--primary);
+        }
+        .dataTables_wrapper .dataTables_length select {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.2rem;
+            outline: none;
+        }
+        table.dataTable thead th {
+            border-bottom: 2px solid var(--border) !important;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        table.dataTable tbody td {
+            border-bottom: 1px solid var(--surface-3);
+            vertical-align: middle;
+        }
+        .color-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+    </style>
+@endpush
+
 @section('content')
-<div class="page-header" style="margin-bottom: 2rem;">
+<div class="page-header">
     <div>
-        <h1 class="page-title">📄 Jenis Surat</h1>
+        <h1 class="page-title"><i class="fas fa-layer-group" style="color: var(--primary)"></i> Jenis Surat</h1>
         <div class="page-sub">Kelola layanan dan jenis surat</div>
     </div>
     <div>
-        <a href="{{ route('admin.services.create') }}" class="btn btn-primary">
+        <a href="{{ route('admin.services.create') }}" class="btn btn-primary" style="border-radius: 8px;">
             <i class="fas fa-plus"></i> Tambah Jenis Surat
         </a>
     </div>
 </div>
 
-<div class="card">
+<div class="card" style="padding: 0;">
     <div class="table-responsive">
-        <table class="table" style="width: 100%; text-align: left; border-collapse: collapse;">
+        <table class="display" id="services-table" style="width: 100%;">
             <thead>
-                <tr style="border-bottom: 2px solid var(--border);">
-                    <th style="padding: 1rem;">Kode</th>
-                    <th style="padding: 1rem;">Nama</th>
-                    <th style="padding: 1rem;">Warna</th>
-                    <th style="padding: 1rem;">Status</th>
-                    <th style="padding: 1rem;">Aksi</th>
+                <tr>
+                    <th>Kode</th>
+                    <th>Nama Layanan</th>
+                    <th>Warna Label</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($services as $svc)
-                <tr style="border-bottom: 1px solid var(--border);">
-                    <td style="padding: 1rem; font-weight: bold;">{{ $svc->code }}</td>
-                    <td style="padding: 1rem;">{{ $svc->name }}</td>
-                    <td style="padding: 1rem;"><span style="display:inline-block; width:20px; height:20px; border-radius:50%; background-color:var(--{{ $svc->color }}, {{ $svc->color }});"></span> {{ $svc->color }}</td>
-                    <td style="padding: 1rem;">
-                        <form action="{{ route('admin.services.toggle-active', $svc->id) }}" method="POST" style="display:inline;">
+                <tr>
+                    <td style="font-weight: 600; color: var(--primary);">{{ $svc->code }}</td>
+                    <td style="font-weight: 500;">{{ $svc->name }}</td>
+                    <td>
+                        <div style="display: flex; align-items: center;">
+                            <span class="color-dot" style="background-color: var(--{{ $svc->color }}, {{ $svc->color }});"></span> 
+                            {{ $svc->color }}
+                        </div>
+                    </td>
+                    <td>
+                        <form action="{{ route('admin.services.toggle-active', $svc->id) }}" method="POST" style="margin: 0;">
                             @csrf
                             @method('PATCH')
-                            <button type="submit" class="btn {{ $svc->is_active ? 'btn-success' : 'btn-secondary' }}" style="padding: 0.2rem 0.6rem; font-size: 0.8rem; border-radius: 20px; border: none; cursor: pointer; background-color: {{ $svc->is_active ? '#10b981' : '#6b7280' }}; color: white;">
+                            <button type="submit" style="padding: 0.3rem 0.8rem; font-size: 0.75rem; border-radius: 99px; border: none; cursor: pointer; font-weight: 600; background-color: {{ $svc->is_active ? 'rgba(16, 185, 129, 0.1)' : 'rgba(107, 114, 128, 0.1)' }}; color: {{ $svc->is_active ? '#10b981' : '#6b7280' }}; transition: all 0.2s;">
                                 {{ $svc->is_active ? 'Aktif' : 'Non-Aktif' }}
                             </button>
                         </form>
                     </td>
-                    <td style="padding: 1rem; display: flex; gap: 0.5rem;">
-                        <a href="{{ route('admin.services.edit', $svc->id) }}" class="btn btn-warning" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Edit</a>
-                        <form action="{{ route('admin.services.destroy', $svc->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Hapus</button>
-                        </form>
+                    <td style="text-align: right;">
+                        <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                            <a href="{{ route('admin.services.edit', $svc->id) }}" class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; color: var(--warning); border-color: var(--warning);">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <form action="{{ route('admin.services.destroy', $svc->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus jenis surat ini?')" style="margin: 0;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; color: var(--danger); border-color: var(--danger);">
+                                    <i class="fas fa-trash-alt"></i> Hapus
+                                </button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 @endforeach
@@ -57,3 +125,33 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#services-table').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json',
+                    search: "Cari:",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                    infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
+                    infoFiltered: "(disaring dari _MAX_ total data)",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "Lanjut",
+                        previous: "Kembali"
+                    }
+                },
+                pageLength: 10,
+                ordering: true,
+                columnDefs: [
+                    { orderable: false, targets: 4 } // Disable sorting on actions column
+                ]
+            });
+        });
+    </script>
+@endpush

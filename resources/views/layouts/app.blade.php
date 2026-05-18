@@ -327,6 +327,29 @@
             animation: slideIn 0.3s ease;
         }
 
+        .footer {
+            margin-top: auto;
+            text-align: center;
+            padding: 2rem 1.5rem;
+            background: var(--surface-2);
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            width: 100%;
+        }
+
+        .footer p {
+            margin: 0;
+            color: var(--text-muted);
+        }
+
+        .footer .footer-brand {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+
         @keyframes slideIn {
             from {
                 transform: translateX(100px);
@@ -483,6 +506,14 @@
         @yield('content')
     </div>
 
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 <span class="footer-brand">SI-PINTER</span> | Sistem Pelayanan Persuratan Terintegrasi</p>
+            <p style="margin-top: 0.25rem; font-size: 0.75rem;">Fakultas Ilmu Sosial dan Hukum, Universitas Negeri Makassar</p>
+        </div>
+    </footer>   
+    
     <div class="toast-container" id="toast-container"></div>
 
     @stack('scripts')
