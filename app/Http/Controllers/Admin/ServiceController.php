@@ -54,8 +54,15 @@ class ServiceController extends Controller
 
     public function destroy(QueueService $service)
     {
-        $service->delete();
-        return redirect()->route('admin.services.index')->with('success', 'Jenis Surat berhasil dihapus.');
+        try {
+            $service->delete();
+            return redirect()->route('admin.services.index')->with('success', 'Jenis Surat berhasil dihapus.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() == 23000) {
+                return redirect()->route('admin.services.index')->with('error', 'Gagal: Jenis surat ini tidak dapat dihapus karena sudah pernah digunakan oleh mahasiswa untuk mendaftar antrian. Saran: Non-aktifkan statusnya agar tidak bisa dipilih lagi.');
+            }
+            return redirect()->route('admin.services.index')->with('error', 'Terjadi kesalahan saat menghapus data.');
+        }
     }
 
     public function toggleActive(QueueService $service)

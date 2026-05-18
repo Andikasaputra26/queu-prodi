@@ -565,9 +565,9 @@
             <!-- <a href="{{ route('admin.counters.index') }}" class="btn btn-ghost">
                     <i class="fas fa-user-tie"></i> Loket / Dosen
                 </a> -->
-            <button class="btn btn-primary" onclick="openModal()">
+            <!-- <button class="btn btn-primary" onclick="openModal()">
                 <i class="fas fa-plus"></i> Tambah Manual
-            </button>
+            </button> -->
             <form action="{{ route('logout') }}" method="POST" style="display:inline;">
                 @csrf
                 <button type="submit" class="btn btn-danger">
