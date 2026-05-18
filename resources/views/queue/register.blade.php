@@ -407,7 +407,7 @@
 
                         <div class="form-group" id="file-upload-group" style="display: none;">
                             <label class="form-label" for="file">
-                                Upload File (PDF/Word) <span style="color: var(--danger)">*</span>
+                                Upload File (Word) <span style="color: var(--danger)">*</span>
                             </label>
                             <div class="input-icon">
                                 <i class="fas fa-file-upload" style="color: var(--primary);"></i>
@@ -415,7 +415,7 @@
                             </div>
                             <small
                                 style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.4rem; display: block;">
-                                Wajib upload file proposal/hasil/tutup dalam format <strong>PDF atau Word</strong>. (Jika Word, sisipkan teks <strong>${NOMOR_SURAT}</strong> agar nomor terisi otomatis).
+                                Wajib upload file proposal/hasil/tutup dalam format <strong>Word</strong>. (Sisipkan teks <strong>${NOMOR_SURAT}</strong> agar nomor terisi otomatis).
                             </small>
                             @error('file')
                                 <small style="color: var(--danger); margin-top: 0.3rem; display: block">{{ $message }}</small>
