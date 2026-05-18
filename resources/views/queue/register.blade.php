@@ -290,6 +290,33 @@
         .info-box i {
             margin-right: 0.3rem;
         }
+
+        .btn-template {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1rem;
+            background-color: transparent;
+            color: var(--danger);
+            border: 2px solid var(--danger);
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-decoration: none;
+            margin-top: 0.5rem;
+            transition: all 0.3s ease;
+            animation: red-pulse 1.5s infinite;
+        }
+        
+        .btn-template:hover {
+            background-color: #fef2f2;
+        }
+
+        @keyframes red-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+            70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        }
     </style>
 @endpush
 
@@ -333,7 +360,7 @@
                 @endforeach
             </div>
 
-            <div class="section-label"><i class="fas fa-chart-line"></i> Statistik Hari Ini</div>
+            <!-- <div class="section-label"><i class="fas fa-chart-line"></i> Statistik Hari Ini</div>
             <div class="live-stats">
                 <div class="stat-card">
                     <div class="stat-number" id="stat-total">0</div>
@@ -347,17 +374,11 @@
                     <div class="stat-number" id="stat-ready">0</div>
                     <div class="stat-label">Siap Ambil</div>
                 </div>
-            </div>
-
-            <div class="info-box">
-                <i class="fas fa-info-circle"></i>
-                Setelah mengambil nomor, Anda akan mendapat <strong>tiket digital</strong>.
-                Sistem akan memberitahu otomatis saat nomor Anda dipanggil.
-            </div>
+            </div> -->
         </div>
 
         <div>
-            <div class="card" style="position: sticky; top: 80px;">
+            <div class="card" id="form-card" style="position: sticky; top: 80px;">
                 <div class="card-header">
                     <h2 class="card-title">
                         <i class="fas fa-id-badge" style="color: var(--primary)"></i>
@@ -415,8 +436,11 @@
                             </div>
                             <small
                                 style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.4rem; display: block;">
-                                Wajib upload file dalam format <strong>Word</strong>. (Sisipkan teks <strong>${NOMOR_SURAT}</strong> agar nomor terisi otomatis).
+                                Wajib upload file dalam format <strong>Word</strong>. (Sisipkan teks <strong>${nmr}</strong> agar nomor terisi otomatis).
                             </small>
+                            <a href="{{ asset('template/FormatSurat.docx') }}" target="_blank" class="btn-template">
+                                <i class="fas fa-file-word"></i>Download Template Surat
+                            </a>
                             @error('file')
                                 <small style="color: var(--danger); margin-top: 0.3rem; display: block">{{ $message }}</small>
                             @enderror

@@ -51,6 +51,16 @@ function selectService(el) {
         fileGroup.style.display = isSeminar ? 'block' : 'none';
         if (fileInput) fileInput.required = isSeminar;
     }
+
+    // Auto scroll ke form pada layar mobile/HP
+    if (window.innerWidth <= 992) {
+        const formCard = document.getElementById('form-card');
+        if (formCard) {
+            setTimeout(() => {
+                formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+    }
 }
 
 function updateStats(data) {

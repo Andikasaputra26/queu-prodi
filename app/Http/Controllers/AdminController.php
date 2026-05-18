@@ -133,7 +133,7 @@ class AdminController extends Controller
                     $absolutePath = storage_path('app/public/' . $queue->file_path);
                     if (file_exists($absolutePath)) {
                         $templateProcessor = new \PhpOffice\PhpWord\TemplateProcessor($absolutePath);
-                        $templateProcessor->setValue('NOMOR_SURAT', $request->document_number);
+                        $templateProcessor->setValue('nmr', $request->document_number);
                         $templateProcessor->saveAs($absolutePath);
                     }
                 } catch (\Throwable $e) {
