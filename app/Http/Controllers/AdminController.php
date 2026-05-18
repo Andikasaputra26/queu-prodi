@@ -219,6 +219,9 @@ class AdminController extends Controller
 
         if ($request->date) {
             $query->whereDate('queue_date', $request->date);
+        } else {
+            $query->whereMonth('queue_date', date('m'))
+                  ->whereYear('queue_date', date('Y'));
         }
 
         if ($request->service_id) {

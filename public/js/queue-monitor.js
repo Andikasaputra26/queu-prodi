@@ -230,8 +230,19 @@ function refreshQueues() {
     const tbody = document.getElementById('q-tbody');
     if (!tbody) return; // Only for monitor page
 
-    let url = '/api/admin/today';
-    if (qTab) url += `?status=${qTab}`;
+    let url = '/api/admin/today?';
+    const dateEl = document.getElementById('chart-date');
+    const catEl = document.getElementById('chart-category');
+    
+    if (dateEl && dateEl.value) {
+        url += `date=${dateEl.value}&`;
+    }
+    if (catEl && catEl.value) {
+        url += `service_id=${catEl.value}&`;
+    }
+    if (qTab) {
+        url += `status=${qTab}&`;
+    }
 
     fetch(url).then(r => r.json()).then(renderQueues).catch(() => {});
 }

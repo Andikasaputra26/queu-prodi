@@ -753,7 +753,7 @@
                     <div class="wait-bar-icon">✅</div>
                     <div>
                         <div class="wait-num" style="color: var(--success);" id="done-today">0</div>
-                        <div class="wait-label">Surat diselesaikan hari ini</div>
+                        <div class="wait-label">Surat diselesaikan (sesuai filter)</div>
                     </div>
                 </div>
             </div>
