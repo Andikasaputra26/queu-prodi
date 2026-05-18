@@ -652,6 +652,15 @@
                 <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
                     <input type="date" class="q-search" id="filter-date" style="flex: 1; padding-left: 1rem;"
                         onchange="refreshQueues()">
+                    <select class="q-search" id="filter-status" style="flex: 1; padding-left: 1rem; appearance: auto;"
+                        onchange="refreshQueues()">
+                        <option value="">- Semua Status -</option>
+                        <option value="pending">Diajukan</option>
+                        <option value="admin">Diproses</option>
+                        <option value="done">Selesai</option>
+                        <option value="picked_up">Selesai & Diambil</option>
+                        <option value="rejected">Ditolak</option>
+                    </select>
                     <select class="q-search" id="filter-service" style="flex: 1; padding-left: 1rem; appearance: auto;"
                         onchange="refreshQueues()">
                         <option value="">— Semua Jenis Surat —</option>

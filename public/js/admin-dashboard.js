@@ -76,12 +76,15 @@ function filterQueues() {
 async function refreshQueues() {
     const dateEl = document.getElementById('filter-date');
     const svcEl  = document.getElementById('filter-service');
+    const statusEl = document.getElementById('filter-status');
     
     const date = dateEl ? dateEl.value : '';
     const svc  = svcEl ? svcEl.value : '';
+    const statusVal = statusEl ? statusEl.value : '';
     
     let url = '/api/admin/today?';
-    if (tab) url += `status=${tab}&`;
+    if (statusVal) url += `status=${statusVal}&`;
+    else if (tab) url += `status=${tab}&`; // fallback to tab if used
     if (date) url += `date=${date}&`;
     if (svc) url += `service_id=${svc}&`;
 
