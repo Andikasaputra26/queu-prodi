@@ -268,6 +268,21 @@
             <i class="fas fa-check"></i> Baik, Saya Segera
         </button>
     </div>
+<div class="calling-overlay" id="done-overlay">
+    <div class="calling-popup" style="border-color: var(--success); box-shadow: 0 0 50px rgba(16,185,129,0.3);">
+        <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">✅</div>
+        <div style="font-size: 1.25rem; font-weight: 700; margin: 0.875rem 0 0.4rem; color: var(--success);">Surat Selesai!</div>
+        <div style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.5rem;">
+            Surat Anda sudah dapat diambil. Mohon kesediaannya untuk mengisi survei kepuasan layanan kami.
+        </div>
+        <a id="survey-btn" href="#" target="_blank" class="btn btn-success" style="width: 100%; justify-content: center; font-size: 1rem; margin-bottom: 0.5rem;">
+            <i class="fas fa-star"></i> Isi Survei Kepuasan
+        </a>
+        <button class="btn btn-ghost" style="width: 100%; justify-content: center;"
+                onclick="document.getElementById('done-overlay').style.display='none'">
+            Tutup
+        </button>
+    </div>
 </div>
 @endsection
 
@@ -277,6 +292,7 @@
 <script>
 window.TicketConfig = {
     myNumber: '{{ $queue->queue_number }}',
+    surveyLink: '{{ env("SURVEY_LINK", "https://docs.google.com/forms/d/e/1FAIpQLSeSnOxJIgkuIeVblX9QDYnJcLvqt3NjbK2VYKg9Oa95_EIKWg/viewform?usp=publish-editor") }}',
     reverb: {
         key: '{{ env("VITE_REVERB_APP_KEY") }}',
         host: '{{ env("VITE_REVERB_HOST", "localhost") }}',

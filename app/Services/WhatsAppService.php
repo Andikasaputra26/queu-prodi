@@ -104,7 +104,7 @@ class WhatsAppService
             if ($queue->reject_reason) {
                 $message .= "\n*Alasan Penolakan:*\n{$queue->reject_reason}\n";
             }
-            $message .= "\nSilakan perbaiki dokumen Anda lalu hubungi loket admin untuk diantrikan ulang.\n\nSalam hangat,\n\n*Admin SI-PINTER*";
+            $message .= "\nSilakan perbaiki dokumen Anda lalu lakukan antirian ulang.\n\nSalam hangat,\n\n*Admin SI-PINTER*";
         } elseif ($queue->status === 'admin') {
             $docNumMsg = $queue->document_number ? "\n*Nomor Surat Anda:* {$queue->document_number}\n" : "";
             $message = "🔔 *UPDATE PROGRES SURAT*\n\nHalo, *{$queue->patient_name}*! 👋\n\nSurat Anda telah diterima oleh petugas dan sedang diproses.{$docNumMsg}\nSilakan pantau terus perkembangannya secara berkala.\n\nSalam hangat,\n\n*Admin SI-PINTER*";

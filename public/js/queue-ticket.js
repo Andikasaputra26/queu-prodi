@@ -32,9 +32,32 @@ document.addEventListener('DOMContentLoaded', () => {
             enabledTransports: ['ws'],
         });
 
-        echo.channel('queue-monitor').listen('.queue.updated', () => {
+        echo.channel('queue-monitor').listen('.queue.updated', (e) => {
             if (typeof setWsStatus === 'function') setWsStatus(true);
             updateWaiting();
+            
+            if (e.action === 'done' && e.queue && e.queue.queue_number === Config.myNumber) {
+                const doneOverlay = document.getElementById('done-overlay');
+                if (doneOverlay) {
+                    doneOverlay.style.display = 'flex';
+                    const surveyBtn = document.getElementById('survey-btn');
+                    if (surveyBtn) surveyBtn.href = Config.surveyLink;
+                }
+                
+                const badgeEl = document.getElementById('status-badge');
+                if (badgeEl) {
+                    badgeEl.textContent = 'Selesai';
+                    badgeEl.className = 'badge badge-done';
+                }
+                
+                const liveIcon = document.getElementById('live-icon');
+                if (liveIcon) liveIcon.textContent = '✅';
+                
+                const liveText = document.getElementById('live-text');
+                if (liveText) liveText.textContent = 'Pelayanan selesai. Terima kasih!';
+                
+                if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+            }
         });
 
         echo.channel('queue-display').listen('.queue.called', (e) => {

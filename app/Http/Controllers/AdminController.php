@@ -160,8 +160,8 @@ class AdminController extends Controller
 
         \App\Services\WhatsAppService::notifyStatusUpdate($queue);
 
-        if ($request->status === 'done') {
-            $surveyLink = env('SURVEY_LINK', 'https://forms.gle/contoh-link-survey');
+        if ($request->status === 'picked_up') {
+            $surveyLink = env('SURVEY_LINK', 'https://docs.google.com/forms/d/e/1FAIpQLSeSnOxJIgkuIeVblX9QDYnJcLvqt3NjbK2VYKg9Oa95_EIKWg/viewform?usp=publish-editor');
             \App\Services\WhatsAppService::notifySurvey($queue, $surveyLink);
         }
 
