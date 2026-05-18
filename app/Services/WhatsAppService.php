@@ -14,48 +14,10 @@ class WhatsAppService
             $to = '62' . substr($to, 1);
         }
 
-        $token = trim(env('FONNTE_TOKEN'));
-
-        if (!$token || $token === 'your_token_here' || $token === '') {
-            Log::info("[SIMULATION] WhatsApp to {$to}: {$message}");
-            return true;
-        }
-
-        $curl = curl_init();
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://api.fonnte.com/send',
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => array(
-                'target' => $to,
-                'message' => $message,
-                'countryCode' => '62',
-            ),
-            CURLOPT_HTTPHEADER => array(
-                "Authorization: $token"
-            ),
-        ));
-
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-        curl_close($curl);
-
-        if ($err) {
-            Log::error("Fonnte Error: " . $err);
-            return false;
-        } else {
-            $resJson = json_decode($response, true);
-            if (isset($resJson['status']) && $resJson['status'] === false) {
-                Log::warning("Fonnte Warning: " . ($resJson['reason'] ?? 'Unknown Error'));
-            }
-            Log::info("Fonnte Response: " . $response);
-            return true;
-        }
+        // Mengirimkan notifikasi ke background job agar web tidak lemot
+        \App\Jobs\SendWhatsAppNotification::dispatch($to, $message);
+        
+        return true;
     }
 
     private static function getGreeting()
