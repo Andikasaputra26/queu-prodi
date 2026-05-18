@@ -9,16 +9,53 @@ class WhatsAppService
 {
     public static function send($to, $message)
     {
-        // Bersihkan nomor
         $to = preg_replace('/[^0-9]/', '', $to);
         if (str_starts_with($to, '0')) {
             $to = '62' . substr($to, 1);
         }
 
-        // Dispatch job ke background agar tidak memblokir antarmuka pengguna
-        \App\Jobs\SendWhatsAppNotification::dispatch($to, $message);
-        
-        return true;
+        $token = trim(env('FONNTE_TOKEN'));
+
+        if (!$token || $token === 'your_token_here' || $token === '') {
+            Log::info("[SIMULATION] WhatsApp to {$to}: {$message}");
+            return true;
+        }
+
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://api.fonnte.com/send',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => array(
+                'target' => $to,
+                'message' => $message,
+                'countryCode' => '62',
+            ),
+            CURLOPT_HTTPHEADER => array(
+                "Authorization: $token"
+            ),
+        ));
+
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        curl_close($curl);
+
+        if ($err) {
+            Log::error("Fonnte Error: " . $err);
+            return false;
+        } else {
+            $resJson = json_decode($response, true);
+            if (isset($resJson['status']) && $resJson['status'] === false) {
+                Log::warning("Fonnte Warning: " . ($resJson['reason'] ?? 'Unknown Error'));
+            }
+            Log::info("Fonnte Response: " . $response);
+            return true;
+        }
     }
 
     private static function getGreeting()
@@ -62,16 +99,17 @@ class WhatsAppService
             $message .= "Kami menantikan kedatangan Anda! 😊\n\n";
             $message .= "Salam hangat,\n\n*Admin SI-PINTER*";
         } elseif ($queue->status === 'rejected') {
-            $message = "🔔 *UPDATE PROGRES SURAT*\n\nHalo, *{$queue->patient_name}*! 👋\n\n❌ Mohon maaf, pengajuan Anda belum bisa diproses karena ada ketidaksesuaian berkas.\n";
+            $message = "🔔 *Update Progres Pengajuan Surat⏰*\n\nHalo, *{$queue->patient_name}*! 👋\n\n Terima kasih atas pengajuan surat yang telah Anda lakukan. Saat ini, pengajuan Anda belum dapat kami proses karena terdapat beberapa ketidaksesuaian pada berkas yang dilampirkan. ❌.\n";
             if ($queue->reject_reason) {
                 $message .= "\n*Alasan Penolakan:*\n{$queue->reject_reason}\n";
             }
-            $message .= "\nSilakan perbaiki dokumen Anda lalu lakukan antirian ulang.\n\nSalam hangat,\n\n*Admin SI-PINTER*";
+            $message .= "\nSilakan perbaiki dokumen Anda lalu lakukan antirian ulang melalui sistem SI-PINTER,ya 😊
+                            .\n\nSalam hangat,\n\n*Admin SI-PINTER*";
         } elseif ($queue->status === 'admin') {
             $docNumMsg = $queue->document_number ? "\n*Nomor Surat Anda:* {$queue->document_number}\n" : "";
-            $message = "🔔 *UPDATE PROGRES SURAT*\n\nHalo, *{$queue->patient_name}*! 👋\n\nSurat Anda telah diterima oleh petugas dan sedang diproses.{$docNumMsg}\nSilakan pantau terus perkembangannya secara berkala.\n\nSalam hangat,\n\n*Admin SI-PINTER*";
+            $message = "🔔 *Update Progres Pengajuan Surat⏰*\n\nHalo, *{$queue->patient_name}*! 👋\n\nSilahkan pantau perkembangannya secara berkala melalui sistem SI-PINTER, ya 😊 \n\nSalam hangat,\n\n*Admin SI-PINTER*";
         } else {
-            return true; // don't send for other random statuses
+            return true; 
         }
 
         return self::send($queue->phone, $message);

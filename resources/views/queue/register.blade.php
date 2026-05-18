@@ -296,7 +296,7 @@
 @section('content')
     <div class="hero-section">
         <div class="hero-badge">
-            <span class="pulse">🟢</span> Administrasi Prodi — {{ now()->format('l, d F Y') }}
+            <span class="pulse">🟢</span> Administrasi Jurusan — {{ now()->format('l, d F Y') }}
         </div>
         <h1 class="hero-title">Layanan Administrasi<br>Kemahasiswaan</h1>
         <p class="hero-sub">Layanan Administrasi Kemahasiswaan
@@ -415,7 +415,7 @@
                             </div>
                             <small
                                 style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.4rem; display: block;">
-                                Wajib upload file proposal/hasil/tutup dalam format <strong>Word</strong>. (Sisipkan teks <strong>${NOMOR_SURAT}</strong> agar nomor terisi otomatis).
+                                Wajib upload file dalam format <strong>Word</strong>. (Sisipkan teks <strong>${NOMOR_SURAT}</strong> agar nomor terisi otomatis).
                             </small>
                             @error('file')
                                 <small style="color: var(--danger); margin-top: 0.3rem; display: block">{{ $message }}</small>
