@@ -10,7 +10,7 @@
         "laravel/framework": "^13.0",
         "laravel/reverb": "^1.10",
         "laravel/tinker": "^3.0",
-        "phpoffice/phpword": "^1.4"
+        "phpoffice/phpword": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

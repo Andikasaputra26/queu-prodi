@@ -729,8 +729,17 @@
             <div class="card">
                 <div class="sec-hdr">
                     <div class="sec-title"><i class="fas fa-layer-group"></i> Rekap Per Jenis Surat</div>
-                    <div class="live-pill">
-                        <div class="live-pill-dot"></div>Auto-update
+                    <div style="display:flex; gap:0.5rem; align-items:center;">
+                        <input type="date" id="chart-date" class="form-control" style="font-size:0.75rem; padding:0.2rem 0.5rem; border:1px solid var(--border); border-radius:4px;" onchange="refreshStats()">
+                        <select id="chart-category" class="form-control" style="font-size:0.75rem; padding:0.2rem 0.5rem; border:1px solid var(--border); border-radius:4px; max-width: 150px;" onchange="refreshStats()">
+                            <option value="">Semua Kategori</option>
+                            @foreach($services as $svc)
+                                <option value="{{ $svc->id }}">{{ $svc->name }}</option>
+                            @endforeach
+                        </select>
+                        <div class="live-pill">
+                            <div class="live-pill-dot"></div>Auto-update
+                        </div>
                     </div>
                 </div>
                 <div style="min-height: 250px; margin-top: 1rem; position: relative;">

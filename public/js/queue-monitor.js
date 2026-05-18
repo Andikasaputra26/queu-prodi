@@ -170,7 +170,18 @@ function renderBreakdown(services) {
 // Stats
 // ──────────────────────────────
 function refreshStats() {
-    fetch('/api/stats').then(r => r.json()).then(data => {
+    let url = '/api/stats?';
+    const dateEl = document.getElementById('chart-date');
+    const catEl = document.getElementById('chart-category');
+    
+    if (dateEl && dateEl.value) {
+        url += `date=${dateEl.value}&`;
+    }
+    if (catEl && catEl.value) {
+        url += `service_id=${catEl.value}&`;
+    }
+
+    fetch(url).then(r => r.json()).then(data => {
         // Shared logic for both pages
         let total = 0, pending = 0, admin = 0, done = 0;
 

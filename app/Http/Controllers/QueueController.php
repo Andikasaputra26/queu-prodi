@@ -88,9 +88,22 @@ class QueueController extends Controller
         return redirect()->route('queue.ticket', $queue->id);
     }
 
-    public function getStats(): array
+    public function getStats($date = null, $serviceId = null): array
     {
-        $services = QueueService::where('is_active', true)->with('queues')->get();
+        $servicesQuery = QueueService::where('is_active', true);
+
+        if ($serviceId) {
+            $servicesQuery->where('id', $serviceId);
+        }
+
+        $services = $servicesQuery->with(['queues' => function ($query) use ($date) {
+            if ($date) {
+                $query->whereDate('queue_date', $date);
+            } else {
+                $query->whereMonth('queue_date', date('m'))
+                      ->whereYear('queue_date', date('Y'));
+            }
+        }])->get();
 
         $stats = [];
         foreach ($services as $service) {
@@ -123,9 +136,9 @@ class QueueController extends Controller
         ];
     }
 
-    public function stats()
+    public function stats(Request $request)
     {
-        return response()->json($this->getStats());
+        return response()->json($this->getStats($request->date, $request->service_id));
     }
 
     public function waitingList(Request $request)

@@ -23,7 +23,8 @@ class MonitorController extends Controller
      */
     public function monitor()
     {
-        return view('monitor.monitor');
+        $services = QueueService::where('is_active', true)->get();
+        return view('monitor.monitor', compact('services'));
     }
 
     /**

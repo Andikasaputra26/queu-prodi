@@ -136,7 +136,7 @@ class AdminController extends Controller
                         $templateProcessor->setValue('NOMOR_SURAT', $request->document_number);
                         $templateProcessor->saveAs($absolutePath);
                     }
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     \Illuminate\Support\Facades\Log::error('Word template error: ' . $e->getMessage());
                 }
             }
@@ -319,13 +319,13 @@ class AdminController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
-    public function getStats(): array
+    public function getStats($date = null, $serviceId = null): array
     {
-        return app(QueueController::class)->getStats();
+        return app(QueueController::class)->getStats($date, $serviceId);
     }
 
-    public function statsApi()
+    public function statsApi(Request $request)
     {
-        return response()->json($this->getStats());
+        return response()->json($this->getStats($request->date, $request->service_id));
     }
 }
