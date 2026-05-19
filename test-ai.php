@@ -4,9 +4,16 @@ $app = require_once __DIR__ . '/bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
-$apiKey = env('GEMINI_API_KEY');
-$response = Illuminate\Support\Facades\Http::get("https://generativelanguage.googleapis.com/v1beta/models?key=$apiKey");
-$models = $response->json('models');
-foreach ($models as $m) {
-    echo $m['name'] . "\n";
-}
+$s = App\Models\ChatSession::create([
+    'session_id' => 'test-fallback-' . time(),
+    'student_name' => 'Test',
+    'status' => 'open',
+    'is_ai_active' => true,
+    'last_activity_at' => now()
+]);
+$s->messages()->create(['sender' => 'student', 'message' => 'Layanan apa saja yang ada?']);
+
+App\Jobs\ProcessGeminiChat::dispatchSync($s->id);
+
+$s->refresh();
+echo "REPLY: " . json_encode($s->messages->pluck('message')->toArray()) . "\n";

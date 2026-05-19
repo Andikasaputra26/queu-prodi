@@ -49,28 +49,39 @@ class ProcessGeminiChat implements ShouldQueue
         $apiKey = env('GEMINI_API_KEY');
         if (!$apiKey) return;
 
-        try {
-            $response = Http::timeout(30)->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}", [
-                'contents' => $contents,
-            ]);
+        $models = ['gemini-2.5-flash', 'gemini-2.0-flash-lite', 'gemini-2.0-flash', 'gemini-flash-latest'];
+        $reply = null;
+        $success = false;
 
-            if ($response->successful()) {
-                $reply = $response->json('candidates.0.content.parts.0.text');
-                if ($reply) {
-                    $message = $session->messages()->create([
-                        'sender' => 'admin',
-                        'message' => trim($reply),
-                    ]);
-                    $session->update(['last_activity_at' => now()]);
-                    broadcast(new ChatMessageSent($message, $session));
+        foreach ($models as $model) {
+            try {
+                $response = Http::timeout(30)->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}", [
+                    'contents' => $contents,
+                ]);
+
+                if ($response->successful()) {
+                    $reply = $response->json('candidates.0.content.parts.0.text');
+                    if ($reply) {
+                        $success = true;
+                        break; // Successfully got a response, exit loop!
+                    }
                 } else {
-                    \Log::error('Gemini API returned success but no reply text.', ['response' => $response->json()]);
+                    \Log::warning("Gemini model {$model} failed: Status {$response->status()}", ['body' => $response->body()]);
                 }
-            } else {
-                \Log::error('Gemini API Error', ['status' => $response->status(), 'body' => $response->body()]);
+            } catch (\Exception $e) {
+                \Log::error("Gemini model {$model} exception: " . $e->getMessage());
             }
-        } catch (\Exception $e) {
-            \Log::error('Gemini Job Exception: ' . $e->getMessage());
+        }
+
+        if ($success && $reply) {
+            $message = $session->messages()->create([
+                'sender' => 'admin',
+                'message' => trim($reply),
+            ]);
+            $session->update(['last_activity_at' => now()]);
+            broadcast(new ChatMessageSent($message, $session));
+        } else {
+            \Log::error('All Gemini fallback models exhausted or failed to return text.');
         }
     }
 }
