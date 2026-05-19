@@ -3,6 +3,10 @@
 @section('title', 'Pengajuan Surat Mahasiswa — SI-PINTER')
 
 @push('styles')
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
+    <!-- Animate.css untuk animasi tambahan yang keren -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
         .hero-section {
             text-align: center;
@@ -68,11 +72,70 @@
             gap: 0.5rem;
         }
 
+        .service-cards-wrapper {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-service {
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .search-service i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .search-service input {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 2.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--surface-2);
+            font-size: 0.9rem;
+            color: var(--text);
+            transition: all 0.2s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+
+        .search-service input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        .service-cards-container {
+            max-height: 480px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+            margin-right: -0.5rem;
+        }
+
+        /* Custom Scrollbar for Service Cards */
+        .service-cards-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .service-cards-container::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 10px;
+        }
+        .service-cards-container::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.2);
+            border-radius: 10px;
+        }
+        .service-cards-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.5);
+        }
+
         .service-cards {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 0.7rem;
-            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
         }
 
         @media (max-width: 500px) {
@@ -218,7 +281,6 @@
             margin-top: 0.2rem;
         }
 
-        /* ---- Form ---- */
         .input-icon {
             position: relative;
         }
@@ -334,30 +396,47 @@
 
     <div class="register-grid">
         <div>
-            <div class="section-label"><i class="fas fa-file-alt"></i> Pilih Jenis Surat</div>
-            <div class="service-cards" id="service-cards">
-                @foreach($services as $service)
-                    <div class="service-card {{ !$service->is_active ? 'disabled' : '' }}"
-                        style="--svc-color: {{ $service->color }}; {{ !$service->is_active ? 'opacity: 0.6; cursor: not-allowed;' : '' }}"
-                        data-id="{{ $service->id }}" data-name="{{ $service->name }}" data-code="{{ $service->code }}"
-                        data-desc="{{ $service->description }}" data-color="{{ $service->color }}"
-                        data-active="{{ $service->is_active ? '1' : '0' }}"
-                        onclick="{{ $service->is_active ? 'selectService(this)' : '' }}">
-                        <div class="svc-code" style="background: {{ $service->color }}20; color: {{ $service->color }}">
-                            {{ $service->code }}
-                        </div>
-                        <div class="svc-name">{{ $service->name }} {{ !$service->is_active ? '(Tidak Aktif)' : '' }}</div>
-                        <div class="svc-desc">{{ $service->description }}</div>
-                        <div class="svc-meta">
-                            @if($service->is_active)
-                                <span class="svc-count">Diproses: —</span>
-                                <div class="svc-check">✓</div>
-                            @else
-                                <span class="svc-count" style="background: var(--surface-4);">Tutup</span>
-                            @endif
-                        </div>
+            <div class="section-label" style="display: flex; justify-content: space-between; align-items: center;">
+                <span><i class="fas fa-file-alt"></i> Pilih Jenis Surat</span>
+                <span class="badge" style="background: var(--primary); color: white; padding: 0.2rem 0.6rem; font-size: 0.65rem;">{{ count($services) }} Layanan</span>
+            </div>
+            
+            <div class="service-cards-wrapper">
+                <div class="search-service">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-service-input" placeholder="Cari jenis surat yang Anda butuhkan..." autocomplete="off">
+                </div>
+                
+                <div class="service-cards-container">
+                    <div class="service-cards" id="service-cards">
+                        @foreach($services as $service)
+                            <div class="service-card {{ !$service->is_active ? 'disabled' : '' }}"
+                                style="--svc-color: {{ $service->color }}; {{ !$service->is_active ? 'opacity: 0.6; cursor: not-allowed;' : '' }}"
+                                data-id="{{ $service->id }}" data-name="{{ strtolower($service->name) }}" data-code="{{ $service->code }}"
+                                data-desc="{{ $service->description }}" data-color="{{ $service->color }}"
+                                data-active="{{ $service->is_active ? '1' : '0' }}"
+                                onclick="{{ $service->is_active ? 'selectService(this)' : '' }}">
+                                <div class="svc-code" style="background: {{ $service->color }}20; color: {{ $service->color }}">
+                                    {{ $service->code }}
+                                </div>
+                                <div class="svc-name" style="text-transform: capitalize;">{{ $service->name }} {{ !$service->is_active ? '(Tidak Aktif)' : '' }}</div>
+                                <div class="svc-desc">{{ $service->description }}</div>
+                                <div class="svc-meta">
+                                    @if($service->is_active)
+                                        <span class="svc-count">Diproses: —</span>
+                                        <div class="svc-check">✓</div>
+                                    @else
+                                        <span class="svc-count" style="background: var(--surface-4);">Tutup</span>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
-                @endforeach
+                    <div id="no-service-found" style="display: none; text-align: center; padding: 2rem 1rem; color: var(--text-muted);">
+                        <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                        <p>Jenis surat tidak ditemukan.</p>
+                    </div>
+                </div>
             </div>
 
             <!-- <div class="section-label"><i class="fas fa-chart-line"></i> Statistik Hari Ini</div>
@@ -534,6 +613,7 @@
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.3.0/dist/web/pusher.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
         <script>
             window.QueueConfig = {
                 reverb: {
@@ -542,6 +622,93 @@
                     port: {{ env("VITE_REVERB_PORT", 8080) }}
                 }
             };
+
+            document.addEventListener('DOMContentLoaded', function() {
+                if (!sessionStorage.getItem('sipinter_welcomed')) {
+                    Swal.fire({
+                        title: '<span style="font-size: clamp(1.5rem, 5vw, 2rem); font-weight: 900; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Selamat Datang! 🎓</span>',
+                        html: `
+                            <p style="color: var(--text-muted); font-size: clamp(0.85rem, 3vw, 0.95rem); margin-bottom: 1.25rem; line-height: 1.6;">
+                                Anda berada di portal <strong>SI-PINTER</strong>.<br>Sistem Pelayanan Persuratan Terintegrasi Jurusan Ilmu Administrasi.
+                            </p>
+                            <div style="text-align: left; background: var(--surface); padding: clamp(1rem, 4vw, 1.5rem); border-radius: 16px; border: 1px solid rgba(99, 102, 241, 0.2); box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);">
+                                <h4 style="font-size: clamp(0.85rem, 3vw, 0.9rem); font-weight: 800; margin-bottom: 1rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em;"><i class="fas fa-magic" style="margin-right: 0.4rem;"></i> Cara Cepat Pengajuan</h4>
+                                <div style="display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.8rem;">
+                                    <div style="width: 28px; height: 28px; border-radius: 8px; background: rgba(99, 102, 241, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; flex-shrink: 0;">1</div>
+                                    <span style="font-size: clamp(0.8rem, 2.5vw, 0.9rem); color: var(--text); line-height: 1.4; margin-top: 0.15rem;">Gunakan kotak <strong>Pencarian</strong> untuk menemukan Jenis Surat.</span>
+                                </div>
+                                <div style="display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.8rem;">
+                                    <div style="width: 28px; height: 28px; border-radius: 8px; background: rgba(99, 102, 241, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; flex-shrink: 0;">2</div>
+                                    <span style="font-size: clamp(0.8rem, 2.5vw, 0.9rem); color: var(--text); line-height: 1.4; margin-top: 0.15rem;">Isi form dengan lengkap, sertakan file format Word jika diminta.</span>
+                                </div>
+                                <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                                    <div style="width: 28px; height: 28px; border-radius: 8px; background: rgba(99, 102, 241, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; flex-shrink: 0;">3</div>
+                                    <span style="font-size: clamp(0.8rem, 2.5vw, 0.9rem); color: var(--text); line-height: 1.4; margin-top: 0.15rem;">Dapatkan Notifikasi WA dan <strong>Lacak Progres</strong> secara real-time.</span>
+                                </div>
+                            </div>
+                        `,
+                        backdrop: `rgba(15, 23, 42, 0.85)`,
+                        showConfirmButton: true,
+                        confirmButtonText: '<i class="fas fa-rocket" style="margin-right: 0.5rem;"></i> Mulai Pengajuan',
+                        confirmButtonColor: '#1D4ED8',
+                        background: '#ffffff',
+                        padding: window.innerWidth < 600 ? '1.5em' : '2.5em',
+                        width: window.innerWidth < 600 ? '92%' : '550px',
+                        customClass: {
+                            popup: 'animate__animated animate__zoomIn',
+                            confirmButton: 'btn btn-primary',
+                        },
+                        didOpen: () => {
+                            const popup = Swal.getPopup();
+                            popup.classList.remove('swal2-show');
+                            popup.style.borderRadius = '24px';
+                            popup.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25)';
+                        },
+                        willClose: () => {
+                            const popup = Swal.getPopup();
+                            popup.classList.remove('animate__zoomIn');
+                            popup.classList.add('animate__zoomOut');
+                        }
+                    }).then(() => {
+                        sessionStorage.setItem('sipinter_welcomed', 'true');
+                        // Auto focus to search input after closing modal
+                        setTimeout(() => {
+                            const searchInput = document.getElementById('search-service-input');
+                            if (searchInput) searchInput.focus();
+                        }, 500);
+                    });
+                }
+
+                // Search/Filter Service Cards
+                const searchInput = document.getElementById('search-service-input');
+                const serviceCards = document.querySelectorAll('.service-card');
+                const noServiceFound = document.getElementById('no-service-found');
+
+                if (searchInput) {
+                    searchInput.addEventListener('input', function(e) {
+                        const searchTerm = e.target.value.toLowerCase().trim();
+                        let visibleCount = 0;
+
+                        serviceCards.forEach(card => {
+                            const name = card.getAttribute('data-name');
+                            const code = card.getAttribute('data-code').toLowerCase();
+                            
+                            if (name.includes(searchTerm) || code.includes(searchTerm)) {
+                                card.style.display = 'block';
+                                visibleCount++;
+                            } else {
+                                card.style.display = 'none';
+                            }
+                        });
+
+                        if (visibleCount === 0) {
+                            noServiceFound.style.display = 'block';
+                        } else {
+                            noServiceFound.style.display = 'none';
+                        }
+                    });
+                }
+            });
         </script>
         <script src="{{ asset('js/queue-register.js') }}"></script>
     @endpush
