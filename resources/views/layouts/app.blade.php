@@ -554,7 +554,6 @@
             }
         }
 
-        // Tampilkan pesan sukses/error dari backend otomatis
         document.addEventListener('DOMContentLoaded', () => {
             @if(session('success'))
                 showToast("{{ session('success') }}", 'success');
@@ -565,7 +564,6 @@
         });
     </script>
     
-    <!-- Global Admin Chat Notifications -->
     @if(request()->routeIs('admin.*'))
     <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.3.0/dist/web/pusher.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
@@ -591,14 +589,12 @@
 
             adminEcho.channel('admin-chat').listen('.chat.message', (e) => {
                 if (e.message.sender === 'student' && !window.location.pathname.includes('/admin/chat')) {
-                    // Play notification sound
                     try {
                         const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
                         audio.volume = 0.5;
                         audio.play();
                     } catch(err) {}
 
-                    // Show toast notification using SweetAlert2
                     Swal.fire({
                         toast: true,
                         position: 'top-end',
@@ -621,7 +617,6 @@
         });
     </script>
     @endif
-    <!-- Chat Widget (Public Only) -->
     @if(!request()->routeIs('admin.*') && !request()->routeIs('login') && !request()->routeIs('monitor.display'))
     <div id="chat-widget-container">
         <button id="chat-widget-btn" onclick="toggleChat()"><i class="fas fa-comment-dots"></i></button>
@@ -644,7 +639,6 @@
 
             <div id="chat-active-screen" style="display: none; flex-direction: column; flex: 1; overflow: hidden;">
                 <div id="chat-widget-messages">
-                    <!-- Messages go here -->
                 </div>
                 <form id="chat-widget-form" onsubmit="sendStudentMessage(event)">
                     <input type="text" id="chat-widget-input" placeholder="Ketik pesan..." required autocomplete="off">

@@ -70,7 +70,15 @@ class ChatController extends Controller
             'message' => $request->message,
         ]);
 
-        $session->update(['last_activity_at' => now()]);
+        if ($request->sender === 'admin') {
+            $session->update(['last_activity_at' => now(), 'is_ai_active' => false]);
+        } else {
+            $session->update(['last_activity_at' => now()]);
+            // If AI is active, dispatch job to generate AI reply
+            if ($session->is_ai_active && env('GEMINI_API_KEY')) {
+                \App\Jobs\ProcessGeminiChat::dispatch($session->id);
+            }
+        }
 
         // Broadcast event
         broadcast(new ChatMessageSent($message, $session));
