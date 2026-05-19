@@ -506,7 +506,6 @@
         @yield('content')
     </div>
 
-    <!-- FOOTER -->
     <footer class="footer">
         <div class="container">
             <p>&copy; 2026 <span class="footer-brand">SI-PINTER</span> | Sistem Pelayanan Persuratan Terintegrasi</p>

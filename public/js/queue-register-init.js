@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    if (!sessionStorage.getItem('sipinter_welcomed')) {
-        Swal.fire({
+    Swal.fire({
             title: '<span style="font-size: clamp(1.5rem, 5vw, 2rem); font-weight: 900; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Selamat Datang! 🎓</span>',
             html: `
                 <p style="color: var(--text-muted); font-size: clamp(0.85rem, 3vw, 0.95rem); margin-bottom: 1.25rem; line-height: 1.6;">
@@ -45,14 +44,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 popup.classList.add('animate__zoomOut');
             }
         }).then(() => {
-            sessionStorage.setItem('sipinter_welcomed', 'true');
             // Auto focus to search input after closing modal
             setTimeout(() => {
                 const searchInput = document.getElementById('search-service-input');
                 if (searchInput) searchInput.focus();
             }, 500);
         });
-    }
 
     // Search/Filter Service Cards
     const searchInput = document.getElementById('search-service-input');
