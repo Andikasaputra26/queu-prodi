@@ -242,13 +242,18 @@
 
         <script>
             window.QueueConfig = {
-                reverb: {
-                    key: '{{ env("VITE_REVERB_APP_KEY") }}',
-                    host: '{{ env("VITE_REVERB_HOST", "localhost") }}',
-                    port: {{ env("VITE_REVERB_PORT", 8080) }}
-                }
-            };
-        </script>
+            broadcaster: '{{ env("BROADCAST_CONNECTION") }}',
+            pusher: {
+                key: '{{ env("PUSHER_APP_KEY") }}',
+                cluster: '{{ env("PUSHER_APP_CLUSTER") }}',
+            },
+            reverb: {
+                key: '{{ env("VITE_REVERB_APP_KEY") }}',
+                host: '{{ env("VITE_REVERB_HOST", "localhost") }}',
+                port: {{ env("VITE_REVERB_PORT", 8080) }},
+                scheme: '{{ env("VITE_REVERB_SCHEME", "http") }}'
+            }
+        };</script>
         <script src="{{ asset('js/queue-register-init.js') }}"></script>
         <script src="{{ asset('js/queue-register.js') }}"></script>
     @endpush

@@ -6,6 +6,8 @@ use App\Http\Controllers\MonitorController;
 use App\Http\Controllers\QueueController;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\ChatController;
+
 Route::get('/', fn() => redirect()->route('queue.register'));
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -19,6 +21,10 @@ Route::get('/tiket/{ticketNumber}', [QueueController::class, 'ticket'])->name('q
 
 Route::get('/display', [MonitorController::class, 'display'])->name('monitor.display');
 
+// Public Chat API routes
+Route::post('/chat/start', [ChatController::class, 'startSession']);
+Route::get('/chat/{sessionId}/messages', [ChatController::class, 'getMessages']);
+Route::post('/chat/{sessionId}/send', [ChatController::class, 'sendMessage']);
 
 Route::middleware(['admin.whitelist'])->group(function () {
     Route::get('/monitor', [MonitorController::class, 'monitor'])->name('monitor.monitor');
@@ -26,6 +32,11 @@ Route::middleware(['admin.whitelist'])->group(function () {
 
 Route::prefix('admin')->name('admin.')->middleware(['admin.whitelist'])->group(function () {
     Route::get('/', [AdminController::class, 'index'])->name('dashboard');
+    
+    // Admin Chat routes
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat');
+    Route::get('/chat/list', [ChatController::class, 'adminList']);
+    Route::post('/chat/{sessionId}/close', [ChatController::class, 'closeSession']);
     Route::post('/call-next', [AdminController::class, 'callNext'])->name('call-next');
     Route::post('/add-manual', [AdminController::class, 'addManual'])->name('add-manual');
     Route::patch('/queue/{queue}/status', [AdminController::class, 'updateStatus'])->name('update-status');
