@@ -146,7 +146,6 @@ function printTicket(id, num, name, svc, counter) {
     window.print();
 }
 
-// ─── Call next ───
 async function callNext(counterId) {
     const svcEl = document.getElementById(`svc-${counterId}`);
     const svcId = svcEl ? svcEl.value : null;
@@ -175,7 +174,6 @@ async function callNext(counterId) {
     }
 }
 
-// ─── Update status ───
 async function updateStatus(id, status) {
     let payload = { status };
     if (status === 'rejected') {
@@ -217,7 +215,6 @@ async function updateStatus(id, status) {
     } catch(e) { showToast('Terjadi kesalahan', 'error'); }
 }
 
-// ─── Requeue ───
 async function requeue(id) {
     const result = await Swal.fire({
         title: 'Antrikan Ulang',
@@ -240,7 +237,6 @@ async function requeue(id) {
     } catch(e) { showToast('Terjadi kesalahan', 'error'); }
 }
 
-// ─── Recall ───
 async function recall(id) {
     try {
         const res  = await fetch(`/admin/queue/${id}/recall`, {
@@ -251,7 +247,6 @@ async function recall(id) {
     } catch(e) { showToast('Terjadi kesalahan', 'error'); }
 }
 
-// ─── Reset ───
 async function resetToday() {
     const result = await Swal.fire({
         title: 'Reset Antrian?',
@@ -281,13 +276,12 @@ function setWsStatus(connected) {
     if (text) text.textContent = connected ? 'Live' : 'Terputus';
 }
 
-// ─── Init ───
 document.addEventListener('DOMContentLoaded', () => {
     dtTable = $('#queues-table').DataTable({
         language: {
             url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json"
         },
-        order: [[0, 'desc']], // Sort by time desc
+        order: [[0, 'desc']], 
         columns: [
             { data: 'created_at' },
             { 
@@ -351,7 +345,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     refreshQueues();
 
-    // WebSocket
     try {
         if (!window.Echo) return;
 
@@ -374,7 +367,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Reverb/Pusher connection events
         echo.connector.pusher.connection.bind('connected', () => setWsStatus(true));
         echo.connector.pusher.connection.bind('disconnected', () => setWsStatus(false));
         echo.connector.pusher.connection.bind('unavailable', () => setWsStatus(false));

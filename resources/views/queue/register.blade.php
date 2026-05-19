@@ -239,7 +239,7 @@
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.3.0/dist/web/pusher.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
+
         <script>
             window.QueueConfig = {
                 reverb: {
@@ -248,7 +248,7 @@
                     port: {{ env("VITE_REVERB_PORT", 8080) }}
                 }
             };
-
+        </script>
         <script src="{{ asset('js/queue-register-init.js') }}"></script>
         <script src="{{ asset('js/queue-register.js') }}"></script>
     @endpush

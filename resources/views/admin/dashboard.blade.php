@@ -552,22 +552,9 @@
             <div class="page-sub">Panel Administrasi Jurusan — Semua Riwayat</div>
         </div>
         <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
-            <!-- <div class="ws-status"><div class="ws-dot" id="ws-dot"></div><span id="ws-text">Live</span></div> -->
-            <!-- <a href="{{ route('monitor.monitor') }}" class="btn btn-ghost">
-                    <i class="fas fa-chart-bar"></i> Monitor
-                </a>
-                <a href="{{ route('monitor.display') }}" class="btn btn-ghost" target="_blank">
-                    <i class="fas fa-tv"></i> Display
-                </a> -->
             <a href="{{ route('admin.services.index') }}" class="btn btn-ghost">
                 <i class="fas fa-tags"></i> Jenis Surat
             </a>
-            <!-- <a href="{{ route('admin.counters.index') }}" class="btn btn-ghost">
-                    <i class="fas fa-user-tie"></i> Loket / Dosen
-                </a> -->
-            <!-- <button class="btn btn-primary" onclick="openModal()">
-                <i class="fas fa-plus"></i> Tambah Manual
-            </button> -->
             <form action="{{ route('logout') }}" method="POST" style="display:inline;">
                 @csrf
                 <button type="submit" class="btn btn-danger">
