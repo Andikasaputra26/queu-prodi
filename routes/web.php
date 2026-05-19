@@ -15,7 +15,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/daftar', [QueueController::class, 'index'])->name('queue.register');
 Route::post('/daftar', [QueueController::class, 'register'])->name('queue.store');
 Route::post('/lacak', [QueueController::class, 'search'])->name('queue.search');
-Route::get('/tiket/{queue}', [QueueController::class, 'ticket'])->name('queue.ticket');
+Route::get('/tiket/{ticketNumber}', [QueueController::class, 'ticket'])->name('queue.ticket');
 
 Route::get('/display', [MonitorController::class, 'display'])->name('monitor.display');
 

@@ -1,165 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'Tiket {{ $queue->queue_number }} — SI-PINTER')
+@section('title', 'Tiket ' . $queue->queue_number . ' — SI-PINTER')
 
 @push('styles')
-<style>
-    .ticket-wrapper {
-        display: flex; align-items: center; justify-content: center;
-        min-height: calc(100vh - 100px);
-        padding: 2rem 0;
-    }
-
-    .ticket-card {
-        background: var(--surface-2);
-        border: 1px solid var(--border);
-        border-radius: 24px;
-        overflow: hidden;
-        width: 100%;
-        max-width: 460px;
-        box-shadow: 0 25px 60px rgba(0,0,0,0.5);
-    }
-
-    .ticket-header {
-        padding: 2rem;
-        text-align: center;
-        background: linear-gradient(135deg, {{ $queue->service->color }}25, transparent);
-        border-bottom: 1px solid var(--border);
-    }
-
-    .ticket-emoji { font-size: 2.5rem; margin-bottom: 0.75rem; display: block; }
-
-    .ticket-service-tag {
-        display: inline-flex; align-items: center; gap: 0.4rem;
-        background: {{ $queue->service->color }}20;
-        border: 1px solid {{ $queue->service->color }}40;
-        color: {{ $queue->service->color }};
-        padding: 0.35rem 0.875rem;
-        border-radius: 99px;
-        font-size: 0.78rem;
-        font-weight: 700;
-        margin-bottom: 1.25rem;
-    }
-
-    .ticket-number {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 5.5rem;
-        font-weight: 900;
-        color: {{ $queue->service->color }};
-        line-height: 1;
-        text-shadow: 0 0 40px {{ $queue->service->color }}55;
-        letter-spacing: -0.02em;
-        margin-bottom: 0.4rem;
-    }
-
-    .ticket-num-label {
-        font-size: 0.72rem;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.15em;
-    }
-
-    .ticket-dashes {
-        padding: 0 1.5rem;
-        display: flex; align-items: center;
-    }
-
-    .ticket-dashes span {
-        flex: 1;
-        border-top: 2px dashed var(--border);
-        margin: 0 1rem;
-    }
-
-    .ticket-circle {
-        width: 22px; height: 22px;
-        background: var(--surface);
-        border-radius: 50%;
-        flex-shrink: 0;
-    }
-
-    .ticket-body { padding: 1.5rem 2rem; }
-
-    .info-row {
-        display: flex; justify-content: space-between; align-items: center;
-        padding: 0.65rem 0;
-        border-bottom: 1px solid var(--border);
-        font-size: 0.875rem;
-    }
-
-    .info-row:last-child { border-bottom: none; }
-    .info-label { color: var(--text-muted); font-size: 0.8rem; }
-    .info-value { font-weight: 600; text-align: right; }
-
-    .ticket-footer {
-        background: var(--surface-3);
-        border-top: 1px solid var(--border);
-        padding: 1.5rem 2rem;
-        text-align: center;
-    }
-
-    .waiting-num {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 3rem; font-weight: 900;
-        color: var(--warning); line-height: 1;
-    }
-
-    .waiting-label { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem; }
-
-    .ticket-btns { display: flex; gap: 0.75rem; margin-top: 1.25rem; }
-    .ticket-btns .btn { flex: 1; justify-content: center; }
-
-    .live-card {
-        background: var(--surface-2);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 1.1rem 1.25rem;
-        margin-top: 1.25rem;
-        display: flex; align-items: center; gap: 1rem;
-    }
-
-    .live-card-icon {
-        width: 44px; height: 44px; border-radius: 11px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.4rem; flex-shrink: 0;
-        background: rgba(37,99,235,0.1);
-        transition: all 0.3s;
-    }
-
-    /* Calling overlay */
-    .calling-overlay {
-        position: fixed; inset: 0;
-        background: rgba(255,255,255,0.88);
-        backdrop-filter: blur(12px);
-        display: none;
-        align-items: center; justify-content: center;
-        z-index: 9999;
-    }
-
-    .calling-popup {
-        background: var(--surface-2);
-        border: 2px solid var(--warning);
-        border-radius: 24px;
-        padding: 2.5rem 2rem;
-        text-align: center;
-        max-width: 380px;
-        width: 90%;
-        animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
-        box-shadow: 0 0 50px rgba(245,158,11,0.3);
-    }
-
-    @keyframes popIn {
-        0%   { transform: scale(0.6); opacity: 0; }
-        100% { transform: scale(1);   opacity: 1; }
-    }
-
-    .calling-num-big {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 5rem; font-weight: 900;
-        color: var(--warning);
-        animation: pulse 0.8s infinite;
-        text-shadow: 0 0 30px rgba(245,158,11,0.5);
-    }
-</style>
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{{ asset('css/queue-ticket.css') }}">
 @endpush
 
 @section('content')
@@ -204,7 +49,7 @@
                 </div>
                 <div class="info-row">
                     <span class="info-label"><i class="fas fa-clock"></i> Waktu Daftar</span>
-                    <span class="info-value">{{ $queue->created_at->format('H:i:s') }}</span>
+                    <span class="info-value">{{ $queue->created_at->format('H:i:s') }} WITA</span>
                 </div>
                 <div class="info-row">
                     <span class="info-label"><i class="fas fa-circle"></i> Status</span>
@@ -230,8 +75,10 @@
             </div>
 
             <div class="ticket-footer">
-                <div class="waiting-num" id="waiting-count">{{ $waitingBefore }}</div>
-                <div class="waiting-label">antrian di depan Anda</div>
+                <div class="waiting-card">
+                    <div class="waiting-num" id="waiting-count">{{ $waitingBefore }}</div>
+                    <div class="waiting-label">antrian di depan Anda</div>
+                </div>
                 <div class="ticket-btns">
                     <a href="{{ route('queue.register') }}" class="btn btn-ghost">
                         <i class="fas fa-plus"></i> Daftar Lagi
@@ -268,6 +115,8 @@
             <i class="fas fa-check"></i> Baik, Saya Segera
         </button>
     </div>
+</div>
+
 <div class="calling-overlay" id="done-overlay">
     <div class="calling-popup" style="border-color: var(--success); box-shadow: 0 0 50px rgba(16,185,129,0.3);">
         <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">✅</div>
@@ -299,6 +148,25 @@ window.TicketConfig = {
         port: {{ env("VITE_REVERB_PORT", 8080) }}
     }
 };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
+<script>
+    @if(session('queue_success'))
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'success',
+                title: 'Pengajuan Berhasil!',
+                html: 'Tunggu nomor antrian Anda dipanggil.<br>Nomor Anda: <strong>{{ $queue->queue_number }}</strong>',
+                confirmButtonText: 'Baik, Mengerti',
+                confirmButtonColor: '#10B981',
+                timer: 5000,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'animate__animated animate__zoomIn'
+                }
+            });
+        });
+    @endif
 </script>
 <script src="{{ asset('js/queue-ticket.js') }}"></script>
 @endpush

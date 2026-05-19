@@ -1,0 +1,314 @@
+/* CSS for Queue Ticket View */
+
+.ticket-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 100px);
+    padding: 2rem 1rem;
+    animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.ticket-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.15), 0 18px 36px -18px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.ticket-header {
+    padding: 2.5rem 2rem 2rem;
+    text-align: center;
+    position: relative;
+    /* The inline style will apply the gradient background based on service color */
+    border-bottom: 2px dashed rgba(0,0,0,0.05);
+}
+
+.ticket-emoji {
+    font-size: clamp(2rem, 5vw, 2.8rem);
+    margin-bottom: 1rem;
+    display: inline-block;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+}
+
+.ticket-service-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 1rem;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1.5rem;
+    box-shadow: inset 0 0 0 1px currentColor;
+}
+
+.ticket-number {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: clamp(4.5rem, 12vw, 6rem);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.5rem;
+    /* Color and text-shadow are handled inline per service */
+}
+
+.ticket-num-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+}
+
+.ticket-dashes {
+    height: 30px;
+    position: relative;
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    overflow: hidden;
+    margin: -15px 0;
+    z-index: 2;
+}
+
+.ticket-dashes::before,
+.ticket-dashes::after {
+    content: '';
+    width: 30px;
+    height: 30px;
+    background: #f8fafc; /* Match body bg if possible, or transparent if using mask */
+    border-radius: 50%;
+    position: absolute;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+}
+
+.ticket-dashes::before {
+    left: -15px;
+}
+
+.ticket-dashes::after {
+    right: -15px;
+}
+
+.ticket-dashes span {
+    flex: 1;
+    border-top: 3px dashed var(--border);
+    margin: 0 24px;
+    opacity: 0.6;
+}
+
+.ticket-body {
+    padding: 2.5rem 2rem 2rem;
+    background: var(--surface);
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.875rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.info-label {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-label i {
+    width: 16px;
+    text-align: center;
+    color: var(--primary);
+    opacity: 0.8;
+}
+
+.info-value {
+    font-weight: 700;
+    text-align: right;
+    color: var(--text);
+    max-width: 60%;
+    word-break: break-word;
+}
+
+.ticket-footer {
+    background: var(--surface-2);
+    padding: 2rem;
+    text-align: center;
+    border-top: 1px dashed var(--border);
+}
+
+.waiting-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.waiting-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(2.5rem, 8vw, 3.5rem);
+    font-weight: 900;
+    color: var(--warning);
+    line-height: 1;
+    text-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.waiting-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.4rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.ticket-btns {
+    display: flex;
+    gap: 1rem;
+}
+
+@media (max-width: 480px) {
+    .ticket-btns {
+        flex-direction: column;
+    }
+}
+
+.ticket-btns .btn {
+    flex: 1;
+    justify-content: center;
+    padding: 0.875rem 1rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ticket-btns .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1);
+}
+
+.live-card {
+    background: var(--surface);
+    border: 1px solid rgba(37, 99, 235, 0.2);
+    border-radius: 20px;
+    padding: 1.25rem 1.5rem;
+    margin-top: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.live-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--primary);
+}
+
+.live-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--primary);
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+/* Calling Overlay Premium */
+.calling-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.calling-popup {
+    background: var(--surface);
+    border-radius: 32px;
+    padding: 3rem 2.5rem;
+    text-align: center;
+    max-width: 420px;
+    width: 90%;
+    animation: popInBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 4px rgba(245, 158, 11, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+@keyframes popInBounce {
+    0% { transform: scale(0.4); opacity: 0; }
+    50% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.calling-num-big {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(4rem, 12vw, 6rem);
+    font-weight: 900;
+    color: var(--warning);
+    line-height: 1;
+    margin: 1rem 0;
+    animation: glowPulse 2s infinite;
+}
+
+@keyframes glowPulse {
+    0%, 100% { text-shadow: 0 0 20px rgba(245, 158, 11, 0.4); transform: scale(1); }
+    50% { text-shadow: 0 0 40px rgba(245, 158, 11, 0.8); transform: scale(1.05); }
+}
+
+.btn-pulse {
+    animation: btnPulse 2s infinite;
+}
+
+@keyframes btnPulse {
+    0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+}

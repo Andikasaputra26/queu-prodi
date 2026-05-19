@@ -10,9 +10,13 @@ const Config = window.TicketConfig || {
 function updateWaiting() {
     fetch('/api/waiting').then(r => r.json()).then(list => {
         const myIdx = list.findIndex(q => q.queue_number === Config.myNumber);
-        const before = myIdx >= 0 ? list.slice(0, myIdx).filter(q => q.status === 'waiting').length : 0;
-        const countEl = document.getElementById('waiting-count');
-        if (countEl) countEl.textContent = before;
+        if (myIdx >= 0) {
+            const myQueue = list[myIdx];
+            // Filter by the same service and correct statuses (pending or admin)
+            const before = list.slice(0, myIdx).filter(q => q.service_name === myQueue.service_name && (q.status === 'pending' || q.status === 'admin')).length;
+            const countEl = document.getElementById('waiting-count');
+            if (countEl) countEl.textContent = before;
+        }
     }).catch(() => {});
 }
 

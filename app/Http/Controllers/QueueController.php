@@ -59,13 +59,15 @@ class QueueController extends Controller
 
         broadcast(new QueueUpdated(action: 'new', queueItem: $queue, stats: $this->getStats()))->toOthers();
 
-        return redirect()->route('queue.ticket', $queue->id);
+        return redirect()->route('queue.ticket', 'TKT-' . str_pad($queue->id, 5, '0', STR_PAD_LEFT))->with('queue_success', 'Pengajuan berhasil dikirim!');
     }
 
-    public function ticket(Queue $queue)
+    public function ticket($ticketNumber)
     {
+        $id = (int) str_replace('TKT-', '', $ticketNumber);
+        $queue = Queue::findOrFail($id);
         $waitingBefore = Queue::where('service_id', $queue->service_id)
-            ->where('queue_date', $queue->queue_date)
+            ->whereDate('queue_date', $queue->queue_date)
             ->whereIn('status', ['pending', 'admin'])
             ->where('sequence', '<', $queue->sequence)
             ->count();
@@ -85,7 +87,7 @@ class QueueController extends Controller
             return back()->withErrors(['queue_number' => 'Nomor antrian tidak ditemukan untuk hari ini.']);
         }
 
-        return redirect()->route('queue.ticket', $queue->id);
+        return redirect()->route('queue.ticket', 'TKT-' . str_pad($queue->id, 5, '0', STR_PAD_LEFT));
     }
 
     public function getStats($date = null, $serviceId = null): array

@@ -31,7 +31,7 @@ class WhatsAppService
 
     public static function notifyRegistration(Queue $queue)
     {
-        $ticketUrl = route('queue.ticket', $queue->id);
+        $ticketUrl = route('queue.ticket', 'TKT-' . str_pad($queue->id, 5, '0', STR_PAD_LEFT));
         $greeting = self::getGreeting();
         
         $message = "🎉 *Yay, registrasi Anda berhasil!*\n\n";
