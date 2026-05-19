@@ -179,12 +179,29 @@ async function callNext(counterId) {
 async function updateStatus(id, status) {
     let payload = { status };
     if (status === 'rejected') {
-        const reason = prompt('Masukkan alasan penolakan (kosongkan jika tidak ada):');
-        if (reason === null) return; // User cancelled
+        const { value: reason } = await Swal.fire({
+            title: 'Tolak Pengajuan',
+            input: 'textarea',
+            inputLabel: 'Masukkan alasan penolakan (kosongkan jika tidak ada):',
+            showCancelButton: true,
+            confirmButtonText: 'Tolak',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#DC2626'
+        });
+        if (reason === undefined) return; // User cancelled
         payload.reject_reason = reason;
     } else if (status === 'done') {
-        const docNum = prompt('Masukkan Nomor Surat / Dokumen:', allQueues.find(q => q.id === id).document_number || '');
-        if (docNum === null) return; // User cancelled
+        const { value: docNum } = await Swal.fire({
+            title: 'Selesaikan Surat',
+            input: 'text',
+            inputLabel: 'Masukkan Nomor Surat / Dokumen:',
+            inputValue: allQueues.find(q => q.id === id).document_number || '',
+            showCancelButton: true,
+            confirmButtonText: 'Selesai',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#10B981'
+        });
+        if (docNum === undefined) return; // User cancelled
         payload.document_number = docNum;
     }
 
@@ -202,7 +219,16 @@ async function updateStatus(id, status) {
 
 // ─── Requeue ───
 async function requeue(id) {
-    if (!confirm('Mahasiswa sudah memperbaiki dokumen dan antrikan ulang surat ini?')) return;
+    const result = await Swal.fire({
+        title: 'Antrikan Ulang',
+        text: 'Mahasiswa sudah memperbaiki dokumen dan antrikan ulang surat ini?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#F59E0B',
+        cancelButtonColor: '#6B7280',
+        confirmButtonText: 'Ya, Antrikan Ulang'
+    });
+    if (!result.isConfirmed) return;
     try {
         const res  = await fetch(`/admin/queue/${id}/requeue`, {
             method: 'POST',
@@ -227,7 +253,16 @@ async function recall(id) {
 
 // ─── Reset ───
 async function resetToday() {
-    if (!confirm('⚠️ Reset semua antrian hari ini?\nTindakan ini tidak bisa dibatalkan.')) return;
+    const result = await Swal.fire({
+        title: 'Reset Antrian?',
+        text: 'Semua antrian hari ini akan di-reset. Tindakan ini tidak bisa dibatalkan.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#DC2626',
+        cancelButtonColor: '#6B7280',
+        confirmButtonText: 'Ya, Reset Semua'
+    });
+    if (!result.isConfirmed) return;
     try {
         const res  = await fetch(Config.routes.resetToday, {
             method: 'DELETE', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },

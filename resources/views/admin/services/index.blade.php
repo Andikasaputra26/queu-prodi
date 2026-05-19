@@ -109,10 +109,10 @@
                             <a href="{{ route('admin.services.edit', $svc->id) }}" class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; color: var(--warning); border-color: var(--warning);">
                                 <i class="fas fa-edit"></i> Edit
                             </a>
-                            <form action="{{ route('admin.services.destroy', $svc->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus jenis surat ini?')" style="margin: 0;">
+                            <form action="{{ route('admin.services.destroy', $svc->id) }}" method="POST" class="delete-service-form" style="margin: 0;">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; color: var(--danger); border-color: var(--danger);">
+                                <button type="button" class="btn btn-ghost btn-delete-svc" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; color: var(--danger); border-color: var(--danger);">
                                     <i class="fas fa-trash-alt"></i> Hapus
                                 </button>
                             </form>
@@ -151,6 +151,26 @@
                 columnDefs: [
                     { orderable: false, targets: 4 } // Disable sorting on actions column
                 ]
+            });
+
+            // SweetAlert Delete Confirmation
+            $('.btn-delete-svc').on('click', function(e) {
+                e.preventDefault();
+                const form = $(this).closest('form');
+                
+                Swal.fire({
+                    title: 'Hapus Jenis Surat?',
+                    text: "Tindakan ini tidak bisa dibatalkan!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#DC2626',
+                    cancelButtonColor: '#6B7280',
+                    confirmButtonText: 'Ya, Hapus!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
             });
         });
     </script>
