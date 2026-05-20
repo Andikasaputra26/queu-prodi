@@ -638,9 +638,14 @@
                         <span>Online • Asisten AI</span>
                     </div>
                 </div>
-                <button class="chat-header-close" onclick="toggleChat()" aria-label="Tutup Chat">
-                    <i class="fas fa-times"></i>
-                </button>
+                <div class="chat-header-actions" style="display: flex; align-items: center; gap: 8px;">
+                    <button id="chat-header-reset-btn" class="chat-header-action-btn" onclick="confirmResetChat()" title="Mulai Ulang Obrolan" style="display: none;">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="chat-header-close" onclick="toggleChat()" aria-label="Tutup Chat">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
             </div>
             
             <!-- Setup Screen -->
@@ -856,6 +861,24 @@
         }
         .chat-header-close:hover {
             background: rgba(255,255,255,0.25);
+            transform: scale(1.05);
+        }
+        .chat-header-action-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: white;
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+        .chat-header-action-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
             transform: scale(1.05);
         }
 

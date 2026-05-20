@@ -20,6 +20,7 @@ function toggleChat() {
     const closeIcon = chatBtn.querySelector('.close-icon');
     
     const isClosed = chatBox.classList.contains('chat-closed');
+    const resetBtn = document.getElementById('chat-header-reset-btn');
     
     if (isClosed) {
         chatBox.classList.remove('chat-closed');
@@ -31,11 +32,13 @@ function toggleChat() {
         if (name) {
             document.getElementById('chat-setup-screen').style.display = 'none';
             document.getElementById('chat-active-screen').style.display = 'flex';
+            if (resetBtn) resetBtn.style.display = 'flex';
             loadStudentMessages();
             initStudentWs();
         } else {
             document.getElementById('chat-setup-screen').style.display = 'flex';
             document.getElementById('chat-active-screen').style.display = 'none';
+            if (resetBtn) resetBtn.style.display = 'none';
         }
     } else {
         chatBox.classList.add('chat-closed');
@@ -86,6 +89,9 @@ async function startStudentChat(e) {
         
         document.getElementById('chat-setup-screen').style.display = 'none';
         document.getElementById('chat-active-screen').style.display = 'flex';
+        
+        const resetBtn = document.getElementById('chat-header-reset-btn');
+        if (resetBtn) resetBtn.style.display = 'flex';
         
         if (data.session.status === 'closed') {
             lockStudentChat();
@@ -200,6 +206,9 @@ function appendStudentMessage(m) {
 function lockStudentChat() {
     const input = document.getElementById('chat-widget-input');
     const btn = document.querySelector('#chat-widget-form button');
+    const resetBtn = document.getElementById('chat-header-reset-btn');
+    if (resetBtn) resetBtn.style.display = 'none';
+
     if (input) {
         input.disabled = true;
         input.placeholder = "Sesi telah ditutup oleh Admin.";
@@ -333,4 +342,34 @@ function initStudentWs() {
             }
         });
     }
+}
+
+function confirmResetChat() {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Mulai Ulang Obrolan?',
+            text: 'Sesi chat saat ini akan diakhiri dan riwayat chat Anda akan direset secara lokal.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: 'var(--primary)',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Ya, Mulai Ulang',
+            cancelButtonText: 'Batal',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                resetChatSession();
+            }
+        });
+    } else {
+        if (confirm('Apakah Anda yakin ingin mengakhiri sesi chat ini dan memulai ulang?')) {
+            resetChatSession();
+        }
+    }
+}
+
+function resetChatSession() {
+    localStorage.removeItem('sipinter_chat_session_id');
+    localStorage.removeItem('sipinter_chat_name');
+    window.location.reload();
 }
