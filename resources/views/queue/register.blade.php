@@ -199,39 +199,6 @@
                         </button>
                     </form>
                 </div>
-
-                <div class="card" style="margin-top: 1.5rem;">
-                    <div class="card-header" style="margin-bottom: 1rem;">
-                        <h2 class="card-title">
-                            <i class="fas fa-list-ul" style="color: var(--success)"></i>
-                            Monitoring Antrian
-                        </h2>
-                    </div>
-
-                    <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
-                        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
-                            <thead style="position: sticky; top: 0; background: var(--surface-2); z-index: 1;">
-                                <tr>
-                                    <th
-                                        style="padding: 0.75rem; text-align: left; color: var(--text-muted); border-bottom: 1px solid var(--border);">
-                                        No. Surat</th>
-                                    <th
-                                        style="padding: 0.75rem; text-align: left; color: var(--text-muted); border-bottom: 1px solid var(--border);">
-                                        Nama / Jenis</th>
-                                    <th
-                                        style="padding: 0.75rem; text-align: left; color: var(--text-muted); border-bottom: 1px solid var(--border);">
-                                        Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="public-tracking-list">
-                                <tr>
-                                    <td colspan="3" style="text-align: center; padding: 1.5rem; color: var(--text-muted);">
-                                        Memuat data...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
             </div>
         </div>
 @endsection

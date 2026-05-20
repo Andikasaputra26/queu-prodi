@@ -9,13 +9,23 @@ if (!sipinterChatSessionId) {
 }
 
 let chatEcho = null;
+let typingTimeout = null;
 
 function toggleChat() {
     const chatBox = document.getElementById('chat-widget-box');
-    const isHidden = chatBox.style.display === 'none' || chatBox.style.display === '';
+    const chatBtn = document.getElementById('chat-widget-btn');
+    if (!chatBox || !chatBtn) return;
+
+    const chatIcon = chatBtn.querySelector('.chat-icon');
+    const closeIcon = chatBtn.querySelector('.close-icon');
     
-    if (isHidden) {
-        chatBox.style.display = 'flex';
+    const isClosed = chatBox.classList.contains('chat-closed');
+    
+    if (isClosed) {
+        chatBox.classList.remove('chat-closed');
+        if (chatIcon) chatIcon.style.display = 'none';
+        if (closeIcon) closeIcon.style.display = 'block';
+        
         // Auto start session or load if name is in localStorage
         const name = localStorage.getItem('sipinter_chat_name');
         if (name) {
@@ -28,13 +38,34 @@ function toggleChat() {
             document.getElementById('chat-active-screen').style.display = 'none';
         }
     } else {
-        chatBox.style.display = 'none';
+        chatBox.classList.add('chat-closed');
+        if (chatIcon) chatIcon.style.display = 'block';
+        if (closeIcon) closeIcon.style.display = 'none';
     }
 }
 
+function startWithQuery(query) {
+    const nameInput = document.getElementById('chat-student-name');
+    if (!nameInput) return;
+
+    let name = nameInput.value.trim();
+    if (!name) {
+        name = 'Mahasiswa';
+        nameInput.value = name;
+    }
+    
+    window.pendingQuery = query;
+    
+    // Call startStudentChat directly by mimicking submit event
+    startStudentChat({ preventDefault: () => {} });
+}
+
 async function startStudentChat(e) {
-    e.preventDefault();
-    const name = document.getElementById('chat-student-name').value.trim();
+    if (e && e.preventDefault) e.preventDefault();
+    const nameInput = document.getElementById('chat-student-name');
+    if (!nameInput) return;
+
+    const name = nameInput.value.trim();
     if (!name) return;
 
     localStorage.setItem('sipinter_chat_name', name);
@@ -60,8 +91,20 @@ async function startStudentChat(e) {
             lockStudentChat();
         }
         
-        loadStudentMessages();
+        await loadStudentMessages();
         initStudentWs();
+
+        // If there's a pending query, send it!
+        if (window.pendingQuery) {
+            const query = window.pendingQuery;
+            window.pendingQuery = null;
+            
+            const input = document.getElementById('chat-widget-input');
+            if (input && !input.disabled) {
+                input.value = query;
+                sendStudentMessage({ preventDefault: () => {} });
+            }
+        }
     } catch(e) {
         console.error(e);
     }
@@ -90,44 +133,62 @@ async function loadStudentMessages() {
 
 function appendStudentMessage(m) {
     const container = document.getElementById('chat-widget-messages');
+    if (!container) return;
+
     const isStudent = m.sender === 'student';
     
-    const d = document.createElement('div');
-    d.style.maxWidth = '85%';
-    d.style.padding = '10px 14px';
-    d.style.borderRadius = '16px';
-    d.style.fontSize = '0.9rem';
-    d.style.lineHeight = '1.45';
-    d.style.marginBottom = '12px';
-    d.style.boxShadow = '0 2px 5px rgba(0,0,0,0.02)';
-    d.style.wordBreak = 'break-word';
+    // Hide typing indicator
+    const typingIndicator = document.getElementById('chat-typing-indicator');
+    if (typingIndicator) {
+        typingIndicator.style.display = 'none';
+    }
+    if (typingTimeout) {
+        clearTimeout(typingTimeout);
+        typingTimeout = null;
+    }
+
+    // Create row
+    const row = document.createElement('div');
+    row.className = `chat-message-row ${isStudent ? 'student-row animate__animated animate__fadeInUp' : 'admin-row animate__animated animate__fadeInUp'}`;
+    row.style.animationDuration = '0.25s';
     
+    // Avatar
+    const avatar = document.createElement('div');
+    avatar.className = 'chat-bubble-avatar';
     if (isStudent) {
-        d.style.alignSelf = 'flex-end';
-        d.style.background = 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)';
-        d.style.color = 'white';
-        d.style.borderBottomRightRadius = '4px';
+        avatar.innerHTML = '<i class="fas fa-user-graduate"></i>';
     } else {
-        d.style.alignSelf = 'flex-start';
-        d.style.background = 'white';
-        d.style.border = '1px solid rgba(0,0,0,0.05)';
-        d.style.color = 'var(--text)';
-        d.style.borderBottomLeftRadius = '4px';
+        avatar.innerHTML = '<i class="fas fa-robot"></i>';
     }
     
-    // Convert newlines to br
-    d.innerHTML = m.message.replace(/\n/g, '<br>');
+    // Bubble
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble';
     
-    // Add time
-    const timeDiv = document.createElement('div');
-    timeDiv.style.fontSize = '0.65rem';
-    timeDiv.style.marginTop = '4px';
-    timeDiv.style.textAlign = isStudent ? 'right' : 'left';
-    timeDiv.style.opacity = '0.7';
-    timeDiv.textContent = new Date(m.created_at || Date.now()).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-    d.appendChild(timeDiv);
-
-    container.appendChild(d);
+    // Text
+    const textSpan = document.createElement('span');
+    textSpan.innerHTML = m.message.replace(/\n/g, '<br>');
+    bubble.appendChild(textSpan);
+    
+    // Meta (Timestamp and Badge)
+    const meta = document.createElement('div');
+    meta.className = 'chat-bubble-meta';
+    
+    const badge = document.createElement('span');
+    badge.className = 'chat-bubble-badge';
+    badge.textContent = isStudent ? 'MHS' : 'SI-PINTER';
+    meta.appendChild(badge);
+    
+    const timeSpan = document.createElement('span');
+    timeSpan.textContent = new Date(m.created_at || Date.now()).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    meta.appendChild(timeSpan);
+    
+    bubble.appendChild(meta);
+    
+    row.appendChild(avatar);
+    row.appendChild(bubble);
+    
+    container.appendChild(row);
     container.scrollTop = container.scrollHeight;
     
     // Check if this is the closing message
@@ -142,16 +203,17 @@ function lockStudentChat() {
     if (input) {
         input.disabled = true;
         input.placeholder = "Sesi telah ditutup oleh Admin.";
-        input.style.background = "#e2e8f0";
+        input.style.background = "#cbd5e1";
     }
     if (btn) btn.disabled = true;
 
     // Add a button to start a new chat if it doesn't exist yet
     if (!document.getElementById('btn-new-chat-session')) {
         const restartDiv = document.createElement('div');
-        restartDiv.style.padding = '10px';
+        restartDiv.style.padding = '15px';
         restartDiv.style.textAlign = 'center';
-        restartDiv.innerHTML = `<button id="btn-new-chat-session" onclick="localStorage.removeItem('sipinter_chat_session_id'); localStorage.removeItem('sipinter_chat_name'); window.location.reload();" style="background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">Mulai Sesi Baru</button>`;
+        restartDiv.style.width = '100%';
+        restartDiv.innerHTML = `<button id="btn-new-chat-session" onclick="localStorage.removeItem('sipinter_chat_session_id'); localStorage.removeItem('sipinter_chat_name'); window.location.reload();" style="background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; font-weight: 600; box-shadow: 0 4px 12px rgba(29, 78, 216, 0.2); transition: all 0.2s;">Mulai Sesi Baru</button>`;
         document.getElementById('chat-active-screen').appendChild(restartDiv);
         
         // Scroll to bottom
@@ -161,12 +223,29 @@ function lockStudentChat() {
 }
 
 async function sendStudentMessage(e) {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     const input = document.getElementById('chat-widget-input');
+    if (!input) return;
+
     const text = input.value.trim();
     if (!text) return;
     
     input.value = '';
+    
+    // Show typing indicator
+    const typingIndicator = document.getElementById('chat-typing-indicator');
+    if (typingIndicator) {
+        typingIndicator.style.display = 'block';
+        const container = document.getElementById('chat-widget-messages');
+        if (container) container.scrollTop = container.scrollHeight;
+    }
+
+    // Set a safety timeout to hide typing indicator in 15 seconds
+    if (typingTimeout) clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+        const indicator = document.getElementById('chat-typing-indicator');
+        if (indicator) indicator.style.display = 'none';
+    }, 15000);
     
     try {
         const res = await fetch(`/chat/${sipinterChatSessionId}/send`, {
@@ -180,12 +259,16 @@ async function sendStudentMessage(e) {
         
         if (res.status === 403) {
             lockStudentChat();
+            if (typingIndicator) typingIndicator.style.display = 'none';
             return;
         }
         
         const data = await res.json();
         appendStudentMessage(data);
-    } catch(e) { console.error(e); }
+    } catch(e) { 
+        console.error(e); 
+        if (typingIndicator) typingIndicator.style.display = 'none';
+    }
 }
 
 function initStudentWs() {
@@ -223,16 +306,26 @@ function initStudentWs() {
     if (chatEcho) {
         chatEcho.channel(`chat.${sipinterChatSessionId}`).listen('.chat.message', (e) => {
             if (e.message.sender === 'admin') {
+                // Hide typing indicator
+                const typingIndicator = document.getElementById('chat-typing-indicator');
+                if (typingIndicator) typingIndicator.style.display = 'none';
+                if (typingTimeout) {
+                    clearTimeout(typingTimeout);
+                    typingTimeout = null;
+                }
+
                 appendStudentMessage(e.message);
+                
+                // Toggle open if closed
                 const chatBox = document.getElementById('chat-widget-box');
-                if (chatBox.style.display === 'none' || chatBox.style.display === '') {
+                if (chatBox && chatBox.classList.contains('chat-closed')) {
                     toggleChat();
                 }
                 
                 // Play notification sound
                 try {
                     const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-                    audio.volume = 0.5;
+                    audio.volume = 0.4;
                     audio.play();
                 } catch(err) {}
 
