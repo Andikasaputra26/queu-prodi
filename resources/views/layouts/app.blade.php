@@ -623,8 +623,8 @@
         <div id="chat-widget-box" style="display: none;">
             <div id="chat-widget-header">
                 <div>
-                    <strong style="display: block; font-size: 0.95rem;">Live Chat Bantuan</strong>
-                    <span style="font-size: 0.75rem; opacity: 0.8;">Admin aktif membalas</span>
+                    <strong style="display: block; font-size: 0.95rem;">Live Chat SI-PINTER</strong>
+                    <!-- <span style="font-size: 0.75rem; opacity: 0.8;">Admin aktif membalas</span> -->
                 </div>
                 <button onclick="toggleChat()" style="background: none; border: none; color: white; cursor: pointer;"><i class="fas fa-times"></i></button>
             </div>

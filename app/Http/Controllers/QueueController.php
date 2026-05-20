@@ -36,7 +36,15 @@ class QueueController extends Controller
         $queue = DB::transaction(function () use ($request, $service) {
             $service->lockForUpdate();
             $sequence    = $service->getNextSequence();
-            $queueNumber = $service->code . str_pad($sequence, 3, '0', STR_PAD_LEFT);
+            
+            // Generate a random queue number that is unique for today
+            do {
+                $randomNumber = mt_rand(100, 999);
+                $queueNumber = $service->code . $randomNumber;
+                $exists = Queue::where('queue_number', $queueNumber)
+                    ->whereDate('queue_date', today())
+                    ->exists();
+            } while ($exists);
 
             $filePath = null;
             if ($request->hasFile('file')) {

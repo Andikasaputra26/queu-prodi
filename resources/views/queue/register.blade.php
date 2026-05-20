@@ -186,7 +186,7 @@
                             <label class="form-label" style="font-size: 0.75rem;">Masukkan Nomor Antrian / ID Surat</label>
                             <div class="input-icon">
                                 <i class="fas fa-ticket-alt"></i>
-                                <input type="text" name="queue_number" class="form-control" placeholder="Contoh: A001"
+                                <input type="text" name="queue_number" class="form-control" placeholder="Contoh: SP538"
                                     style="text-transform: uppercase;">
                             </div>
                             @error('queue_number')

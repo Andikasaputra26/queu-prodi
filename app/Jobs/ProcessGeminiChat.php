@@ -6,6 +6,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use App\Models\ChatSession;
 use App\Models\QueueService;
+use App\Models\Queue;
 use App\Events\ChatMessageSent;
 use Illuminate\Support\Facades\Http;
 
@@ -29,7 +30,19 @@ class ProcessGeminiChat implements ShouldQueue
         }
 
         $services = QueueService::where('is_active', true)->get()->pluck('name')->implode(', ');
-        $systemContext = "[SISTEM: Anda adalah Asisten AI SI-PINTER (Sistem Pelayanan Informasi Terpadu). Tugas Anda menjawab mahasiswa dengan ramah, profesional, dan ringkas. Layanan yang kami sediakan: {$services}. Jika Anda tidak tahu jawabannya atau mahasiswa butuh bantuan staf asli, katakan bahwa Admin akan segera membalas.]\n\n";
+        
+        $systemInstructionText = "Anda adalah Asisten Virtual Akademik SI-PINTER (Sistem Pelayanan Informasi Terpadu) yang cerdas dan solutif. "
+            . "Tugas Anda membantu mahasiswa mengecek status pengajuan secara real-time dan memiliki akses langsung ke sistem untuk mengambil data.\n\n"
+            . "Layanan yang kami sediakan: {$services}.\n"
+            . "Jika mahasiswa menanyakan status pengajuan atau keluhan dan memberikan ID pengajuan (seperti nomor tiket TKT-xxxxx, nomor antrean, atau nomor surat), "
+            . "gunakan tool `checkRequestStatus` untuk mengambil data status pengajuan atau keluhan mahasiswa secara real-time dari database.\n"
+            . "Jawab dengan ramah, profesional, dan ringkas dalam Bahasa Indonesia. Jika Anda tidak tahu jawabannya atau mahasiswa butuh bantuan staf asli, katakan bahwa Admin akan segera membalas.";
+
+        $systemInstruction = [
+            'parts' => [
+                ['text' => $systemInstructionText]
+            ]
+        ];
 
         $historyText = "";
         foreach ($session->messages as $msg) {
@@ -37,12 +50,35 @@ class ProcessGeminiChat implements ShouldQueue
             $historyText .= $senderName . ": " . $msg->message . "\n";
         }
 
-        $prompt = $systemContext . "Berikut adalah riwayat obrolan sejauh ini:\n" . $historyText . "\nSilakan berikan balasan Anda selanjutnya sebagai Asisten/Admin (jawab langsung isi pesannya saja, tanpa prefix):";
+        $prompt = "Berikut adalah riwayat obrolan sejauh ini:\n" . $historyText . "\nSilakan berikan balasan Anda selanjutnya sebagai Asisten/Admin (jawab langsung isi pesannya saja, tanpa prefix):";
 
         $contents = [
             [
                 'role' => 'user',
                 'parts' => [['text' => $prompt]]
+            ]
+        ];
+
+        $tools = [
+            [
+                'function_declarations' => [
+                    [
+                        'name' => 'checkRequestStatus',
+                        'description' => 'Mengambil data status pengajuan atau keluhan mahasiswa secara real-time dari database berdasarkan ID Pengajuan.',
+                        'parameters' => [
+                            'type' => 'OBJECT',
+                            'properties' => [
+                                'request_id' => [
+                                    'type' => 'STRING',
+                                    'description' => 'ID unik pengajuan keluhan mahasiswa.'
+                                ]
+                            ],
+                            'required' => [
+                                'request_id'
+                            ]
+                        ]
+                    ]
+                ]
             ]
         ];
 
@@ -55,21 +91,97 @@ class ProcessGeminiChat implements ShouldQueue
 
         foreach ($models as $model) {
             try {
-                $response = Http::timeout(30)->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}", [
-                    'contents' => $contents,
-                ]);
+                $currentContents = $contents;
+                $loopCount = 0;
+                $maxLoops = 3;
 
-                if ($response->successful()) {
-                    $reply = $response->json('candidates.0.content.parts.0.text');
-                    if ($reply) {
-                        $success = true;
-                        break; // Successfully got a response, exit loop!
+                while ($loopCount < $maxLoops) {
+                    $response = Http::timeout(30)->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}", [
+                        'contents' => $currentContents,
+                        'tools' => $tools,
+                        'system_instruction' => $systemInstruction,
+                    ]);
+
+                    if (!$response->successful()) {
+                        \Log::warning("Gemini model {$model} failed: Status {$response->status()}", ['body' => $response->body()]);
+                        break;
                     }
-                } else {
-                    \Log::warning("Gemini model {$model} failed: Status {$response->status()}", ['body' => $response->body()]);
+
+                    $candidate = $response->json('candidates.0');
+                    if (!$candidate) {
+                        break;
+                    }
+
+                    $content = $candidate['content'] ?? null;
+                    if (!$content) {
+                        break;
+                    }
+
+                    // Check if model returned a functionCall
+                    $functionCall = null;
+                    foreach ($content['parts'] ?? [] as $part) {
+                        if (isset($part['functionCall'])) {
+                            $functionCall = $part['functionCall'];
+                            break;
+                        }
+                    }
+
+                    if ($functionCall) {
+                        $name = $functionCall['name'];
+                        $args = $functionCall['args'] ?? [];
+
+                        if ($name === 'checkRequestStatus') {
+                            $requestId = $args['request_id'] ?? '';
+                            $result = $this->checkRequestStatus($requestId);
+
+                            // Format the model turn with the function call
+                            $modelTurn = $content;
+                            if (!isset($modelTurn['role'])) {
+                                $modelTurn['role'] = 'model';
+                            }
+
+                            // Format the function response turn
+                            $functionTurn = [
+                                'role' => 'function',
+                                'parts' => [
+                                    [
+                                        'functionResponse' => [
+                                            'name' => $name,
+                                            'response' => $result
+                                        ]
+                                    ]
+                                ]
+                            ];
+
+                            // Add both turns to request history and loop back
+                            $currentContents[] = $modelTurn;
+                            $currentContents[] = $functionTurn;
+                            $loopCount++;
+                            continue;
+                        }
+                    }
+
+                    // Look for final text reply
+                    $replyText = null;
+                    foreach ($content['parts'] ?? [] as $part) {
+                        if (isset($part['text'])) {
+                            $replyText = $part['text'];
+                            break;
+                        }
+                    }
+
+                    if ($replyText) {
+                        $reply = $replyText;
+                        $success = true;
+                    }
+                    break;
+                }
+
+                if ($success) {
+                    break;
                 }
             } catch (\Exception $e) {
-                \Log::error("Gemini model {$model} exception: " . $e->getMessage());
+                \Log::error("Gemini model {$model} exception: " . $e->getMessage() . "\n" . $e->getTraceAsString());
             }
         }
 
@@ -84,4 +196,59 @@ class ProcessGeminiChat implements ShouldQueue
             \Log::error('All Gemini fallback models exhausted or failed to return text.');
         }
     }
+
+    /**
+     * Mengambil data status pengajuan atau keluhan mahasiswa secara real-time dari database.
+     */
+    private function checkRequestStatus(string $requestId): array
+    {
+        $requestIdClean = trim(strtoupper($requestId));
+
+        // Mencari berdasarkan format tiket (TKT-XXXXX)
+        if (preg_match('/^TKT-(\d+)$/i', $requestIdClean, $matches)) {
+            $queue = Queue::with('service', 'counter')->find((int) $matches[1]);
+        } else {
+            // Mencari berdasarkan queue_number, document_number, atau ID secara langsung
+            $queue = Queue::with('service', 'counter')
+                ->where('queue_number', $requestIdClean)
+                ->orWhere('document_number', $requestIdClean)
+                ->orWhere(function($query) use ($requestIdClean) {
+                    if (is_numeric($requestIdClean)) {
+                        $query->where('id', (int) $requestIdClean);
+                    }
+                })
+                ->first();
+        }
+
+        if (!$queue) {
+            return [
+                'found' => false,
+                'message' => "Pengajuan atau keluhan dengan ID '{$requestId}' tidak ditemukan di database."
+            ];
+        }
+
+        $statusLabel = match ($queue->status) {
+            'pending'   => 'Diajukan / Menunggu Verifikasi',
+            'admin'     => 'Sedang Diproses oleh Admin',
+            'done'      => 'Selesai',
+            'picked_up' => 'Selesai & Sudah Diambil',
+            'rejected'  => 'Ditolak',
+            default     => ucfirst($queue->status),
+        };
+
+        return [
+            'found' => true,
+            'id_pengajuan' => 'TKT-' . str_pad($queue->id, 5, '0', STR_PAD_LEFT),
+            'nama_mahasiswa' => $queue->patient_name,
+            'nomor_antrean' => $queue->queue_number,
+            'layanan' => $queue->service?->name,
+            'loket' => $queue->counter?->name ?? 'Belum ditentukan',
+            'status' => $statusLabel,
+            'nomor_surat' => $queue->document_number ?? 'Belum ada',
+            'alasan_penolakan' => $queue->reject_reason ?? null,
+            'tanggal_pengajuan' => $queue->queue_date ? $queue->queue_date->format('d-m-Y') : null,
+            'link_tiket' => route('queue.ticket', 'TKT-' . str_pad($queue->id, 5, '0', STR_PAD_LEFT)),
+        ];
+    }
 }
+
