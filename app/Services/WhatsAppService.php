@@ -52,24 +52,24 @@ class WhatsAppService
         if (!$queue->phone) return;
 
         if ($queue->status === 'done') {
-            $message = "🥳 *Hore! Surat Anda sudah siap!*\n\n";
+            $ticketUrl = route('queue.ticket', 'TKT-' . str_pad($queue->id, 5, '0', STR_PAD_LEFT));
+            $message = "🥳 *Hore! Surat Anda sudah siap untuk diunduh!*\n\n";
             $message .= "Halo, *{$queue->patient_name}*! 👋\n";
-            $message .= "Ada kabar gembira nih! Permohonan surat Anda telah selesai diproses dan siap untuk diambil✨\n\n";
+            $message .= "Ada kabar gembira nih! Permohonan surat Anda telah selesai diproses dan dokumennya sudah tersedia untuk diunduh langsung ✨\n\n";
             $message .= "📝 Jenis Surat: {$queue->service->name}\n";
             $message .= "🎟️ Nomor Antrean: *{$queue->queue_number}*\n\n";
-            $message .= "Silakan mengunjungi ruang Jurusan Ilmu Administrasi pada jam kerja untuk pengambilan surat. Mohon tunjukkan pesan WhatsApp ini saat pengambilan surat, ya 📱\n\n";
-            $message .= "Kami menantikan kedatangan Anda! 😊\n\n";
+            $message .= "Silakan unduh dokumen Anda melalui halaman tiket berikut:\n";
+            $message .= "🔗 {$ticketUrl}\n\n";
+            $message .= "Terima kasih telah menggunakan layanan SI-PINTER 😊\n\n";
             $message .= "Salam hangat,\n\n*Admin SI-PINTER*";
         } elseif ($queue->status === 'rejected') {
-            $message = "🔔 *Update Progres Pengajuan Surat⏰*\n\nHalo, *{$queue->patient_name}*! 👋\n\n Terima kasih atas pengajuan surat yang telah Anda lakukan. Saat ini, pengajuan Anda belum dapat kami proses karena terdapat beberapa ketidaksesuaian pada berkas yang dilampirkan. ❌.\n";
+            $message = "🔔 *Update Progres Pengajuan Surat⏰*\n\nHalo, *{$queue->patient_name}*! 👋\n\nTerima kasih atas pengajuan surat yang telah Anda lakukan. Saat ini, pengajuan Anda belum dapat kami proses karena terdapat beberapa ketidaksesuaian pada berkas yang dilampirkan ❌\n";
             if ($queue->reject_reason) {
                 $message .= "\n*Alasan Penolakan:*\n{$queue->reject_reason}\n";
             }
-            $message .= "\nSilakan perbaiki dokumen Anda lalu lakukan antirian ulang melalui sistem SI-PINTER,ya 😊
-                            .\n\nSalam hangat,\n\n*Admin SI-PINTER*";
+            $message .= "\nSilakan perbaiki dokumen Anda lalu lakukan antrian ulang melalui sistem SI-PINTER ya 😊\n\nSalam hangat,\n\n*Admin SI-PINTER*";
         } elseif ($queue->status === 'admin') {
-            $docNumMsg = $queue->document_number ? "\n*Nomor Surat Anda:* {$queue->document_number}\n" : "";
-            $message = "🔔 *Update Progres Pengajuan Surat⏰*\n\nHalo, *{$queue->patient_name}*! 👋\n\nSilahkan pantau perkembangannya secara berkala melalui sistem SI-PINTER, ya 😊 \n\nSalam hangat,\n\n*Admin SI-PINTER*";
+            $message = "🔔 *Update Progres Pengajuan Surat⏰*\n\nHalo, *{$queue->patient_name}*! 👋\n\nSurat Anda sedang dalam proses pemeriksaan. Silakan pantau perkembangannya secara berkala melalui sistem SI-PINTER ya 😊\n\nSalam hangat,\n\n*Admin SI-PINTER*";
         } else {
             return true; 
         }
@@ -81,10 +81,14 @@ class WhatsAppService
     {
         if (!$queue->phone) return;
 
-        $message = "🔔 *Pengingat pengambilan surat* ⏰\n\n";
+        $ticketUrl = route('queue.ticket', 'TKT-' . str_pad($queue->id, 5, '0', STR_PAD_LEFT));
+
+        $message = "⏰ *Pengingat: Surat Anda Belum Diunduh!*\n\n";
         $message .= "Halo, *{$queue->patient_name}*! 👋\n";
-        $message .= "Kami ingin mengingatkan kembali bahwa surat permohonan Anda dengan nomor antrean *{$queue->queue_number}* telah tersedia di ruang Jurusan Ilmu Administrasi. Jangan sampai terlewat ya karena dokumen ini penting untuk keperluan administrasi Anda 📑\n\n";
-        $message .= "Kami menunggu kehadiran Anda!😊\n\n";
+        $message .= "Kami ingin mengingatkan bahwa dokumen permohonan Anda untuk *{$queue->service->name}* dengan nomor antrean *{$queue->queue_number}* sudah selesai diproses dan siap untuk diunduh 📄\n\n";
+        $message .= "Silakan unduh dokumen Anda langsung melalui halaman tiket berikut:\n";
+        $message .= "🔗 {$ticketUrl}\n\n";
+        $message .= "Jangan sampai terlewat ya, dokumen ini penting untuk keperluan administrasi Anda 📑\n\n";
         $message .= "Salam hangat,\n\n*Admin SI-PINTER*";
 
         return self::send($queue->phone, $message);
