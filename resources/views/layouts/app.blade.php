@@ -634,8 +634,8 @@
                         <span class="online-indicator"></span>
                     </div>
                     <div class="chat-header-text">
-                        <strong>Live Chat SI-PINTER</strong>
-                        <span>Online • Asisten AI</span>
+                        <strong>SI-PINTER</strong>
+                        <span>Asisten AI</span>
                     </div>
                 </div>
                 <div class="chat-header-actions" style="display: flex; align-items: center; gap: 8px;">

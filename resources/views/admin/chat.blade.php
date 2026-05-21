@@ -793,6 +793,82 @@
         document.querySelector('.chat-sidebar').classList.remove('hidden');
     }
 
+    function parseMarkdown(text) {
+        if (!text) return '';
+        
+        // Escape HTML first to prevent XSS
+        let html = text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+
+        // Replace headers
+        html = html.replace(/^### (.*?)$/gm, '<h5 style="margin-top: 0.5rem; margin-bottom: 0.25rem; font-weight: 700;">$1</h5>');
+        html = html.replace(/^## (.*?)$/gm, '<h4 style="margin-top: 0.75rem; margin-bottom: 0.25rem; font-weight: 700;">$1</h4>');
+        html = html.replace(/^# (.*?)$/gm, '<h3 style="margin-top: 1rem; margin-bottom: 0.25rem; font-weight: 800;">$1</h3>');
+
+        // Bold & Italic & inline code
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        html = html.replace(/`(.*?)`/g, '<code style="background: rgba(0,0,0,0.05); padding: 2px 4px; border-radius: 4px; font-family: monospace;">$1</code>');
+
+        // Split by lines to parse lists
+        const lines = html.split('\n');
+        let inList = false; // false, 'ul', 'ol'
+        let result = [];
+
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i];
+            let trimmed = line.trim();
+            
+            // Bullet points
+            if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
+                if (inList !== 'ul') {
+                    if (inList) {
+                        result.push(inList === 'ul' ? '</ul>' : '</ol>');
+                    }
+                    result.push('<ul style="margin-left: 1.25rem; margin-bottom: 0.5rem; padding-left: 0; list-style-type: disc;">');
+                    inList = 'ul';
+                }
+                result.push('<li style="margin-bottom: 0.25rem;">' + trimmed.substring(2) + '</li>');
+            }
+            // Numbered list
+            else if (/^\d+\.\s/.test(trimmed)) {
+                if (inList !== 'ol') {
+                    if (inList) {
+                        result.push(inList === 'ul' ? '</ul>' : '</ol>');
+                    }
+                    result.push('<ol style="margin-left: 1.25rem; margin-bottom: 0.5rem; padding-left: 0; list-style-type: decimal;">');
+                    inList = 'ol';
+                }
+                const content = trimmed.replace(/^\d+\.\s/, '');
+                result.push('<li style="margin-bottom: 0.25rem;">' + content + '</li>');
+            }
+            // Regular line
+            else {
+                if (inList) {
+                    result.push(inList === 'ul' ? '</ul>' : '</ol>');
+                    inList = false;
+                }
+                result.push(line);
+            }
+        }
+        
+        if (inList) {
+            result.push(inList === 'ul' ? '</ul>' : '</ol>');
+        }
+
+        html = result.join('\n');
+
+        // Replace remaining single newlines (not inside tag blocks) with <br>
+        html = html.replace(/\n/g, '<br>');
+        
+        // Clean up empty lines or duplicate <br>s
+        html = html.replace(/(<br>\s*){2,}/g, '<br><br>');
+
+        return html;
+    }
+
     function appendMessage(m) {
         const msgsEl = document.getElementById('chat-messages');
         const isAdmin = m.sender === 'admin';
@@ -801,7 +877,7 @@
         
         const time = moment(m.created_at).format('HH:mm');
         d.innerHTML = `
-            <div>${m.message.replace(/\n/g, '<br>')}</div>
+            <div>${parseMarkdown(m.message)}</div>
             <div class="message-time">${time}</div>
         `;
         msgsEl.appendChild(d);
