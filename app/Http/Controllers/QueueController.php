@@ -184,4 +184,33 @@ class QueueController extends Controller
 
         return response()->json($queues);
     }
+
+    public function markDownloaded(Queue $queue)
+    {
+        if ($queue->status === 'done') {
+            $queue->update([
+                'status' => 'picked_up',
+            ]);
+            
+            // Broadcast the update so the admin screen refreshes in real-time
+            broadcast(new \App\Events\QueueUpdated('picked_up', $queue, $this->getStats()));
+            
+            // Send WhatsApp survey
+            $surveyLink = env('SURVEY_LINK', 'https://docs.google.com/forms/d/e/1FAIpQLSeSnOxJIgkuIeVblX9QDYnJcLvqt3NjbK2VYKg9Oa95_EIKWg/viewform?usp=publish-editor');
+            try {
+                \App\Services\WhatsAppService::notifySurvey($queue, $surveyLink);
+            } catch (\Exception $e) {
+                \Log::error('WhatsApp survey notification failed: ' . $e->getMessage());
+            }
+        }
+        
+        if ($queue->file_path) {
+            $absolutePath = storage_path('app/public/' . $queue->file_path);
+            if (file_exists($absolutePath)) {
+                return response()->download($absolutePath);
+            }
+        }
+        
+        return back()->withErrors(['error' => 'Berkas tidak ditemukan.']);
+    }
 }

@@ -66,6 +66,19 @@
                     <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">* Harap perbaiki dokumen Anda lalu temui admin untuk diantrikan ulang.</span>
                 </div>
                 @endif
+
+                @if(($queue->status === 'done' || $queue->status === 'picked_up') && $queue->file_path)
+                <div class="download-section animate__animated animate__fadeInUp" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(5, 150, 105, 0.12)); padding: 1.25rem; border-radius: 12px; margin-top: 1.25rem; border: 1px solid rgba(16, 185, 129, 0.2); text-align: center; width: 100%; box-sizing: border-box;">
+                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📄</div>
+                    <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.25rem; color: #065F46;">Dokumen Selesai & Terstempel</h4>
+                    <p style="font-size: 0.75rem; color: #047857; margin-bottom: 1rem; line-height: 1.4;">
+                        Silakan unduh berkas yang telah ditandatangani dan distempel resmi di bawah ini.
+                    </p>
+                    <a href="{{ route('queue.download', $queue->id) }}" onclick="setTimeout(() => window.location.reload(), 1500)" class="btn btn-success" style="width: 100%; justify-content: center; font-size: 0.9rem; padding: 0.6rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15); text-decoration: none; font-weight: 600; box-sizing: border-box;">
+                        <i class="fas fa-download"></i> Unduh Dokumen
+                    </a>
+                </div>
+                @endif
             </div>
 
             <div class="ticket-dashes">
@@ -128,8 +141,8 @@
             <i class="fas fa-star"></i> Isi Survei Kepuasan
         </a>
         <button class="btn btn-ghost" style="width: 100%; justify-content: center;"
-                onclick="document.getElementById('done-overlay').style.display='none'">
-            Tutup
+                onclick="window.location.reload()">
+            Tutup & Lihat Berkas
         </button>
     </div>
 </div>

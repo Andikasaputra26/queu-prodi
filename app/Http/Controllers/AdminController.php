@@ -119,16 +119,24 @@ class AdminController extends Controller
             'status' => 'required|string',
             'reject_reason' => 'nullable|string',
             'document_number' => 'nullable|string',
+            'file' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240', // Max 10MB
         ]);
 
         $updates = ['status' => $request->status];
         if ($request->has('reject_reason')) {
             $updates['reject_reason'] = $request->reject_reason;
         }
+
+        if ($request->hasFile('file')) {
+            $filePath = $request->file('file')->store('queue_files', 'public');
+            $updates['file_path'] = $filePath;
+        }
+
         if ($request->has('document_number')) {
             $updates['document_number'] = $request->document_number;
 
-            if ($queue->file_path && str_ends_with(strtolower($queue->file_path), 'docx')) {
+            // Only update docx template if we didn't just upload a brand new file
+            if (!$request->hasFile('file') && $queue->file_path && str_ends_with(strtolower($queue->file_path), 'docx')) {
                 try {
                     $absolutePath = storage_path('app/public/' . $queue->file_path);
                     if (file_exists($absolutePath)) {

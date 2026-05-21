@@ -21,12 +21,12 @@ let allQueues = [];
 let dtTable;
 
 // ─── Modal ───
-function openModal()  { document.getElementById('manual-modal').classList.add('open'); }
+function openModal() { document.getElementById('manual-modal').classList.add('open'); }
 function closeModal() { document.getElementById('manual-modal').classList.remove('open'); }
 
 const modalEl = document.getElementById('manual-modal');
 if (modalEl) {
-    modalEl.addEventListener('click', function(e) {
+    modalEl.addEventListener('click', function (e) {
         if (e.target === this) closeModal();
     });
 }
@@ -34,14 +34,14 @@ if (modalEl) {
 // ─── Submit manual ───
 async function submitManual() {
     const svcId = document.getElementById('manual-service').value;
-    const name  = document.getElementById('manual-name').value.trim();
+    const name = document.getElementById('manual-name').value.trim();
     const phone = document.getElementById('manual-phone').value.trim();
 
-    if (!svcId)  { showToast('Pilih jenis surat terlebih dahulu', 'error'); return; }
-    if (!name)   { showToast('Nama mahasiswa harus diisi', 'error'); return; }
+    if (!svcId) { showToast('Pilih jenis surat terlebih dahulu', 'error'); return; }
+    if (!name) { showToast('Nama mahasiswa harus diisi', 'error'); return; }
 
     try {
-        const res  = await fetch(Config.routes.addManual, {
+        const res = await fetch(Config.routes.addManual, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
             body: JSON.stringify({ service_id: svcId, patient_name: name, phone }),
@@ -50,12 +50,12 @@ async function submitManual() {
         showToast(data.message, data.success ? 'success' : 'error');
         if (data.success) {
             closeModal();
-            document.getElementById('manual-name').value  = '';
+            document.getElementById('manual-name').value = '';
             document.getElementById('manual-phone').value = '';
             document.getElementById('manual-service').value = '';
             refreshQueues();
         }
-    } catch(e) { showToast('Terjadi kesalahan', 'error'); }
+    } catch (e) { showToast('Terjadi kesalahan', 'error'); }
 }
 
 // ─── Tab & search (Tabs are removed, this is a fallback if needed) ───
@@ -75,13 +75,13 @@ function filterQueues() {
 // ─── Queue list ───
 async function refreshQueues() {
     const dateEl = document.getElementById('filter-date');
-    const svcEl  = document.getElementById('filter-service');
+    const svcEl = document.getElementById('filter-service');
     const statusEl = document.getElementById('filter-status');
-    
+
     const date = dateEl ? dateEl.value : '';
-    const svc  = svcEl ? svcEl.value : '';
+    const svc = svcEl ? svcEl.value : '';
     const statusVal = statusEl ? statusEl.value : '';
-    
+
     let url = '/api/admin/today?';
     if (statusVal) url += `status=${statusVal}&`;
     else if (tab) url += `status=${tab}&`; // fallback to tab if used
@@ -92,16 +92,16 @@ async function refreshQueues() {
         const res = await fetch(url);
         allQueues = await res.json();
         renderQueues(allQueues);
-    } catch(e) {}
+    } catch (e) { }
 }
 
 function exportReport() {
     const dateEl = document.getElementById('filter-date');
-    const svcEl  = document.getElementById('filter-service');
-    
+    const svcEl = document.getElementById('filter-service');
+
     const date = dateEl ? dateEl.value : '';
-    const svc  = svcEl ? svcEl.value : '';
-    
+    const svc = svcEl ? svcEl.value : '';
+
     let url = '/admin/export?';
     if (tab) url += `status=${tab}&`;
     if (date) url += `date=${date}&`;
@@ -113,7 +113,7 @@ function exportReport() {
 function renderQueues(list) {
     const totalLbl = document.getElementById('q-total-lbl');
     if (totalLbl) totalLbl.textContent = `${list.length} antrian`;
-    
+
     if (dtTable) {
         dtTable.clear();
         dtTable.rows.add(list);
@@ -149,15 +149,15 @@ function printTicket(id, num, name, svc, counter) {
 async function callNext(counterId) {
     const svcEl = document.getElementById(`svc-${counterId}`);
     const svcId = svcEl ? svcEl.value : null;
-    
+
     const btn = event.target.closest('button');
     if (btn) {
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
     }
-    
+
     try {
-        const res  = await fetch(Config.routes.callNext, {
+        const res = await fetch(Config.routes.callNext, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
             body: JSON.stringify({ counter_id: counterId, service_id: svcId || null }),
@@ -165,17 +165,20 @@ async function callNext(counterId) {
         const data = await res.json();
         showToast(data.message, data.success ? 'success' : 'warning');
         if (data.success) setTimeout(() => location.reload(), 1200);
-    } catch(e) { showToast('Terjadi kesalahan', 'error'); }
-    finally { 
+    } catch (e) { showToast('Terjadi kesalahan', 'error'); }
+    finally {
         if (btn) {
-            btn.disabled = false; 
-            btn.innerHTML = '<i class="fas fa-bell"></i> Panggil'; 
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-bell"></i> Panggil';
         }
     }
 }
 
 async function updateStatus(id, status) {
-    let payload = { status };
+    const formData = new FormData();
+    formData.append('status', status);
+    formData.append('_method', 'PATCH');
+
     if (status === 'rejected') {
         const { value: reason } = await Swal.fire({
             title: 'Tolak Pengajuan',
@@ -187,32 +190,52 @@ async function updateStatus(id, status) {
             confirmButtonColor: '#DC2626'
         });
         if (reason === undefined) return; // User cancelled
-        payload.reject_reason = reason;
+        formData.append('reject_reason', reason);
     } else if (status === 'done') {
-        const { value: docNum } = await Swal.fire({
+        const { value: formValues } = await Swal.fire({
             title: 'Selesaikan Surat',
-            input: 'text',
-            inputLabel: 'Masukkan Nomor Surat / Dokumen:',
-            inputValue: allQueues.find(q => q.id === id).document_number || '',
+            html: `
+                <div style="text-align: left; font-family: inherit;">
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                        Unggah berkas final yang telah diisi, ditandatangani, dan distempel resmi. Berkas ini akan langsung dapat diunduh oleh mahasiswa.
+                    </p>
+                    <label for="swal-file" style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; color: var(--text);">Pilih Berkas Final (PDF/Word/Gambar)</label>
+                    <input id="swal-file" type="file" class="swal2-file" style="width: 100%; margin: 0; box-sizing: border-box; border-radius: 8px; border: 1px dashed #ccc; padding: 0.5rem;" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                </div>
+            `,
+            focusConfirm: false,
             showCancelButton: true,
-            confirmButtonText: 'Selesai',
+            confirmButtonText: 'Selesai & Unggah',
             cancelButtonText: 'Batal',
-            confirmButtonColor: '#10B981'
+            confirmButtonColor: '#10B981',
+            preConfirm: () => {
+                const fileInput = document.getElementById('swal-file');
+                const file = fileInput.files[0];
+
+                if (!file) {
+                    Swal.showValidationMessage('Berkas surat wajib dipilih!');
+                    return false;
+                }
+
+                return { file: file };
+            }
         });
-        if (docNum === undefined) return; // User cancelled
-        payload.document_number = docNum;
+        if (formValues === undefined) return; // User cancelled
+        if (formValues.file) {
+            formData.append('file', formValues.file);
+        }
     }
 
     try {
-        const res  = await fetch(`/admin/queue/${id}/status`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-            body: JSON.stringify(payload),
+        const res = await fetch(`/admin/queue/${id}/status`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': CSRF },
+            body: formData,
         });
         const data = await res.json();
         showToast(data.message, data.success ? 'success' : 'error');
         if (data.success) { refreshQueues(); setTimeout(() => location.reload(), 1500); }
-    } catch(e) { showToast('Terjadi kesalahan', 'error'); }
+    } catch (e) { showToast('Terjadi kesalahan', 'error'); }
 }
 
 async function requeue(id) {
@@ -227,24 +250,24 @@ async function requeue(id) {
     });
     if (!result.isConfirmed) return;
     try {
-        const res  = await fetch(`/admin/queue/${id}/requeue`, {
+        const res = await fetch(`/admin/queue/${id}/requeue`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
         });
         const data = await res.json();
         showToast(data.message, data.success ? 'success' : 'error');
         if (data.success) { refreshQueues(); setTimeout(() => location.reload(), 1500); }
-    } catch(e) { showToast('Terjadi kesalahan', 'error'); }
+    } catch (e) { showToast('Terjadi kesalahan', 'error'); }
 }
 
 async function recall(id) {
     try {
-        const res  = await fetch(`/admin/queue/${id}/recall`, {
+        const res = await fetch(`/admin/queue/${id}/recall`, {
             method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
         });
         const data = await res.json();
         showToast(data.message, data.success ? 'success' : 'error');
-    } catch(e) { showToast('Terjadi kesalahan', 'error'); }
+    } catch (e) { showToast('Terjadi kesalahan', 'error'); }
 }
 
 async function deleteQueue(id) {
@@ -265,9 +288,9 @@ async function deleteQueue(id) {
     try {
         const res = await fetch(`/admin/queue/${id}`, {
             method: 'DELETE',
-            headers: { 
-                'Content-Type': 'application/json', 
-                'X-CSRF-TOKEN': CSRF 
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': CSRF
             },
         });
         const data = await res.json();
@@ -276,8 +299,8 @@ async function deleteQueue(id) {
             refreshQueues();
             setTimeout(() => location.reload(), 1500);
         }
-    } catch(e) { 
-        showToast('Terjadi kesalahan', 'error'); 
+    } catch (e) {
+        showToast('Terjadi kesalahan', 'error');
     }
 }
 
@@ -293,13 +316,13 @@ async function resetToday() {
     });
     if (!result.isConfirmed) return;
     try {
-        const res  = await fetch(Config.routes.resetToday, {
+        const res = await fetch(Config.routes.resetToday, {
             method: 'DELETE', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
         });
         const data = await res.json();
         showToast(data.message, data.success ? 'success' : 'error');
         if (data.success) setTimeout(() => location.reload(), 1500);
-    } catch(e) { showToast('Terjadi kesalahan', 'error'); }
+    } catch (e) { showToast('Terjadi kesalahan', 'error'); }
 }
 
 // ─── WebSocket Helper ───
@@ -315,24 +338,24 @@ document.addEventListener('DOMContentLoaded', () => {
         language: {
             url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json"
         },
-        order: [[0, 'desc']], 
+        order: [[0, 'desc']],
         columns: [
             { data: 'created_at' },
-            { 
-                data: 'queue_number', 
-                render: (data, type, row) => `<span style="color:${row.service_color || '#6366F1'}; font-weight: 900; font-family: 'JetBrains Mono', monospace;">${data}</span>` 
+            {
+                data: 'queue_number',
+                render: (data, type, row) => `<span style="color:${row.service_color || '#6366F1'}; font-weight: 900; font-family: 'JetBrains Mono', monospace;">${data}</span>`
             },
             { data: 'patient_name', render: (data) => `<span style="font-weight: 600;">${data}</span>` },
-            { 
-                data: 'phone', 
+            {
+                data: 'phone',
                 render: (data, type, row) => {
                     if (!data) return '-';
-                    const num = data.startsWith('0') ? '62' + data.substring(1) : data.replace(/[^0-9]/g,'');
+                    const num = data.startsWith('0') ? '62' + data.substring(1) : data.replace(/[^0-9]/g, '');
                     return `<a href="https://wa.me/${num}?text=Halo ${encodeURIComponent(row.patient_name)}, surat Anda (${row.service_name}) saat ini berstatus: ${row.status_label}." target="_blank" class="btn btn-success" style="padding:0.3rem 0.5rem; font-size:0.72rem; border-radius: 6px;"><i class="fab fa-whatsapp"></i> ${data}</a>`;
-                } 
+                }
             },
-            { 
-                data: 'service_name', 
+            {
+                data: 'service_name',
                 render: (data, type, row) => {
                     let html = `<span style="color:${row.service_color || '#6366F1'}; font-weight: 600;">${data || '-'}</span>`;
                     if (row.file_path) {
@@ -345,16 +368,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     return html;
                 }
             },
-            { 
-                data: 'document_number', 
-                render: data => data ? `<span style="font-weight: 700;">${data}</span>` : '-' 
+            {
+                data: 'document_number',
+                render: data => data ? `<span style="font-weight: 700;">${data}</span>` : '-'
             },
-            { 
-                data: 'status', 
-                render: (data, type, row) => `<span class="badge badge-${data}">${row.status_label}</span>` 
+            {
+                data: 'status',
+                render: (data, type, row) => `<span class="badge badge-${data}">${row.status_label}</span>`
             },
-            { 
-                data: 'id', 
+            {
+                data: 'id',
                 orderable: false,
                 render: (data, type, row) => {
                     let actions = '<div style="display: flex; gap: 0.3rem; flex-wrap: wrap;">';
@@ -362,8 +385,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         actions += `<button class="btn btn-warning" style="padding: 0.3rem 0.5rem; font-size: 0.72rem;" onclick="updateStatus(${data},'admin')">Proses</button>`;
                     } else if (row.status === 'admin') {
                         actions += `<button class="btn btn-success" style="padding: 0.3rem 0.5rem; font-size: 0.72rem;" onclick="updateStatus(${data},'done')">Selesai</button>`;
-                    } else if (row.status === 'done') {
-                        actions += `<button class="btn btn-primary" style="padding: 0.3rem 0.5rem; font-size: 0.72rem;" onclick="updateStatus(${data},'picked_up')"><i class="fas fa-hand-holding"></i> Diambil</button>`;
                     } else if (row.status === 'rejected') {
                         actions += `<button class="btn btn-warning" style="padding: 0.3rem 0.5rem; font-size: 0.72rem;" onclick="requeue(${data})"><i class="fas fa-redo"></i> Ulang</button>`;
                     }
@@ -406,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
         echo.connector.pusher.connection.bind('disconnected', () => setWsStatus(false));
         echo.connector.pusher.connection.bind('unavailable', () => setWsStatus(false));
         echo.connector.pusher.connection.bind('failed', () => setWsStatus(false));
-    } catch(e) { console.warn(e); }
+    } catch (e) { console.warn(e); }
 
     setInterval(refreshQueues, 15000);
 });

@@ -670,7 +670,7 @@
                                 <th>Nama</th>
                                 <th>No. HP/WA</th>
                                 <th>Jenis Surat</th>
-                                <th>No. Dokumen</th>
+                                <th>File Hasil</th>
                                 <th>Status</th>
                                 <th style="width: 150px;">Aksi</th>
                             </tr>

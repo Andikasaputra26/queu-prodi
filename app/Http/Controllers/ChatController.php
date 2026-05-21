@@ -9,8 +9,6 @@ use App\Events\ChatMessageSent;
 
 class ChatController extends Controller
 {
-    // --- PUBLIC ENDPOINTS ---
-
     public function startSession(Request $request)
     {
         $request->validate([
@@ -45,7 +43,6 @@ class ChatController extends Controller
         $reader = $request->query('reader', 'student'); 
         $targetSender = $reader === 'student' ? 'admin' : 'student';
 
-        // Mark as read
         $session->messages()->where('sender', $targetSender)->where('is_read', false)->update(['is_read' => true]);
 
         $messages = $session->messages()->orderBy('created_at', 'asc')->get();
@@ -74,19 +71,15 @@ class ChatController extends Controller
             $session->update(['last_activity_at' => now(), 'is_ai_active' => false]);
         } else {
             $session->update(['last_activity_at' => now()]);
-            // If AI is active, dispatch job to generate AI reply
             if ($session->is_ai_active && env('GEMINI_API_KEY')) {
                 \App\Jobs\ProcessGeminiChat::dispatch($session->id);
             }
         }
 
-        // Broadcast event
         broadcast(new ChatMessageSent($message, $session));
 
         return response()->json($message);
     }
-
-    // --- ADMIN ENDPOINTS ---
 
     public function index()
     {
@@ -105,8 +98,6 @@ class ChatController extends Controller
     {
         $session = ChatSession::where('session_id', $sessionId)->firstOrFail();
         
-        // Broadcast a system message to let the student know it's closed BEFORE deleting
-        // We broadcast a "fake" message object just for the websocket to catch it
         $fakeMessage = new ChatMessage([
             'sender' => 'admin',
             'message' => 'Sesi obrolan ini telah ditutup dan dihapus oleh Admin.',
@@ -116,7 +107,6 @@ class ChatController extends Controller
         
         broadcast(new ChatMessageSent($fakeMessage, $session));
 
-        // Actually delete the session from the database (messages cascade delete)
         $session->delete();
 
         return response()->json(['success' => true]);
