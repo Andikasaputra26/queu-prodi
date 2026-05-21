@@ -438,17 +438,82 @@
             border-radius: 99px;
         }
 
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-toggle {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: background 0.2s;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-toggle:hover {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
         @media (max-width: 768px) {
             .navbar {
                 padding: 0.875rem 1rem;
+                position: relative;
             }
 
             .main-content {
                 padding: 1rem;
             }
 
+            .nav-toggle {
+                display: flex;
+            }
+
             .nav-links {
                 display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: var(--surface-2);
+                border-bottom: 1px solid var(--border);
+                flex-direction: column;
+                padding: 1rem;
+                gap: 0.5rem;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                z-index: 99;
+            }
+
+            .nav-links.active {
+                display: flex;
+                animation: slideDown 0.2s ease-out;
+            }
+
+            .nav-links li {
+                width: 100%;
+            }
+
+            .nav-links a {
+                width: 100%;
+                padding: 0.75rem 1rem;
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
     </style>
@@ -501,9 +566,14 @@
                     </a></li>
             @endauth
         </ul>
-        <div class="ws-status">
-            <div class="ws-dot" id="ws-dot"></div>
-            <span id="ws-text">Live</span>
+        <div class="navbar-right">
+            <div class="ws-status">
+                <div class="ws-dot" id="ws-dot"></div>
+                <span id="ws-text">Live</span>
+            </div>
+            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
     </nav>
 
@@ -561,6 +631,22 @@
             @if(session('error'))
                 showToast("{{ session('error') }}", 'error');
             @endif
+
+            const toggleBtn = document.getElementById('nav-toggle');
+            const navLinks = document.querySelector('.nav-links');
+            if (toggleBtn && navLinks) {
+                toggleBtn.addEventListener('click', () => {
+                    navLinks.classList.toggle('active');
+                    const icon = toggleBtn.querySelector('i');
+                    if (icon) {
+                        if (navLinks.classList.contains('active')) {
+                            icon.className = 'fas fa-times';
+                        } else {
+                            icon.className = 'fas fa-bars';
+                        }
+                    }
+                });
+            }
         });
     </script>
     

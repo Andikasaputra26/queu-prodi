@@ -135,7 +135,6 @@ class AdminController extends Controller
         if ($request->has('document_number')) {
             $updates['document_number'] = $request->document_number;
 
-            // Only update docx template if we didn't just upload a brand new file
             if (!$request->hasFile('file') && $queue->file_path && str_ends_with(strtolower($queue->file_path), 'docx')) {
                 try {
                     $absolutePath = storage_path('app/public/' . $queue->file_path);

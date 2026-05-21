@@ -121,7 +121,6 @@ class ProcessGeminiChat implements ShouldQueue
                         break;
                     }
 
-                    // Check if model returned a functionCall
                     $functionCall = null;
                     foreach ($content['parts'] ?? [] as $part) {
                         if (isset($part['functionCall'])) {
@@ -138,13 +137,11 @@ class ProcessGeminiChat implements ShouldQueue
                             $requestId = $args['request_id'] ?? '';
                             $result = $this->checkRequestStatus($requestId);
 
-                            // Format the model turn with the function call
                             $modelTurn = $content;
                             if (!isset($modelTurn['role'])) {
                                 $modelTurn['role'] = 'model';
                             }
 
-                            // Format the function response turn
                             $functionTurn = [
                                 'role' => 'function',
                                 'parts' => [
@@ -157,7 +154,6 @@ class ProcessGeminiChat implements ShouldQueue
                                 ]
                             ];
 
-                            // Add both turns to request history and loop back
                             $currentContents[] = $modelTurn;
                             $currentContents[] = $functionTurn;
                             $loopCount++;
@@ -165,7 +161,6 @@ class ProcessGeminiChat implements ShouldQueue
                         }
                     }
 
-                    // Look for final text reply
                     $replyText = null;
                     foreach ($content['parts'] ?? [] as $part) {
                         if (isset($part['text'])) {
@@ -201,18 +196,13 @@ class ProcessGeminiChat implements ShouldQueue
         }
     }
 
-    /**
-     * Mengambil data status pengajuan atau keluhan mahasiswa secara real-time dari database.
-     */
     private function checkRequestStatus(string $requestId): array
     {
         $requestIdClean = trim(strtoupper($requestId));
 
-        // Mencari berdasarkan format tiket (TKT-XXXXX)
         if (preg_match('/^TKT-(\d+)$/i', $requestIdClean, $matches)) {
             $queue = Queue::with('service', 'counter')->find((int) $matches[1]);
         } else {
-            // Mencari berdasarkan queue_number, document_number, atau ID secara langsung
             $queue = Queue::with('service', 'counter')
                 ->where('queue_number', $requestIdClean)
                 ->orWhere('document_number', $requestIdClean)

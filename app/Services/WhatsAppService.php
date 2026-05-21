@@ -14,7 +14,6 @@ class WhatsAppService
             $to = '62' . substr($to, 1);
         }
 
-        // Mengirimkan notifikasi ke background job agar web tidak lemot
         \App\Jobs\SendWhatsAppNotification::dispatch($to, $message);
         
         return true;
