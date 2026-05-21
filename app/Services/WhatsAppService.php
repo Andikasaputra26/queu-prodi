@@ -41,7 +41,7 @@ class WhatsAppService
         $message .= "📝 Jenis Surat: {$queue->service->name}\n";
         $message .= "🎟️ Nomor Antrean: *{$queue->queue_number}*\n\n";
         $message .= "Anda dapat memantau perkembangan antrean melalui tautan berikut:\n{$ticketUrl}\n\n";
-        $message .= "Mohon ditunggu yah! Kami akan segera menginformasikan melalui WhatsApp jika surat telah selesai dan siap untuk diambil🚀\n\n";
+        $message .= "Mohon ditunggu yah! Kami akan segera menginformasikan melalui WhatsApp jika surat telah selesai🚀\n\n";
         $message .= "Salam hangat,\n\n*Admin SI-PINTER*";
 
         return self::send($queue->phone, $message);

@@ -168,8 +168,9 @@ class AdminController extends Controller
 
         \App\Services\WhatsAppService::notifyStatusUpdate($queue);
 
-        if ($request->status === 'picked_up') {
-            $surveyLink = env('SURVEY_LINK', 'https://docs.google.com/forms/d/e/1FAIpQLSeSnOxJIgkuIeVblX9QDYnJcLvqt3NjbK2VYKg9Oa95_EIKWg/viewform?usp=publish-editor');
+        $surveyLink = env('SURVEY_LINK', 'https://docs.google.com/forms/d/e/1FAIpQLSeSnOxJIgkuIeVblX9QDYnJcLvqt3NjbK2VYKg9Oa95_EIKWg/viewform?usp=publish-editor');
+
+        if ($request->status === 'done' || $request->status === 'picked_up') {
             \App\Services\WhatsAppService::notifySurvey($queue, $surveyLink);
         }
 
