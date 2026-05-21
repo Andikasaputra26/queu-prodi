@@ -213,6 +213,25 @@ class AdminController extends Controller
         return response()->json(['success' => true, 'message' => 'Antrian hari ini telah direset']);
     }
 
+    public function destroy(Queue $queue)
+    {
+        if ($queue->counter_id) {
+            $counter = QueueCounter::find($queue->counter_id);
+            if ($counter && $counter->current_queue_id === $queue->id) {
+                $counter->update(['current_queue_id' => null]);
+            }
+        }
+
+        $queue->delete();
+
+        broadcast(new QueueUpdated('deleted', $queue, $this->getStats()));
+
+        return response()->json([
+            'success' => true,
+            'message' => "Antrian {$queue->queue_number} berhasil dihapus",
+        ]);
+    }
+
     public function todayList(Request $request)
     {
         $query = Queue::with(['service', 'counter']);

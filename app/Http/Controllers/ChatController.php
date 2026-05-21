@@ -42,7 +42,7 @@ class ChatController extends Controller
     {
         $session = ChatSession::where('session_id', $sessionId)->firstOrFail();
         
-        $reader = $request->query('reader', 'student'); // 'student' or 'admin'
+        $reader = $request->query('reader', 'student'); 
         $targetSender = $reader === 'student' ? 'admin' : 'student';
 
         // Mark as read
@@ -120,5 +120,17 @@ class ChatController extends Controller
         $session->delete();
 
         return response()->json(['success' => true]);
+    }
+
+    public function toggleAi($sessionId)
+    {
+        $session = ChatSession::where('session_id', $sessionId)->firstOrFail();
+        $session->is_ai_active = !$session->is_ai_active;
+        $session->save();
+
+        return response()->json([
+            'success' => true,
+            'is_ai_active' => (bool) $session->is_ai_active
+        ]);
     }
 }

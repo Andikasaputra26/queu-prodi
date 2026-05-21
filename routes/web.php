@@ -37,6 +37,7 @@ Route::prefix('admin')->name('admin.')->middleware(['admin.whitelist'])->group(f
     Route::get('/chat', [ChatController::class, 'index'])->name('chat');
     Route::get('/chat/list', [ChatController::class, 'adminList']);
     Route::post('/chat/{sessionId}/close', [ChatController::class, 'closeSession']);
+    Route::post('/chat/{sessionId}/toggle-ai', [ChatController::class, 'toggleAi'])->name('chat.toggle-ai');
     Route::post('/call-next', [AdminController::class, 'callNext'])->name('call-next');
     Route::post('/add-manual', [AdminController::class, 'addManual'])->name('add-manual');
     Route::patch('/queue/{queue}/status', [AdminController::class, 'updateStatus'])->name('update-status');
@@ -44,6 +45,7 @@ Route::prefix('admin')->name('admin.')->middleware(['admin.whitelist'])->group(f
     Route::post('/queue/{queue}/requeue', [AdminController::class, 'requeue'])->name('requeue');
     Route::get('/export', [AdminController::class, 'export'])->name('export');
     Route::delete('/reset-today', [AdminController::class, 'resetToday'])->name('reset-today');
+    Route::delete('/queue/{queue}', [AdminController::class, 'destroy'])->name('queue.destroy');
 
     Route::patch('services/{service}/toggle-active', [\App\Http\Controllers\Admin\ServiceController::class, 'toggleActive'])->name('services.toggle-active');
     Route::resource('services', \App\Http\Controllers\Admin\ServiceController::class);

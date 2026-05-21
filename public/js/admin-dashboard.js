@@ -247,6 +247,40 @@ async function recall(id) {
     } catch(e) { showToast('Terjadi kesalahan', 'error'); }
 }
 
+async function deleteQueue(id) {
+    const result = await Swal.fire({
+        title: 'Hapus Antrian?',
+        text: 'Apakah Anda yakin ingin menghapus antrian ini? Tindakan ini tidak dapat dibatalkan.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#DC2626',
+        cancelButtonColor: '#6B7280',
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal',
+        reverseButtons: true
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+        const res = await fetch(`/admin/queue/${id}`, {
+            method: 'DELETE',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'X-CSRF-TOKEN': CSRF 
+            },
+        });
+        const data = await res.json();
+        showToast(data.message, data.success ? 'success' : 'error');
+        if (data.success) {
+            refreshQueues();
+            setTimeout(() => location.reload(), 1500);
+        }
+    } catch(e) { 
+        showToast('Terjadi kesalahan', 'error'); 
+    }
+}
+
 async function resetToday() {
     const result = await Swal.fire({
         title: 'Reset Antrian?',
@@ -336,6 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (row.status !== 'done' && row.status !== 'rejected' && row.status !== 'picked_up') {
                         actions += `<button class="btn btn-danger" style="padding: 0.3rem 0.5rem; font-size: 0.72rem;" onclick="updateStatus(${data},'rejected')">❌ Tolak</button>`;
                     }
+                    actions += `<button class="btn btn-danger" style="padding: 0.3rem 0.5rem; font-size: 0.72rem; background-color: #DC2626; border-color: #DC2626;" onclick="deleteQueue(${data})"><i class="fas fa-trash"></i> Hapus</button>`;
                     actions += '</div>';
                     return actions;
                 }
