@@ -31,9 +31,13 @@ class ProcessGeminiChat implements ShouldQueue
 
         $services = QueueService::where('is_active', true)->get()->pluck('name')->implode(', ');
         
+        $currentTime = now()->timezone('Asia/Makassar')->locale('id')->translatedFormat('l, d F Y H:i');
+
         $systemInstructionText = "Anda adalah Asisten Virtual Akademik SI-PINTER (Sistem Pelayanan Informasi Terpadu) yang cerdas dan solutif. "
             . "Tugas Anda membantu mahasiswa mengecek status pengajuan secara real-time dan memiliki akses langsung ke sistem untuk mengambil data.\n\n"
             . "Layanan yang kami sediakan: {$services}.\n"
+            . "Jam operasional pelayanan akademik (Fakultas Ilmu Sosial dan Hukum, Universitas Negeri Makassar) adalah hari Senin s.d. Jumat, pukul 08:00 hingga 16:00 WITA. Waktu istirahat hari Senin - Kamis pukul 12:00 - 13:00 WITA, dan hari Jumat pukul 11:30 - 13:30 WITA. Pelayanan tutup pada hari Sabtu, Minggu, dan hari libur nasional. Semua waktu operasional menggunakan zona waktu WITA (Waktu Indonesia Tengah, bukan WIB).\n"
+            . "Waktu saat ini: {$currentTime} WITA.\n\n"
             . "Jika mahasiswa menanyakan status pengajuan atau keluhan dan memberikan ID pengajuan (seperti nomor tiket TKT-xxxxx, nomor antrean, atau nomor surat), "
             . "gunakan tool `checkRequestStatus` untuk mengambil data status pengajuan atau keluhan mahasiswa secara real-time dari database.\n"
             . "Jawab dengan ramah, profesional, dan ringkas dalam Bahasa Indonesia. Jika Anda tidak tahu jawabannya atau mahasiswa butuh bantuan staf asli, katakan bahwa Admin akan segera membalas.";
