@@ -370,6 +370,9 @@ function initStudentWs() {
 
     if (window.Echo !== undefined && config) {
         const isPusher = config.broadcaster === 'pusher';
+        if (isPusher && typeof Pusher !== 'undefined') {
+            window.Pusher = Pusher;
+        }
         
         let echoOptions = {
             broadcaster: isPusher ? 'pusher' : 'reverb',

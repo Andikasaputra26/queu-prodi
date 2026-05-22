@@ -804,7 +804,9 @@
                         <div class="ws-dot" id="ws-dot"></div>
                         <div>
                             <div style="font-size:0.82rem; font-weight:600;" id="ws-text">Menghubungkan WebSocket...</div>
-                            <div style="font-size:0.7rem; color:var(--text-muted)">Reverb — ws://localhost:8080</div>
+                            <div style="font-size:0.7rem; color:var(--text-muted)" id="ws-info">
+                                {{ env("BROADCAST_CONNECTION") === 'pusher' ? 'Pusher' : 'Reverb' }}
+                            </div>
                         </div>
                     </div>
                     <div style="font-size:0.72rem; color:var(--text-muted); font-family:'JetBrains Mono',monospace"
@@ -824,9 +826,16 @@
     <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
     <script>
         window.QueueConfig = {
-            reverbKey: '{{ env("VITE_REVERB_APP_KEY") }}',
-            reverbHost: '{{ env("VITE_REVERB_HOST", "localhost") }}',
-            reverbPort: {{ env("VITE_REVERB_PORT", 8080) }},
+            broadcaster: '{{ env("BROADCAST_CONNECTION") }}',
+            pusher: {
+                key: '{{ env("PUSHER_APP_KEY") }}',
+                cluster: '{{ env("PUSHER_APP_CLUSTER") }}',
+            },
+            reverb: {
+                key: '{{ env("VITE_REVERB_APP_KEY") }}',
+                host: '{{ env("VITE_REVERB_HOST", "localhost") }}',
+                port: {{ env("VITE_REVERB_PORT", 8080) }}
+            }
         };
     </script>
     <script src="{{ asset('js/queue-monitor.js') }}"></script>

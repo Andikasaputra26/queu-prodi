@@ -4,9 +4,9 @@
 
 // Configuration should be provided globally via window.QueueConfig
 const Config = window.QueueConfig || {
-    reverbKey: '',
-    reverbHost: 'localhost',
-    reverbPort: 8080
+    broadcaster: 'reverb',
+    pusher: { key: '', cluster: '' },
+    reverb: { key: '', host: 'localhost', port: 8080 }
 };
 
 // ──────────────────────────────
@@ -458,14 +458,26 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
         if (!window.Echo) return;
 
-        const echo = new window.Echo({
-            broadcaster: 'reverb',
-            key: Config.reverbKey,
-            wsHost: Config.reverbHost,
-            wsPort: Config.reverbPort,
-            forceTLS: false,
-            enabledTransports: ['ws'],
-        });
+        const isPusher = Config.broadcaster === 'pusher';
+        if (isPusher && typeof Pusher !== 'undefined') {
+            window.Pusher = Pusher;
+        }
+
+        let echoConfig = {
+            broadcaster: isPusher ? 'pusher' : 'reverb',
+            key: isPusher ? (Config.pusher ? Config.pusher.key : '') : (Config.reverb ? Config.reverb.key : Config.reverbKey),
+            forceTLS: isPusher ? true : false,
+            enabledTransports: ['ws', 'wss'],
+        };
+
+        if (isPusher) {
+            echoConfig.cluster = Config.pusher ? Config.pusher.cluster : '';
+        } else {
+            echoConfig.wsHost = Config.reverb ? Config.reverb.host : Config.reverbHost;
+            echoConfig.wsPort = Config.reverb ? Config.reverb.port : Config.reverbPort;
+        }
+
+        const echo = new window.Echo(echoConfig);
 
         echo.channel('queue-monitor').listen('.queue.updated', (e) => {
             setWsStatus(true);
@@ -496,10 +508,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Reverb/Pusher connection events
-        echo.connector.pusher.connection.bind('connected', () => setWsStatus(true));
-        echo.connector.pusher.connection.bind('disconnected', () => setWsStatus(false));
-        echo.connector.pusher.connection.bind('unavailable', () => setWsStatus(false));
-        echo.connector.pusher.connection.bind('failed', () => setWsStatus(false));
+        if (echo.connector.pusher && echo.connector.pusher.connection) {
+            echo.connector.pusher.connection.bind('connected', () => setWsStatus(true));
+            echo.connector.pusher.connection.bind('disconnected', () => setWsStatus(false));
+            echo.connector.pusher.connection.bind('unavailable', () => setWsStatus(false));
+            echo.connector.pusher.connection.bind('failed', () => setWsStatus(false));
+        } else if (echo.connector.socket) {
+            echo.connector.socket.on('connect', () => setWsStatus(true));
+            echo.connector.socket.on('disconnect', () => setWsStatus(false));
+        }
 
     } catch(err) { console.warn('WS:', err); }
 

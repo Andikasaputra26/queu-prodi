@@ -4,6 +4,8 @@
 
 const Config = window.TicketConfig || {
     myNumber: '',
+    broadcaster: 'reverb',
+    pusher: { key: '', cluster: '' },
     reverb: { key: '', host: 'localhost', port: 8080 }
 };
 
@@ -27,14 +29,26 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
         if (!window.Echo) return;
 
-        const echo = new window.Echo({
-            broadcaster: 'reverb',
-            key: Config.reverb.key,
-            wsHost: Config.reverb.host,
-            wsPort: Config.reverb.port,
-            forceTLS: false,
-            enabledTransports: ['ws'],
-        });
+        const isPusher = Config.broadcaster === 'pusher';
+        if (isPusher && typeof Pusher !== 'undefined') {
+            window.Pusher = Pusher;
+        }
+
+        let echoConfig = {
+            broadcaster: isPusher ? 'pusher' : 'reverb',
+            key: isPusher ? Config.pusher.key : Config.reverb.key,
+            forceTLS: isPusher ? true : false,
+            enabledTransports: ['ws', 'wss'],
+        };
+
+        if (isPusher) {
+            echoConfig.cluster = Config.pusher.cluster;
+        } else {
+            echoConfig.wsHost = Config.reverb.host;
+            echoConfig.wsPort = Config.reverb.port;
+        }
+
+        const echo = new window.Echo(echoConfig);
 
         echo.channel('queue-monitor').listen('.queue.updated', (e) => {
             if (typeof setWsStatus === 'function') setWsStatus(true);
@@ -103,7 +117,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        echo.connector.socket.on('connect',    () => { if (typeof setWsStatus === 'function') setWsStatus(true); });
-        echo.connector.socket.on('disconnect', () => { if (typeof setWsStatus === 'function') setWsStatus(false); });
+        if (echo.connector.pusher && echo.connector.pusher.connection) {
+            echo.connector.pusher.connection.bind('connected', () => { if (typeof setWsStatus === 'function') setWsStatus(true); });
+            echo.connector.pusher.connection.bind('disconnected', () => { if (typeof setWsStatus === 'function') setWsStatus(false); });
+            echo.connector.pusher.connection.bind('unavailable', () => { if (typeof setWsStatus === 'function') setWsStatus(false); });
+            echo.connector.pusher.connection.bind('failed', () => { if (typeof setWsStatus === 'function') setWsStatus(false); });
+        } else if (echo.connector.socket) {
+            echo.connector.socket.on('connect',    () => { if (typeof setWsStatus === 'function') setWsStatus(true); });
+            echo.connector.socket.on('disconnect', () => { if (typeof setWsStatus === 'function') setWsStatus(false); });
+        }
     } catch(err) { console.warn('WS:', err); }
 });

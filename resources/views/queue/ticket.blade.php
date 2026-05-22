@@ -155,6 +155,11 @@
 window.TicketConfig = {
     myNumber: '{{ $queue->queue_number }}',
     surveyLink: '{{ env("SURVEY_LINK", "https://docs.google.com/forms/d/e/1FAIpQLSeSnOxJIgkuIeVblX9QDYnJcLvqt3NjbK2VYKg9Oa95_EIKWg/viewform?usp=publish-editor") }}',
+    broadcaster: '{{ env("BROADCAST_CONNECTION") }}',
+    pusher: {
+        key: '{{ env("PUSHER_APP_KEY") }}',
+        cluster: '{{ env("PUSHER_APP_CLUSTER") }}',
+    },
     reverb: {
         key: '{{ env("VITE_REVERB_APP_KEY") }}',
         host: '{{ env("VITE_REVERB_HOST", "localhost") }}',

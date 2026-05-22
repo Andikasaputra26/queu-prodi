@@ -656,6 +656,9 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const isPusher = '{{ env("BROADCAST_CONNECTION") }}' === 'pusher';
+            if (isPusher && typeof Pusher !== 'undefined') {
+                window.Pusher = Pusher;
+            }
             
             let echoConfig = {
                 broadcaster: isPusher ? 'pusher' : 'reverb',
