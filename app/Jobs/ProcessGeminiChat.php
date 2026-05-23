@@ -29,6 +29,60 @@ class ProcessGeminiChat implements ShouldQueue
             return;
         }
 
+        // Cek jika pesan terakhir menanyakan pembuat website ini
+        $lastStudentMessage = $session->messages->where('sender', 'student')->last();
+        if ($lastStudentMessage) {
+            $msgText = strtolower(trim($lastStudentMessage->message));
+            $cleanMsgText = preg_replace('/[?.!,]/', '', $msgText);
+            
+            $isAskingCreator = false;
+            if (
+                str_contains($cleanMsgText, 'siapa yang membuat website ini') ||
+                str_contains($cleanMsgText, 'siapa pembuat website ini') ||
+                str_contains($cleanMsgText, 'siapa yang buat website ini') ||
+                (
+                    str_contains($cleanMsgText, 'siapa') && 
+                    (
+                        str_contains($cleanMsgText, 'buat') || 
+                        str_contains($cleanMsgText, 'bikin') || 
+                        str_contains($cleanMsgText, 'membuat') || 
+                        str_contains($cleanMsgText, 'pembuat') || 
+                        str_contains($cleanMsgText, 'creator') || 
+                        str_contains($cleanMsgText, 'developer') ||
+                        str_contains($cleanMsgText, 'pencipta') ||
+                        str_contains($cleanMsgText, 'cipta') ||
+                        str_contains($cleanMsgText, 'rancang') ||
+                        str_contains($cleanMsgText, 'perancang')
+                    ) && 
+                    (
+                        str_contains($cleanMsgText, 'web') || 
+                        str_contains($cleanMsgText, 'aplikasi') || 
+                        str_contains($cleanMsgText, 'sistem') || 
+                        str_contains($cleanMsgText, 'si-pinter') || 
+                        str_contains($cleanMsgText, 'sipinter') ||
+                        str_contains($cleanMsgText, 'platform') ||
+                        str_contains($cleanMsgText, 'platfrom') ||
+                        str_contains($cleanMsgText, 'chatbot') ||
+                        str_contains($cleanMsgText, 'bot') ||
+                        str_contains($cleanMsgText, 'layanan ini')
+                    )
+                )
+            ) {
+                $isAskingCreator = true;
+            }
+
+            if ($isAskingCreator) {
+                $reply = "Website ini dibuat oleh ANDIKA SAPUTRA dari makassar.";
+                $message = $session->messages()->create([
+                    'sender' => 'admin',
+                    'message' => $reply,
+                ]);
+                $session->update(['last_activity_at' => now()]);
+                broadcast(new ChatMessageSent($message, $session));
+                return;
+            }
+        }
+
         $services = QueueService::where('is_active', true)->get()->pluck('name')->implode(', ');
         
         $currentTime = now()->timezone('Asia/Makassar')->locale('id')->translatedFormat('l, d F Y H:i');
@@ -56,6 +110,7 @@ class ProcessGeminiChat implements ShouldQueue
             . "Waktu saat ini: {$currentTime} WITA.\n\n"
             . "Jika mahasiswa menanyakan status pengajuan atau keluhan dan memberikan ID pengajuan (seperti nomor tiket TKT-xxxxx, nomor antrean, atau nomor surat), "
             . "gunakan tool `checkRequestStatus` untuk mengambil data status pengajuan atau keluhan mahasiswa secara real-time dari database.\n"
+            . "Jika mahasiswa menanyakan siapa pembuat atau pengembang website/sistem ini, jawab bahwa pembuat website/sistem ini adalah ANDIKA SAPUTRA dari makassar.\n"
             . "Jawab dengan ramah, profesional, ringkas, dan jelas dalam Bahasa Indonesia. Gunakan formatting list/bullet points agar mudah dibaca jika menjelaskan persyaratan. Jika Anda tidak tahu jawabannya atau mahasiswa butuh bantuan staf asli, katakan bahwa Admin akan segera membalas.";
 
         $systemInstruction = [
