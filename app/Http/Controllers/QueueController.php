@@ -37,7 +37,6 @@ class QueueController extends Controller
             $service->lockForUpdate();
             $sequence    = $service->getNextSequence();
             
-            // Generate a random queue number that is unique for today
             do {
                 $randomNumber = mt_rand(100, 999);
                 $queueNumber = $service->code . $randomNumber;
@@ -192,10 +191,8 @@ class QueueController extends Controller
                 'status' => 'picked_up',
             ]);
             
-            // Broadcast the update so the admin screen refreshes in real-time
             broadcast(new \App\Events\QueueUpdated('picked_up', $queue, $this->getStats()));
             
-            // Send WhatsApp survey
             $surveyLink = env('SURVEY_LINK', 'https://docs.google.com/forms/d/e/1FAIpQLSeSnOxJIgkuIeVblX9QDYnJcLvqt3NjbK2VYKg9Oa95_EIKWg/viewform?usp=publish-editor');
             try {
                 \App\Services\WhatsAppService::notifySurvey($queue, $surveyLink);
