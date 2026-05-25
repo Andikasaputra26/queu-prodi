@@ -127,13 +127,17 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
         if (!window.Echo) return;
 
+        const appConfig = window.AppConfig || {};
+        const isPusher = appConfig.broadcastConnection === 'pusher';
+
         const echo = new window.Echo({
-            broadcaster: 'reverb',
-            key: Config.reverb.key,
-            wsHost: Config.reverb.host,
-            wsPort: Config.reverb.port,
-            forceTLS: false,
-            enabledTransports: ['ws'],
+            broadcaster: isPusher ? 'pusher' : 'reverb',
+            key: isPusher ? appConfig.pusherAppKey : appConfig.reverbAppKey,
+            cluster: isPusher ? appConfig.pusherCluster : undefined,
+            wsHost: isPusher ? undefined : appConfig.reverbHost,
+            wsPort: isPusher ? undefined : (parseInt(appConfig.reverbPort) || 8080),
+            forceTLS: isPusher ? true : false,
+            enabledTransports: ['ws', 'wss'],
         });
 
         echo.channel('queue-monitor').listen('.queue.updated', (e) => {
@@ -145,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        echo.connector.socket.on('connect',    () => { if (typeof setWsStatus === 'function') setWsStatus(true); });
-        echo.connector.socket.on('disconnect', () => { if (typeof setWsStatus === 'function') setWsStatus(false); });
+        echo.connector.pusher.connection.bind('connected', () => { if (typeof setWsStatus === 'function') setWsStatus(true); });
+        echo.connector.pusher.connection.bind('disconnected', () => { if (typeof setWsStatus === 'function') setWsStatus(false); });
     } catch(err) { console.warn('WebSocket:', err); }
 });

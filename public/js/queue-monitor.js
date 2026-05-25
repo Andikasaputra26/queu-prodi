@@ -458,13 +458,17 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
         if (!window.Echo) return;
 
+        const appConfig = window.AppConfig || {};
+        const isPusher = appConfig.broadcastConnection === 'pusher';
+
         const echo = new window.Echo({
-            broadcaster: 'reverb',
-            key: Config.reverbKey,
-            wsHost: Config.reverbHost,
-            wsPort: Config.reverbPort,
-            forceTLS: false,
-            enabledTransports: ['ws'],
+            broadcaster: isPusher ? 'pusher' : 'reverb',
+            key: isPusher ? appConfig.pusherAppKey : appConfig.reverbAppKey,
+            cluster: isPusher ? appConfig.pusherCluster : undefined,
+            wsHost: isPusher ? undefined : appConfig.reverbHost,
+            wsPort: isPusher ? undefined : (parseInt(appConfig.reverbPort) || 8080),
+            forceTLS: isPusher ? true : false,
+            enabledTransports: ['ws', 'wss'],
         });
 
         echo.channel('queue-monitor').listen('.queue.updated', (e) => {
