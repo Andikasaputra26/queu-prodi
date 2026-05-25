@@ -21,7 +21,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
+            'username' => ['required', 'string'],
             'password' => ['required'],
         ]);
 
@@ -40,8 +40,8 @@ class AuthController extends Controller
         RateLimiter::hit($this->throttleKey($request));
 
         return back()->withErrors([
-            'email' => 'Email atau kata sandi salah.',
-        ])->onlyInput('email');
+            'username' => 'Username atau kata sandi salah.',
+        ])->onlyInput('username');
     }
 
     public function logout(Request $request)
@@ -61,12 +61,12 @@ class AuthController extends Controller
         $seconds = RateLimiter::availableIn($this->throttleKey($request));
 
         throw ValidationException::withMessages([
-            'email' => "Terlalu banyak percobaan login. Silakan coba lagi dalam {$seconds} detik.",
+            'username' => "Terlalu banyak percobaan login. Silakan coba lagi dalam {$seconds} detik.",
         ]);
     }
 
     protected function throttleKey(Request $request)
     {
-        return Str::transliterate(Str::lower($request->input('email')) . '|' . $request->ip());
+        return Str::transliterate(Str::lower($request->input('username')) . '|' . $request->ip());
     }
 }

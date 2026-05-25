@@ -85,12 +85,12 @@
             <form action="{{ route('login') }}" method="POST" class="space-y-5">
                 @csrf
                 <div class="gsap-item">
-                    <label for="email" class="block text-sm font-semibold text-slate-700 mb-1.5">Alamat Email</label>
+                    <label for="username" class="block text-sm font-semibold text-slate-700 mb-1.5">Username</label>
                     <div class="relative">
-                        <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="email" name="email" id="email" required value="{{ old('email') }}"
+                        <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" name="username" id="username" required value="{{ old('username') }}"
                             class="input-field"
-                            placeholder="admin@prodi.ac.id" autocomplete="off">
+                            placeholder="Masukkan username Anda" autocomplete="off">
                     </div>
                 </div>
                 

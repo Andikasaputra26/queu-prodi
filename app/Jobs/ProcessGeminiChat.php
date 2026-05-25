@@ -29,7 +29,6 @@ class ProcessGeminiChat implements ShouldQueue
             return;
         }
 
-        // Cek jika pesan terakhir menanyakan pembuat website ini
         $lastStudentMessage = $session->messages->where('sender', 'student')->last();
         if ($lastStudentMessage) {
             $msgText = strtolower(trim($lastStudentMessage->message));

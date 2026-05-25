@@ -1,6 +1,3 @@
-/**
- * Admin Dashboard Logic
- */
 
 const Config = window.AdminConfig || {
     routes: {
@@ -16,11 +13,10 @@ const Config = window.AdminConfig || {
 };
 
 const CSRF = document.querySelector('meta[name="csrf-token"]').content;
-let tab = ''; // default empty to fetch all
+let tab = '';
 let allQueues = [];
 let dtTable;
 
-// ─── Modal ───
 function openModal() { document.getElementById('manual-modal').classList.add('open'); }
 function closeModal() { document.getElementById('manual-modal').classList.remove('open'); }
 
@@ -31,7 +27,6 @@ if (modalEl) {
     });
 }
 
-// ─── Submit manual ───
 async function submitManual() {
     const svcId = document.getElementById('manual-service').value;
     const name = document.getElementById('manual-name').value.trim();
@@ -189,7 +184,7 @@ async function updateStatus(id, status) {
             cancelButtonText: 'Batal',
             confirmButtonColor: '#DC2626'
         });
-        if (reason === undefined) return; // User cancelled
+        if (reason === undefined) return;
         formData.append('reject_reason', reason);
     } else if (status === 'done') {
         const { value: formValues } = await Swal.fire({
@@ -220,7 +215,7 @@ async function updateStatus(id, status) {
                 return { file: file };
             }
         });
-        if (formValues === undefined) return; // User cancelled
+        if (formValues === undefined) return;
         if (formValues.file) {
             formData.append('file', formValues.file);
         }
@@ -325,7 +320,6 @@ async function resetToday() {
     } catch (e) { showToast('Terjadi kesalahan', 'error'); }
 }
 
-// ─── WebSocket Helper ───
 function setWsStatus(connected) {
     const dot = document.getElementById('ws-dot');
     const text = document.getElementById('ws-text');
@@ -429,7 +423,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     refreshQueues();
 
-    // Bind custom search field
     $('#search-input').on('keyup', function () {
         dtTable.search(this.value).draw();
     });

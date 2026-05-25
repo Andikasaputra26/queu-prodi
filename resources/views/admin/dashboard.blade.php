@@ -552,6 +552,9 @@
             <div class="page-sub">Panel Administrasi Jurusan — Semua Riwayat</div>
         </div>
         <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+            <a href="{{ route('admin.users.index') }}" class="btn" style="background: #F0FDF4; color: #16A34A; border: 1px solid #BBF7D0; font-weight: 600;">
+                <i class="fas fa-users"></i> Kelola User
+            </a>
             <a href="{{ route('admin.services.index') }}" class="btn" style="background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; font-weight: 600;">
                 <i class="fas fa-tags"></i> Jenis Surat
             </a>
@@ -635,7 +638,7 @@
                     <i class="fas fa-user"></i>
                 </div>
                 <div class="profile-info">
-                    <h3>unknown</h3>
+                    <h3>{{ Auth::user()->name ?? 'unknown' }}</h3>
                     <p>Akses Terakhir: Hari ini, {{ session('login_time', now()->format('H:i')) }}</p>
                 </div>
             </div>

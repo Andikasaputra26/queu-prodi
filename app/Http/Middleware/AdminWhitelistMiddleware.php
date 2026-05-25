@@ -20,14 +20,6 @@ class AdminWhitelistMiddleware
             return redirect()->route('login');
         }
 
-        $allowedEmails = explode(',', config('auth.admin_emails', ''));
-        $allowedEmails = array_map('trim', $allowedEmails);
-
-        if (!in_array(Auth::user()->email, $allowedEmails)) {
-            Auth::logout();
-            return redirect()->route('login')->with('error', 'Akses ditolak. Email Anda tidak memiliki izin akses.');
-        }
-
         return $next($request);
     }
 }
