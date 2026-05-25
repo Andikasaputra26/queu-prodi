@@ -635,7 +635,7 @@
                     <i class="fas fa-user"></i>
                 </div>
                 <div class="profile-info">
-                    <h3>Admin Jurusan</h3>
+                    <h3>unknown</h3>
                     <p>Akses Terakhir: Hari ini, {{ session('login_time', now()->format('H:i')) }}</p>
                 </div>
             </div>

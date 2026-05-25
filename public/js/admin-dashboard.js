@@ -369,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 data: 'service_name',
                 render: (data, type, row) => {
                     let html = `<span style="color:${row.service_color || '#6366F1'}; font-weight: 600;">${data || '-'}</span>`;
-                    if (row.file_path) {
+                    if (row.file_path && row.status !== 'done' && row.status !== 'picked_up') {
                         const isWord = row.file_path.toLowerCase().endsWith('.doc') || row.file_path.toLowerCase().endsWith('.docx');
                         const icon = isWord ? 'fa-file-word' : 'fa-file-pdf';
                         const text = isWord ? 'Unduh Word' : 'Lihat PDF';
@@ -379,8 +379,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             },
             {
-                data: 'document_number',
-                render: data => data ? `<span style="font-weight: 700;">${data}</span>` : '<span style="color:#94a3b8; font-style:italic;">Belum diunggah</span>'
+                data: 'file_path',
+                render: (data, type, row) => {
+                    if ((row.status === 'done' || row.status === 'picked_up') && data) {
+                        const isWord = data.toLowerCase().endsWith('.doc') || data.toLowerCase().endsWith('.docx');
+                        const icon = isWord ? 'fa-file-word' : 'fa-file-pdf';
+                        const text = isWord ? 'Unduh Word' : 'Lihat PDF';
+                        let html = `<a href="${data}" target="_blank" style="font-size: 0.72rem; color: #1D4ED8; text-decoration: underline; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fas ${icon}"></i> ${text}</a>`;
+                        if (row.document_number) {
+                            html += `<br><span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;">No: ${row.document_number}</span>`;
+                        }
+                        return html;
+                    }
+                    return '<span style="color:#94a3b8; font-style:italic;">Belum diunggah</span>';
+                }
             },
             {
                 data: 'status',
