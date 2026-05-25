@@ -32,6 +32,7 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $remember)) {
             RateLimiter::clear($this->throttleKey($request));
             $request->session()->regenerate();
+            $request->session()->put('login_time', now()->format('H:i'));
 
             return redirect()->intended(route('admin.dashboard'));
         }

@@ -552,12 +552,12 @@
             <div class="page-sub">Panel Administrasi Jurusan — Semua Riwayat</div>
         </div>
         <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
-            <a href="{{ route('admin.services.index') }}" class="btn btn-ghost">
+            <a href="{{ route('admin.services.index') }}" class="btn" style="background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; font-weight: 600;">
                 <i class="fas fa-tags"></i> Jenis Surat
             </a>
             <form action="{{ route('logout') }}" method="POST" style="display:inline;">
                 @csrf
-                <button type="submit" class="btn btn-danger">
+                <button type="submit" class="btn btn-danger" style="background: #DC2626; color: white; border: none; font-weight: 600;">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
             </form>
@@ -594,54 +594,75 @@
                 </div>
 
                 <div style="padding: 1.25rem;">
-                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
-                        Gunakan daftar di sebelah kanan untuk memilih surat, lalu perbarui statusnya di sini atau langsung
-                        pada baris surat.
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+                        Gunakan daftar di sebelah kanan untuk memilih surat, lalu perbarui statusnya di sini atau langsung pada baris surat.
                     </p>
 
-                    <div class="counter-block">
-                        <div class="cb-title" style="margin-bottom: 0.5rem;">⚙️ Panduan Status</div>
-                        <div
-                            style="font-size: 0.75rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.5rem;">
-                            <div><span class="badge badge-pending">Diajukan</span> Mahasiswa baru saja mendaftar.</div>
-                            <div><span class="badge badge-calling">Diproses</span> Surat sedang diperiksa & diproses.</div>
-                            <div><span class="badge badge-done">Selesai</span> Surat sudah selesai dan dapat diambil.</div>
+                    <div class="counter-block" style="background: #F8FAFC; border: 1px solid var(--border); border-radius: 12px; padding: 1rem; margin-bottom: 1rem;">
+                        <div class="cb-title" style="margin-bottom: 0.75rem; font-weight: 700; font-size: 0.85rem;">
+                            <i class="fas fa-info-circle" style="color: var(--primary);"></i> Panduan Status
+                        </div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.6rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span class="badge" style="background: var(--primary); color: white; min-width: 75px; text-align: center; font-size: 0.68rem; padding: 0.25rem 0.5rem;">DIAJUKAN</span> 
+                                <span>Mahasiswa baru saja mendaftar.</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span class="badge" style="background: #4f46e5; color: white; min-width: 75px; text-align: center; font-size: 0.68rem; padding: 0.25rem 0.5rem;">DIPROSES</span> 
+                                <span>Surat sedang diperiksa & diproses.</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span class="badge" style="background: var(--success); color: white; min-width: 75px; text-align: center; font-size: 0.68rem; padding: 0.25rem 0.5rem;">SELESAI</span> 
+                                <span>Surat sudah selesai dan dapat diambil.</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="danger-strip">
-                        <div>
-                            <div style="font-size:0.8rem; font-weight:600; color:var(--danger)">
-                                <i class="fas fa-history"></i> Bersihkan Data
-                            </div>
-                            <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.1rem">Hapus semua riwayat
-                                hari ini</div>
+                    <div class="danger-strip" style="display: flex; flex-direction: column; align-items: stretch; gap: 0.75rem; background: rgba(220, 38, 38, 0.03); border: 1px solid rgba(220, 38, 38, 0.15); border-radius: 12px; padding: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--danger); font-weight: 700; font-size: 0.85rem;">
+                            <i class="fas fa-history"></i> Bersihkan Data
                         </div>
-                        <button class="btn btn-danger" onclick="resetToday()"
-                            style="font-size:0.8rem; padding:0.45rem 0.875rem; flex-shrink:0">
-                            Reset
+                        <p style="font-size: 0.75rem; color: var(--danger); font-style: italic; margin: 0;">Hapus semua riwayat hari ini</p>
+                        <button class="btn btn-danger" onclick="resetToday()" style="width: 100%; justify-content: center; font-size: 0.8rem; padding: 0.6rem; background: var(--danger); color: white; border-radius: 8px; border: none; font-weight: 600;">
+                            Reset Data
                         </button>
                     </div>
+                </div>
+            </div>
+
+            <div class="profile-card">
+                <div class="profile-avatar" style="width: 48px; height: 48px; border-radius: 50%; background: #E2E8F0; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: #64748B; border: 2px solid var(--primary); box-shadow: var(--glow); flex-shrink: 0;">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="profile-info">
+                    <h3>Admin Jurusan</h3>
+                    <p>Akses Terakhir: Hari ini, {{ session('login_time', now()->format('H:i')) }}</p>
                 </div>
             </div>
         </div>
 
         <div>
             <div class="card" style="height:100%">
-                <div class="card-header" style="flex-wrap:wrap; gap:0.5rem">
-                    <h2 class="card-title">
-                        <i class="fas fa-stream" style="color:var(--primary)"></i>
-                        Daftar Pengajuan Surat
-                    </h2>
-                    <span id="q-total-lbl" style="font-size:0.78rem; color:var(--text-muted)"></span>
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <h2 class="card-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-list" style="color:var(--primary)"></i>
+                            Daftar Pengajuan Surat
+                        </h2>
+                        <span id="q-total-lbl" style="font-size:0.8rem; color:var(--text-muted); font-weight: 500;"></span>
+                    </div>
+                    <button class="btn" onclick="exportReport()"
+                        style="background: #047857; color: white; border: none; font-weight: 600; padding: 0.6rem 1.2rem; border-radius: 10px; display: inline-flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-file-excel"></i> Export Report
+                    </button>
                 </div>
 
-                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; align-items: center;">
                     <input type="date" class="q-search" id="filter-date" style="flex: 1; padding-left: 1rem;"
                         onchange="refreshQueues()">
                     <select class="q-search" id="filter-status" style="flex: 1; padding-left: 1rem; appearance: auto;"
                         onchange="refreshQueues()">
-                        <option value="">- Semua Status -</option>
+                        <option value="">-- Semua Status --</option>
                         <option value="pending">Diajukan</option>
                         <option value="admin">Diproses</option>
                         <option value="done">Selesai</option>
@@ -650,15 +671,15 @@
                     </select>
                     <select class="q-search" id="filter-service" style="flex: 1; padding-left: 1rem; appearance: auto;"
                         onchange="refreshQueues()">
-                        <option value="">— Semua Jenis Surat —</option>
+                        <option value="">-- Semua Jenis Surat --</option>
                         @foreach($services as $svc)
                             <option value="{{ $svc->id }}">{{ $svc->name }}</option>
                         @endforeach
                     </select>
-                    <button class="btn btn-success" onclick="exportReport()"
-                        style="padding: 0.6rem 1rem; border-radius: 10px; flex: 0 0 auto;">
-                        <i class="fas fa-file-excel"></i> Export Report
-                    </button>
+                    <div class="search-wrapper">
+                        <i class="fas fa-search"></i>
+                        <input type="text" class="search-input" id="search-input" placeholder="Cari data...">
+                    </div>
                 </div>
 
                 <div class="table-responsive">

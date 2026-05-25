@@ -495,3 +495,129 @@ body::before {
         transform: translateY(0);
     }
 }
+
+/* Admin Dashboard UI Enhancements */
+.mini-stat::after {
+    content: '';
+    position: absolute;
+    right: -10px;
+    bottom: -15px;
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 5rem;
+    opacity: 0.05;
+    transform: rotate(-10deg);
+    pointer-events: none;
+}
+.ms-total::after {
+    content: '\f0c9'; /* fa-bars */
+}
+.ms-pending::after {
+    content: '\f0f6'; /* fa-file-alt */
+}
+.ms-admin::after {
+    content: '\f013'; /* fa-cog */
+}
+.ms-done::after {
+    content: '\f058'; /* fa-check-circle */
+}
+
+/* User profile card in sidebar */
+.profile-card {
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.profile-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary);
+    box-shadow: var(--glow);
+}
+
+.profile-info h3 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
+}
+
+.profile-info p {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin: 0.15rem 0 0 0;
+}
+
+/* Custom search style */
+.search-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+}
+
+.search-wrapper i {
+    position: absolute;
+    left: 0.875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    pointer-events: none;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.6rem 1rem 0.6rem 2.25rem !important;
+    background: #F1F5F9;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.875rem;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.search-input:focus {
+    border-color: var(--primary);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* Hide Default DataTable Search */
+.dataTables_filter {
+    display: none !important;
+}
+
+/* WhatsApp pill styling */
+.wa-badge {
+    background: rgba(16, 185, 129, 0.1) !important;
+    border: 1px solid rgba(16, 185, 129, 0.25) !important;
+    color: #047857 !important;
+    padding: 0.35rem 0.75rem !important;
+    font-size: 0.75rem !important;
+    border-radius: 99px !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+    text-decoration: none !important;
+    transition: all 0.2s !important;
+}
+
+.wa-badge:hover {
+    background: #10B981 !important;
+    color: white !important;
+    border-color: #10B981 !important;
+    transform: translateY(-1px);
+}
+
