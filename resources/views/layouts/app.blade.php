@@ -59,10 +59,6 @@
                         <i class="fas fa-sign-out-alt"></i> Keluar
                     </a>
                 </li>
-            @else
-                <li><a href="{{ route('login') }}" class="{{ request()->routeIs('login') ? 'active' : '' }}">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </a></li>
             @endauth
         </ul>
         <div class="navbar-right">
@@ -83,7 +79,12 @@
     <footer class="footer">
         <div class="container">
             <p>&copy; 2026 <span class="footer-brand">SI-PINTER</span> | Sistem Pelayanan Persuratan Terintegrasi</p>
-            <p style="margin-top: 0.25rem; font-size: 0.75rem;">Fakultas Ilmu Sosial dan Hukum, Universitas Negeri Makassar</p>
+            <p style="margin-top: 0.25rem; font-size: 0.75rem;">
+                Fakultas Ilmu Sosial dan Hukum, Universitas Negeri Makassar
+                @guest
+                    | <a href="{{ route('login') }}" style="color: var(--text-muted); text-decoration: none; margin-left: 5px;"><i class="fas fa-lock" style="font-size: 0.7rem;"></i> Admin Login</a>
+                @endguest
+            </p>
         </div>
     </footer>   
     
