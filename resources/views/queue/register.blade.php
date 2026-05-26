@@ -139,13 +139,13 @@
                                 <i class="fas fa-file-upload" style="color: var(--primary);"></i>
                                 <input type="file" class="form-control" id="file" name="file" accept=".pdf,.doc,.docx">
                             </div>
-                            <small
+                            <!-- <small
                                 style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.4rem; display: block;">
                                 Wajib upload file dalam format <strong>Word</strong>. (Sisipkan teks <strong>${nmr}</strong> agar nomor terisi otomatis).
                             </small>
                             <a href="{{ asset('template/FormatSurat.docx') }}" target="_blank" class="btn-template">
                                 <i class="fas fa-file-word"></i>Download Template Surat
-                            </a>
+                            </a> -->
                             @error('file')
                                 <small style="color: var(--danger); margin-top: 0.3rem; display: block">{{ $message }}</small>
                             @enderror

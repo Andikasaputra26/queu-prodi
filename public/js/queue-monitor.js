@@ -1,17 +1,9 @@
-/**
- * Queue Monitor & Display Core Logic
- */
-
-// Configuration should be provided globally via window.QueueConfig
 const Config = window.QueueConfig || {
     reverbKey: '',
     reverbHost: 'localhost',
     reverbPort: 8080
 };
 
-// ──────────────────────────────
-// State
-// ──────────────────────────────
 let qTab = '';
 const LOG_MAX = 50;
 let activityLog = [];
@@ -20,13 +12,10 @@ let dtMonitorTable = null;
 let dtTrackingTable = null;
 let svcChart = null;
 
-// ──────────────────────────────
-// Clock
-// ──────────────────────────────
 function updateClock() {
     const el = document.getElementById('mon-clock') || document.getElementById('clock');
     if (el) el.textContent = new Date().toLocaleTimeString('id-ID');
-    
+
     const dateEl = document.getElementById('date');
     if (dateEl) {
         dateEl.textContent = new Date().toLocaleDateString('id-ID', {
@@ -35,13 +24,10 @@ function updateClock() {
     }
 }
 if (document.getElementById('mon-clock') || document.getElementById('clock')) {
-    setInterval(updateClock, 1000); 
+    setInterval(updateClock, 1000);
     updateClock();
 }
 
-// ──────────────────────────────
-// Number counter animation
-// ──────────────────────────────
 function setStatNum(id, newVal) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -54,9 +40,6 @@ function setStatNum(id, newVal) {
     el.addEventListener('animationend', () => el.classList.remove('bump'), { once: true });
 }
 
-// ──────────────────────────────
-// Update "calling highlight" (Monitor Page)
-// ──────────────────────────────
 function showCallingHighlight(data) {
     const highlightEl = document.getElementById('calling-highlight');
     if (!highlightEl) return;
@@ -77,8 +60,8 @@ function showCallingHighlight(data) {
     void numEl.offsetWidth;
     numEl.classList.add('pop');
 
-    document.getElementById('ch-name').textContent    = data.patient_name || '—';
-    document.getElementById('ch-time').textContent    = data.called_at || '—';
+    document.getElementById('ch-name').textContent = data.patient_name || '—';
+    document.getElementById('ch-time').textContent = data.called_at || '—';
 
     const svcEl = document.getElementById('ch-service');
     const color = data.service_color || '#6366F1';
@@ -88,17 +71,14 @@ function showCallingHighlight(data) {
     roomEl.innerHTML = `<i class="fas fa-door-open" style="color:${color}"></i> <span style="color:${color}">${data.counter_name || '—'}</span>`;
 }
 
-// ──────────────────────────────
-// Service breakdown (Chart.js)
-// ──────────────────────────────
 function renderBreakdown(services) {
     const el = document.getElementById('svc-chart');
     if (!el) return;
 
     let totalDone = 0;
-    
+
     if (!services || !Object.keys(services).length) {
-        if(svcChart) {
+        if (svcChart) {
             svcChart.destroy();
             svcChart = null;
         }
@@ -129,9 +109,9 @@ function renderBreakdown(services) {
             data: {
                 labels: categories,
                 datasets: [
-                    { 
-                        label: 'Total Pengajuan', 
-                        data: totalData, 
+                    {
+                        label: 'Total Pengajuan',
+                        data: totalData,
                         backgroundColor: bgColors,
                         borderColor: '#ffffff',
                         borderWidth: 2
@@ -141,7 +121,7 @@ function renderBreakdown(services) {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                cutout: '65%', // Menyesuaikan ukuran lubang donat
+                cutout: '65%',
                 plugins: {
                     legend: {
                         position: 'right',
@@ -166,14 +146,11 @@ function renderBreakdown(services) {
     if (doneTodayEl) doneTodayEl.textContent = totalDone;
 }
 
-// ──────────────────────────────
-// Stats
-// ──────────────────────────────
 function refreshStats() {
     let url = '/api/stats?';
     const dateEl = document.getElementById('chart-date');
     const catEl = document.getElementById('chart-category');
-    
+
     if (dateEl && dateEl.value) {
         url += `date=${dateEl.value}&`;
     }
@@ -182,41 +159,35 @@ function refreshStats() {
     }
 
     fetch(url).then(r => r.json()).then(data => {
-        // Shared logic for both pages
         let total = 0, pending = 0, admin = 0, done = 0;
 
         if (data.services) {
             Object.values(data.services).forEach(s => {
-                total   += s.total;
+                total += s.total;
                 pending += s.pending;
-                admin   += s.admin;
-                done    += s.done;
+                admin += s.admin;
+                done += s.done;
             });
         }
 
-        // Monitor page elements
-        setStatNum('st-total',   total);
+        setStatNum('st-total', total);
         setStatNum('st-pending', pending);
-        setStatNum('st-admin',   admin);
-        setStatNum('st-done',    done);
+        setStatNum('st-admin', admin);
+        setStatNum('st-done', done);
 
-        // Display page elements (if they exist)
         const fAdmin = document.getElementById('f-admin');
-        const fDone  = document.getElementById('f-done');
+        const fDone = document.getElementById('f-done');
         if (fAdmin) fAdmin.textContent = admin;
-        if (fDone)  fDone.textContent  = done;
+        if (fDone) fDone.textContent = done;
 
         renderBreakdown(data.services);
         showCallingHighlight(data.calling);
-        
+
         const lastUpdateEl = document.getElementById('last-update');
         if (lastUpdateEl) lastUpdateEl.textContent = 'Update: ' + new Date().toLocaleTimeString('id-ID');
-    }).catch(() => {});
+    }).catch(() => { });
 }
 
-// ──────────────────────────────
-// Queue list (Monitor Admin)
-// ──────────────────────────────
 function switchTab(tab, btn) {
     qTab = tab;
     if (btn) {
@@ -228,12 +199,12 @@ function switchTab(tab, btn) {
 
 function refreshQueues() {
     const tbody = document.getElementById('q-tbody');
-    if (!tbody) return; // Only for monitor page
+    if (!tbody) return;
 
     let url = '/api/admin/today?';
     const dateEl = document.getElementById('chart-date');
     const catEl = document.getElementById('chart-category');
-    
+
     if (dateEl && dateEl.value) {
         url += `date=${dateEl.value}&`;
     }
@@ -244,13 +215,13 @@ function refreshQueues() {
         url += `status=${qTab}&`;
     }
 
-    fetch(url).then(r => r.json()).then(renderQueues).catch(() => {});
+    fetch(url).then(r => r.json()).then(renderQueues).catch(() => { });
 }
 
 function renderQueues(list) {
     const countLbl = document.getElementById('q-count-lbl');
     if (countLbl) countLbl.textContent = `${list.length} antrian`;
-    
+
     if (dtMonitorTable) {
         dtMonitorTable.clear();
         dtMonitorTable.rows.add(list);
@@ -258,9 +229,6 @@ function renderQueues(list) {
     }
 }
 
-// ──────────────────────────────
-// Tracking list (Display Public)
-// ──────────────────────────────
 function refreshTracking() {
     const tbody = document.getElementById('tracking-list');
     if (!tbody) return;
@@ -269,26 +237,25 @@ function refreshTracking() {
     const dateFilter = document.getElementById('filter-date');
     const svcId = svcFilter ? svcFilter.value : '';
     const date = dateFilter ? dateFilter.value : '';
-    
+
     let url = '/api/waiting?';
     if (svcId) url += `service_id=${svcId}&`;
-    if (date)  url += `date=${date}&`;
+    if (date) url += `date=${date}&`;
 
     fetch(url).then(r => r.json()).then(list => {
         const empty = document.getElementById('empty-msg');
-        
+
         if (list.length === 0) {
             if (dtTrackingTable) dtTrackingTable.clear().draw();
             if (empty) empty.style.display = 'flex';
             return;
         }
-        
+
         if (empty) empty.style.display = 'none';
-        
+
         if (dtTrackingTable) {
             dtTrackingTable.clear().rows.add(list).draw();
         } else {
-            // Fallback if DataTable not initialized
             tbody.innerHTML = '';
             list.forEach(q => {
                 const tr = document.createElement('tr');
@@ -305,9 +272,6 @@ function refreshTracking() {
     });
 }
 
-// ──────────────────────────────
-// Counters grid
-// ──────────────────────────────
 function refreshCounters() {
     const el = document.getElementById('cg-grid');
     if (!el) return;
@@ -333,17 +297,14 @@ function refreshCounters() {
     });
 }
 
-// ──────────────────────────────
-// Activity log
-// ──────────────────────────────
 const LOG_ICONS = {
     pending: { icon: '🟢', bg: 'rgba(16,185,129,0.15)', label: 'Pengajuan Baru' },
-    admin:   { icon: '🔍', bg: 'rgba(245,158,11,0.15)', label: 'Verif Admin' },
-    prodi:   { icon: '🏛️', bg: 'rgba(99,102,241,0.15)', label: 'Kirim Prodi' },
-    ready:   { icon: '🎁', bg: 'rgba(16,185,129,0.2)',  label: 'Siap Ambil' },
-    done:    { icon: '✅', bg: 'rgba(16,185,129,0.1)',  label: 'Selesai' },
-    rejected:{ icon: '❌', bg: 'rgba(239,68,68,0.1)',   label: 'Ditolak' },
-    reset:   { icon: '🔄', bg: 'rgba(99,102,241,0.1)', label: 'Reset' },
+    admin: { icon: '🔍', bg: 'rgba(245,158,11,0.15)', label: 'Verif Admin' },
+    prodi: { icon: '🏛️', bg: 'rgba(99,102,241,0.15)', label: 'Kirim Prodi' },
+    ready: { icon: '🎁', bg: 'rgba(16,185,129,0.2)', label: 'Siap Ambil' },
+    done: { icon: '✅', bg: 'rgba(16,185,129,0.1)', label: 'Selesai' },
+    rejected: { icon: '❌', bg: 'rgba(239,68,68,0.1)', label: 'Ditolak' },
+    reset: { icon: '🔄', bg: 'rgba(99,102,241,0.1)', label: 'Reset' },
 };
 
 function addLog(action, queue) {
@@ -385,9 +346,6 @@ function renderLog() {
 
 function clearLog() { activityLog = []; renderLog(); }
 
-// ──────────────────────────────
-// All refresh
-// ──────────────────────────────
 function refreshAll() {
     refreshStats();
     refreshQueues();
@@ -395,13 +353,10 @@ function refreshAll() {
     refreshTracking();
 }
 
-// ──────────────────────────────
-// WebSocket Helper
-// ──────────────────────────────
 function setWsStatus(connected) {
     const dot = document.getElementById('ws-dot') || document.getElementById('ws-d');
     const text = document.getElementById('ws-text') || document.getElementById('ws-t');
-    
+
     if (dot) {
         dot.className = connected ? (dot.id === 'ws-dot' ? 'ws-dot' : 'ws-d on') : (dot.id === 'ws-dot' ? 'ws-dot offline' : 'ws-d');
         if (dot.id === 'ws-dot') dot.style.background = connected ? 'var(--success)' : 'var(--danger)';
@@ -409,16 +364,12 @@ function setWsStatus(connected) {
     if (text) text.textContent = connected ? (text.id === 'ws-text' ? 'Live — Terhubung' : 'Live — Terhubung') : 'Terputus';
 }
 
-// ──────────────────────────────
-// Init
-// ──────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    // initialize DataTables for monitor page if it exists
     const qTable = $('#monitor-q-table');
     if (qTable.length) {
         dtMonitorTable = qTable.DataTable({
             language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json" },
-            order: [[0, 'desc']], // Waktu desc
+            order: [[0, 'desc']],
             columns: [
                 { data: 'created_at', render: (data) => `<span style="color:var(--text-muted);font-size:0.75rem;font-family:'JetBrains Mono',monospace">${data}</span>` },
                 { data: 'queue_number', render: (data, type, row) => `<span style="color:${row.service_color || '#6366F1'}; font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 0.95rem;">${data}</span>` },
@@ -427,7 +378,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 { data: 'service_name', render: (data, type, row) => `<span style="background:${row.service_color || '#6366F1'}18;color:${row.service_color || '#6366F1'};padding:0.2rem 0.6rem;border-radius:99px;font-size:0.72rem;font-weight:700;white-space:nowrap">${data}</span>` },
                 { data: 'status', render: (data, type, row) => `<span class="badge badge-${data}">${row.status_label}</span>` }
             ],
-            createdRow: function(row, data, dataIndex) {
+            createdRow: function (row, data, dataIndex) {
                 if (data.status === 'calling') {
                     $(row).addClass('row-calling');
                 }
@@ -435,14 +386,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // initialize DataTables for tracking display page if it exists
     const tTable = $('#tracking-table');
     if (tTable.length) {
         dtTrackingTable = tTable.DataTable({
             paging: false,
             searching: false,
             info: false,
-            order: [], // Handled by server-side orderByRaw
+            order: [],
             columns: [
                 { data: 'queue_number', render: (data) => `<span style="color:var(--warning); font-weight:900; font-family:'JetBrains Mono',monospace; font-size:1.4rem;">${data}</span>` },
                 { data: 'patient_name', render: (data) => `<span style="font-weight:700">${data}</span>` },
@@ -476,37 +426,33 @@ document.addEventListener('DOMContentLoaded', () => {
             refreshAll();
             addLog(e.action, e.queue);
 
-            // Toast notifications (if showToast is available)
             if (typeof showToast === 'function') {
                 const msgs = {
-                    new:     () => `Mahasiswa baru: ${e.queue?.queue_number} — ${e.queue?.patient_name}`,
-                    called:  () => `Memanggil: ${e.queue?.queue_number} → ${e.queue?.counter_name}`,
+                    new: () => `Mahasiswa baru: ${e.queue?.queue_number} — ${e.queue?.patient_name}`,
+                    called: () => `Memanggil: ${e.queue?.queue_number} → ${e.queue?.counter_name}`,
                     serving: () => `Melayani: ${e.queue?.queue_number}`,
-                    done:    () => `Selesai: ${e.queue?.queue_number}`,
-                    skip:    () => `Dilewati: ${e.queue?.queue_number}`,
-                    reset:   () => `Antrian hari ini direset`,
+                    done: () => `Selesai: ${e.queue?.queue_number}`,
+                    skip: () => `Dilewati: ${e.queue?.queue_number}`,
+                    reset: () => `Antrian hari ini direset`,
                 };
-                const toastType = { new:'info', called:'warning', serving:'info', done:'success', skip:'error', reset:'error' };
+                const toastType = { new: 'info', called: 'warning', serving: 'info', done: 'success', skip: 'error', reset: 'error' };
                 if (msgs[e.action]) showToast(msgs[e.action](), toastType[e.action] || 'info', 4000);
             }
         });
 
         echo.channel('queue-display').listen('.queue.called', (e) => {
             refreshAll();
-            // Handle highlight if on monitor page
             if (typeof showUpdateHighlight === 'function') {
                 showUpdateHighlight({ ...e, called_at: new Date().toLocaleTimeString('id-ID') });
             }
         });
 
-        // Reverb/Pusher connection events
         echo.connector.pusher.connection.bind('connected', () => setWsStatus(true));
         echo.connector.pusher.connection.bind('disconnected', () => setWsStatus(false));
         echo.connector.pusher.connection.bind('unavailable', () => setWsStatus(false));
         echo.connector.pusher.connection.bind('failed', () => setWsStatus(false));
 
-    } catch(err) { console.warn('WS:', err); }
+    } catch (err) { console.warn('WS:', err); }
 
-    // Auto-refresh fallback (every 20s)
     setInterval(refreshAll, 20000);
 });

@@ -1,7 +1,3 @@
-/**
- * Queue Registration Logic
- */
-
 const Config = window.QueueConfig || {
     reverb: { key: '', host: 'localhost', port: 8080 }
 };
@@ -12,13 +8,13 @@ function selectService(el) {
     document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
     el.classList.add('selected');
     selectedService = {
-        id: el.dataset.id, 
+        id: el.dataset.id,
         name: el.dataset.name,
-        code: el.dataset.code, 
-        desc: el.dataset.desc, 
+        code: el.dataset.code,
+        desc: el.dataset.desc,
         color: el.dataset.color,
     };
-    
+
     const serviceIdEl = document.getElementById('service_id');
     if (serviceIdEl) serviceIdEl.value = selectedService.id;
 
@@ -26,7 +22,7 @@ function selectService(el) {
     const previewCode = document.getElementById('preview-code');
     const previewName = document.getElementById('preview-name');
     const previewDesc = document.getElementById('preview-desc');
-    
+
     if (previewCode) {
         previewCode.textContent = selectedService.code;
         previewCode.style.background = selectedService.color + '20';
@@ -52,7 +48,6 @@ function selectService(el) {
         if (fileInput) fileInput.required = isSeminar;
     }
 
-    // Auto scroll ke form pada layar mobile/HP
     if (window.innerWidth <= 992) {
         const formCard = document.getElementById('form-card');
         if (formCard) {
@@ -70,7 +65,7 @@ function updateStats(data) {
             total += s.total;
             diproses += s.admin;
         });
-        
+
         document.querySelectorAll('.service-card').forEach(card => {
             const s = data.services[card.dataset.code];
             if (s) {
@@ -79,11 +74,11 @@ function updateStats(data) {
             }
         });
     }
-    
+
     const totalEl = document.getElementById('stat-total');
     const prodiEl = document.getElementById('stat-prodi');
     const readyEl = document.getElementById('stat-ready');
-    
+
     if (totalEl) totalEl.textContent = total;
     if (prodiEl) prodiEl.textContent = prodi;
     if (readyEl) readyEl.textContent = ready;
@@ -100,7 +95,7 @@ function refreshPublicTracking() {
                 tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 1.5rem; color: var(--text-muted);">Belum ada antrian yang sedang diproses.</td></tr>`;
                 return;
             }
-            
+
             tbody.innerHTML = '';
             list.forEach(q => {
                 const tr = document.createElement('tr');
@@ -117,11 +112,11 @@ function refreshPublicTracking() {
                 tbody.appendChild(tr);
             });
         })
-        .catch(() => {});
+        .catch(() => { });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    fetch('/api/stats').then(r => r.json()).then(updateStats).catch(() => {});
+    fetch('/api/stats').then(r => r.json()).then(updateStats).catch(() => { });
     refreshPublicTracking();
 
     try {
@@ -151,5 +146,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
         echo.connector.pusher.connection.bind('connected', () => { if (typeof setWsStatus === 'function') setWsStatus(true); });
         echo.connector.pusher.connection.bind('disconnected', () => { if (typeof setWsStatus === 'function') setWsStatus(false); });
-    } catch(err) { console.warn('WebSocket:', err); }
+    } catch (err) { console.warn('WebSocket:', err); }
 });

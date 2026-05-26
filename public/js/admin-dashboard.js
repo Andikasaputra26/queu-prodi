@@ -53,7 +53,6 @@ async function submitManual() {
     } catch (e) { showToast('Terjadi kesalahan', 'error'); }
 }
 
-// ─── Tab & search (Tabs are removed, this is a fallback if needed) ───
 function switchTab(s, btn) {
     tab = s;
     if (btn) {
@@ -64,10 +63,8 @@ function switchTab(s, btn) {
 }
 
 function filterQueues() {
-    // DataTable handles global search
 }
 
-// ─── Queue list ───
 async function refreshQueues() {
     const dateEl = document.getElementById('filter-date');
     const svcEl = document.getElementById('filter-service');
@@ -79,7 +76,7 @@ async function refreshQueues() {
 
     let url = '/api/admin/today?';
     if (statusVal) url += `status=${statusVal}&`;
-    else if (tab) url += `status=${tab}&`; // fallback to tab if used
+    else if (tab) url += `status=${tab}&`;
     if (date) url += `date=${date}&`;
     if (svc) url += `service_id=${svc}&`;
 

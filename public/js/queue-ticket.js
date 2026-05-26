@@ -1,7 +1,3 @@
-/**
- * Queue Ticket Logic
- */
-
 const Config = window.TicketConfig || {
     myNumber: '',
     reverb: { key: '', host: 'localhost', port: 8080 }
@@ -12,12 +8,11 @@ function updateWaiting() {
         const myIdx = list.findIndex(q => q.queue_number === Config.myNumber);
         if (myIdx >= 0) {
             const myQueue = list[myIdx];
-            // Filter by the same service and correct statuses (pending or admin)
             const before = list.slice(0, myIdx).filter(q => q.service_name === myQueue.service_name && (q.status === 'pending' || q.status === 'admin')).length;
             const countEl = document.getElementById('waiting-count');
             if (countEl) countEl.textContent = before;
         }
-    }).catch(() => {});
+    }).catch(() => { });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -43,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         echo.channel('queue-monitor').listen('.queue.updated', (e) => {
             if (typeof setWsStatus === 'function') setWsStatus(true);
             updateWaiting();
-            
+
             if (e.action === 'done' && e.queue && e.queue.queue_number === Config.myNumber) {
                 const doneOverlay = document.getElementById('done-overlay');
                 if (doneOverlay) {
@@ -51,19 +46,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     const surveyBtn = document.getElementById('survey-btn');
                     if (surveyBtn) surveyBtn.href = Config.surveyLink;
                 }
-                
+
                 const badgeEl = document.getElementById('status-badge');
                 if (badgeEl) {
                     badgeEl.textContent = 'Selesai';
                     badgeEl.className = 'badge badge-done';
                 }
-                
+
                 const liveIcon = document.getElementById('live-icon');
                 if (liveIcon) liveIcon.textContent = '✅';
-                
+
                 const liveText = document.getElementById('live-text');
                 if (liveText) liveText.textContent = 'Pelayanan selesai. Terima kasih!';
-                
+
                 if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
             }
         });
@@ -73,25 +68,24 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.queue_number === Config.myNumber) {
                 const overlay = document.getElementById('calling-overlay');
                 if (overlay) overlay.style.display = 'flex';
-                
+
                 const roomEl = document.getElementById('call-room');
                 if (roomEl) roomEl.textContent = `Silakan menuju ${e.counter_name || 'ruangan dosen'}`;
-                
+
                 const badgeEl = document.getElementById('status-badge');
                 if (badgeEl) {
                     badgeEl.textContent = '📢 Dipanggil';
                     badgeEl.className = 'badge badge-calling';
                 }
-                
+
                 const liveIcon = document.getElementById('live-icon');
                 if (liveIcon) liveIcon.textContent = '📢';
-                
+
                 const liveText = document.getElementById('live-text');
                 if (liveText) liveText.textContent = 'Anda dipanggil! Segera menuju ruangan.';
-                
+
                 if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
-                
-                // Audio notification
+
                 try {
                     const ctx = new (window.AudioContext || window.webkitAudioContext)();
                     [523, 784, 1047].forEach((f, i) => {
@@ -103,11 +97,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         g.gain.setValueAtTime(0.35, ctx.currentTime + i * 0.18);
                         g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.18 + 0.14);
                     });
-                } catch(err) {}
+                } catch (err) { }
             }
         });
 
         echo.connector.pusher.connection.bind('connected', () => { if (typeof setWsStatus === 'function') setWsStatus(true); });
         echo.connector.pusher.connection.bind('disconnected', () => { if (typeof setWsStatus === 'function') setWsStatus(false); });
-    } catch(err) { console.warn('WS:', err); }
+    } catch (err) { console.warn('WS:', err); }
 });
