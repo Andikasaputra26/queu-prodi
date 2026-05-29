@@ -90,8 +90,6 @@ class ProcessGeminiChat implements ShouldQueue
         $year = $currentTimeZone->format('Y');
 
         $holidays = \Illuminate\Support\Facades\Cache::remember("indo_holidays_v2_{$year}", 86400 * 30, function () use ($year) {
-<<<<<<< HEAD
-            // Hardcode hari libur resmi 2026 berdasarkan SKB 3 Menteri untuk akurasi 100%
             if ($year === '2026') {
                 return [
                     '2026-01-01' => 'Tahun Baru 2026 Masehi',
@@ -122,15 +120,11 @@ class ProcessGeminiChat implements ShouldQueue
                 ];
             }
 
-=======
-            // Pertama, coba ambil data dari API eksternal agar otomatis & sinkron dengan tahun yang dicari
->>>>>>> main
             try {
                 $response = Http::timeout(5)->get("https://api-hari-libur.vercel.app/api", [
                     'year' => $year
                 ]);
                 if ($response->successful()) {
-<<<<<<< HEAD
                     $holidays = [];
                     $data = $response->json('data') ?? [];
                     foreach ($data as $item) {
@@ -144,8 +138,7 @@ class ProcessGeminiChat implements ShouldQueue
                 \Log::error("Failed to fetch Indonesian holidays: " . $e->getMessage());
             }
             return [];
-=======
-                    $data = $response->json('data') ?? [];
+                        $data = $response->json('data') ?? [];
                     if (!empty($data)) {
                         $holidays = [];
                         foreach ($data as $item) {
