@@ -812,50 +812,123 @@
         html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
         html = html.replace(/`(.*?)`/g, '<code style="background: rgba(0,0,0,0.05); padding: 2px 4px; border-radius: 4px; font-family: monospace;">$1</code>');
 
-        // Split by lines to parse lists
+        // Split by lines to parse lists and tables
         const lines = html.split('\n');
         let inList = false; // false, 'ul', 'ol'
+        let listHtml = '';
+        let inTable = false;
+        let tableAlignments = [];
+        let tableHtml = '';
         let result = [];
 
         for (let i = 0; i < lines.length; i++) {
             let line = lines[i];
             let trimmed = line.trim();
             
+            // Check for table rows starting and ending with |
+            if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
+                // Close list if open
+                if (inList) {
+                    listHtml += inList === 'ul' ? '</ul>' : '</ol>';
+                    result.push(listHtml);
+                    inList = false;
+                    listHtml = '';
+                }
+
+                // Split columns, remove outer |
+                let cols = trimmed.slice(1, -1).split('|').map(c => c.trim());
+
+                // Check if this is a separator line (e.g. |---|---|)
+                let isSeparator = cols.every(col => /^[:\s-]*$/.test(col) && col.includes('-'));
+
+                if (isSeparator) {
+                    // Determine alignments
+                    tableAlignments = cols.map(col => {
+                        let left = col.startsWith(':');
+                        let right = col.endsWith(':');
+                        if (left && right) return 'center';
+                        if (right) return 'right';
+                        return 'left';
+                    });
+                    continue; // Skip separator line output
+                }
+
+                if (!inTable) {
+                    inTable = true;
+                    tableAlignments = Array(cols.length).fill('left'); // default alignments
+                    
+                    tableHtml = '<div style="overflow-x: auto; margin-top: 0.5rem; margin-bottom: 0.5rem; width: 100%; border-radius: 8px;">';
+                    tableHtml += '<table style="width: auto; max-width: 100%; border-collapse: collapse; font-size: 0.85rem; border: 1px solid rgba(128,128,128,0.3); color: inherit;">';
+                    tableHtml += '<thead style="background: rgba(128,128,128,0.15); font-weight: bold;"><tr>';
+                    for (let j = 0; j < cols.length; j++) {
+                        tableHtml += `<th style="border: 1px solid rgba(128,128,128,0.3); padding: 6px 10px; text-align: left;">${cols[j]}</th>`;
+                    }
+                    tableHtml += '</tr></thead><tbody>';
+                } else {
+                    tableHtml += '<tr>';
+                    for (let j = 0; j < cols.length; j++) {
+                        let align = tableAlignments[j] || 'left';
+                        tableHtml += `<td style="border: 1px solid rgba(128,128,128,0.3); padding: 6px 10px; text-align: ${align};">${cols[j] || ''}</td>`;
+                    }
+                    tableHtml += '</tr>';
+                }
+                continue;
+            } else {
+                // Close table if open
+                if (inTable) {
+                    tableHtml += '</tbody></table></div>';
+                    result.push(tableHtml);
+                    inTable = false;
+                    tableAlignments = [];
+                    tableHtml = '';
+                }
+            }
+
             // Bullet points
             if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
                 if (inList !== 'ul') {
                     if (inList) {
-                        result.push(inList === 'ul' ? '</ul>' : '</ol>');
+                        listHtml += inList === 'ul' ? '</ul>' : '</ol>';
+                        result.push(listHtml);
                     }
-                    result.push('<ul style="margin-left: 1.25rem; margin-bottom: 0.5rem; padding-left: 0; list-style-type: disc;">');
+                    listHtml = '<ul style="margin-left: 1.25rem; margin-bottom: 0.5rem; padding-left: 0; list-style-type: disc;">';
                     inList = 'ul';
                 }
-                result.push('<li style="margin-bottom: 0.25rem;">' + trimmed.substring(2) + '</li>');
+                listHtml += '<li style="margin-bottom: 0.25rem;">' + trimmed.substring(2) + '</li>';
             }
             // Numbered list
             else if (/^\d+\.\s/.test(trimmed)) {
                 if (inList !== 'ol') {
                     if (inList) {
-                        result.push(inList === 'ul' ? '</ul>' : '</ol>');
+                        listHtml += inList === 'ul' ? '</ul>' : '</ol>';
+                        result.push(listHtml);
                     }
-                    result.push('<ol style="margin-left: 1.25rem; margin-bottom: 0.5rem; padding-left: 0; list-style-type: decimal;">');
+                    listHtml = '<ol style="margin-left: 1.25rem; margin-bottom: 0.5rem; padding-left: 0; list-style-type: decimal;">';
                     inList = 'ol';
                 }
                 const content = trimmed.replace(/^\d+\.\s/, '');
-                result.push('<li style="margin-bottom: 0.25rem;">' + content + '</li>');
+                listHtml += '<li style="margin-bottom: 0.25rem;">' + content + '</li>';
             }
             // Regular line
             else {
                 if (inList) {
-                    result.push(inList === 'ul' ? '</ul>' : '</ol>');
+                    listHtml += inList === 'ul' ? '</ul>' : '</ol>';
+                    result.push(listHtml);
                     inList = false;
+                    listHtml = '';
                 }
                 result.push(line);
             }
         }
         
+        // Clean up remaining open elements
         if (inList) {
-            result.push(inList === 'ul' ? '</ul>' : '</ol>');
+            listHtml += inList === 'ul' ? '</ul>' : '</ol>';
+            result.push(listHtml);
+        }
+        if (inTable) {
+            tableHtml += '</tbody></table></div>';
+            result.push(tableHtml);
         }
 
         html = result.join('\n');

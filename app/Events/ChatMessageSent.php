@@ -35,4 +35,32 @@ class ChatMessageSent implements ShouldBroadcastNow
     {
         return 'chat.message';
     }
+
+    /**
+     * Get the data to broadcast.
+     *
+     * @return array<string, mixed>
+     */
+    public function broadcastWith(): array
+    {
+        return [
+            'message' => [
+                'id' => $this->message->id,
+                'chat_session_id' => $this->message->chat_session_id,
+                'sender' => $this->message->sender,
+                'message' => $this->message->message,
+                'is_read' => $this->message->is_read,
+                'created_at' => $this->message->created_at ? $this->message->created_at->toIso8601String() : null,
+            ],
+            'session' => [
+                'id' => $this->session->id,
+                'session_id' => $this->session->session_id,
+                'student_name' => $this->session->student_name,
+                'student_phone' => $this->session->student_phone,
+                'status' => $this->session->status,
+                'is_ai_active' => $this->session->is_ai_active,
+                'last_activity_at' => $this->session->last_activity_at ? $this->session->last_activity_at->toIso8601String() : null,
+            ]
+        ];
+    }
 }
