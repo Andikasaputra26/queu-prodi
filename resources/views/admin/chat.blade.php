@@ -341,10 +341,11 @@
             border-top: 1px solid var(--border);
             background: #fff;
             display: flex;
+            align-items: flex-end;
             gap: 0.75rem;
         }
 
-        .chat-input-area input {
+        .chat-input-area textarea {
             flex: 1;
             padding: 0.75rem 1.25rem;
             border: 1px solid var(--border);
@@ -352,10 +353,15 @@
             outline: none;
             font-family: inherit;
             font-size: 0.9rem;
-            transition: all 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            resize: none;
+            overflow-y: auto;
+            min-height: 42px;
+            max-height: 160px;
+            line-height: 1.5;
         }
 
-        .chat-input-area input:focus {
+        .chat-input-area textarea:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
         }
@@ -581,8 +587,8 @@
         </div>
 
         <form class="chat-input-area" id="chat-form">
-            <input type="text" id="chat-input" placeholder="Ketik balasan untuk mahasiswa..." autocomplete="off" required>
-            <button type="submit" class="btn btn-primary" id="chat-submit-btn" style="border-radius: 12px; padding: 0 1.5rem;">
+            <textarea id="chat-input" placeholder="Ketik balasan untuk mahasiswa... (Shift+Enter untuk baris baru)" autocomplete="off" required rows="1"></textarea>
+            <button type="submit" class="btn btn-primary" id="chat-submit-btn" style="border-radius: 12px; padding: 0.6rem 1.5rem; align-self: flex-end;">
                 <i class="fas fa-paper-plane"></i> Kirim
             </button>
         </form>
@@ -1009,6 +1015,25 @@
         }
     }
 
+    // Auto-resize textarea
+    function autoResizeTextarea(el) {
+        el.style.height = 'auto';
+        el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+    }
+
+    const chatInput = document.getElementById('chat-input');
+    chatInput.addEventListener('input', function() {
+        autoResizeTextarea(this);
+    });
+
+    // Enter to send, Shift+Enter for newline
+    chatInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            document.getElementById('chat-form').requestSubmit();
+        }
+    });
+
     document.getElementById('chat-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!currentSessionId) return;
@@ -1018,6 +1043,7 @@
         if (!text) return;
         
         input.value = '';
+        input.style.height = 'auto';
         
         try {
             const res = await fetch(`/chat/${currentSessionId}/send`, {

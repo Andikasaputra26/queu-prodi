@@ -434,17 +434,23 @@
     background: white;
     padding: 0.8rem 1rem;
     gap: 8px;
-    align-items: center;
+    align-items: flex-end;
 }
 #chat-widget-input {
     flex: 1;
     border: 1px solid #e2e8f0;
-    border-radius: 24px;
+    border-radius: 16px;
     padding: 0.7rem 1.1rem;
     outline: none;
     font-size: 0.875rem;
+    font-family: inherit;
     transition: all 0.2s;
     background: #f8fafc;
+    resize: none;
+    overflow-y: auto;
+    min-height: 38px;
+    max-height: 120px;
+    line-height: 1.45;
 }
 #chat-widget-input:focus {
     border-color: var(--primary);

@@ -380,6 +380,27 @@ function lockStudentChat() {
     }
 }
 
+// Auto-resize student widget textarea
+function autoResizeWidgetInput(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const widgetInput = document.getElementById('chat-widget-input');
+    if (widgetInput) {
+        widgetInput.addEventListener('input', function() {
+            autoResizeWidgetInput(this);
+        });
+        widgetInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendStudentMessage(e);
+            }
+        });
+    }
+});
+
 async function sendStudentMessage(e) {
     if (e && e.preventDefault) e.preventDefault();
     const input = document.getElementById('chat-widget-input');
@@ -389,6 +410,7 @@ async function sendStudentMessage(e) {
     if (!text) return;
     
     input.value = '';
+    input.style.height = 'auto';
     
     // Show typing indicator
     const typingIndicator = document.getElementById('chat-typing-indicator');
