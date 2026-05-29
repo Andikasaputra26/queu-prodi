@@ -1,6 +1,3 @@
-/**
- * Admin Dashboard Logic
- */
 
 const Config = window.AdminConfig || {
     routes: {
@@ -16,11 +13,10 @@ const Config = window.AdminConfig || {
 };
 
 const CSRF = document.querySelector('meta[name="csrf-token"]').content;
-let tab = ''; // default empty to fetch all
+let tab = '';
 let allQueues = [];
 let dtTable;
 
-// ─── Modal ───
 function openModal() { document.getElementById('manual-modal').classList.add('open'); }
 function closeModal() { document.getElementById('manual-modal').classList.remove('open'); }
 
@@ -31,7 +27,6 @@ if (modalEl) {
     });
 }
 
-// ─── Submit manual ───
 async function submitManual() {
     const svcId = document.getElementById('manual-service').value;
     const name = document.getElementById('manual-name').value.trim();
@@ -58,7 +53,6 @@ async function submitManual() {
     } catch (e) { showToast('Terjadi kesalahan', 'error'); }
 }
 
-// ─── Tab & search (Tabs are removed, this is a fallback if needed) ───
 function switchTab(s, btn) {
     tab = s;
     if (btn) {
@@ -69,10 +63,8 @@ function switchTab(s, btn) {
 }
 
 function filterQueues() {
-    // DataTable handles global search
 }
 
-// ─── Queue list ───
 async function refreshQueues() {
     const dateEl = document.getElementById('filter-date');
     const svcEl = document.getElementById('filter-service');
@@ -84,7 +76,7 @@ async function refreshQueues() {
 
     let url = '/api/admin/today?';
     if (statusVal) url += `status=${statusVal}&`;
-    else if (tab) url += `status=${tab}&`; // fallback to tab if used
+    else if (tab) url += `status=${tab}&`;
     if (date) url += `date=${date}&`;
     if (svc) url += `service_id=${svc}&`;
 
@@ -189,7 +181,7 @@ async function updateStatus(id, status) {
             cancelButtonText: 'Batal',
             confirmButtonColor: '#DC2626'
         });
-        if (reason === undefined) return; // User cancelled
+        if (reason === undefined) return;
         formData.append('reject_reason', reason);
     } else if (status === 'done') {
         const { value: formValues } = await Swal.fire({
@@ -220,7 +212,7 @@ async function updateStatus(id, status) {
                 return { file: file };
             }
         });
-        if (formValues === undefined) return; // User cancelled
+        if (formValues === undefined) return;
         if (formValues.file) {
             formData.append('file', formValues.file);
         }
@@ -325,7 +317,6 @@ async function resetToday() {
     } catch (e) { showToast('Terjadi kesalahan', 'error'); }
 }
 
-// ─── WebSocket Helper ───
 function setWsStatus(connected) {
     const dot = document.getElementById('ws-dot');
     const text = document.getElementById('ws-text');
@@ -345,36 +336,64 @@ document.addEventListener('DOMContentLoaded', () => {
                 data: 'queue_number',
                 render: (data, type, row) => `<span style="color:${row.service_color || '#6366F1'}; font-weight: 900; font-family: 'JetBrains Mono', monospace;">${data}</span>`
             },
-            { data: 'patient_name', render: (data) => `<span style="font-weight: 600;">${data}</span>` },
+            {
+                data: 'patient_name',
+                render: (data) => {
+                    const initial = data ? data.charAt(0).toUpperCase() : '?';
+                    return `<div style="display:flex; align-items:center; gap:0.5rem;">
+                        <span style="width:28px; height:28px; border-radius:50%; background:#EFF6FF; color:#1D4ED8; font-weight:700; display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem; border: 1px solid #BFDBFE;">${initial}</span>
+                        <span style="font-weight: 700; color: var(--text);">${data}</span>
+                    </div>`;
+                }
+            },
             {
                 data: 'phone',
                 render: (data, type, row) => {
                     if (!data) return '-';
                     const num = data.startsWith('0') ? '62' + data.substring(1) : data.replace(/[^0-9]/g, '');
-                    return `<a href="https://wa.me/${num}?text=Halo ${encodeURIComponent(row.patient_name)}, surat Anda (${row.service_name}) saat ini berstatus: ${row.status_label}." target="_blank" class="btn btn-success" style="padding:0.3rem 0.5rem; font-size:0.72rem; border-radius: 6px;"><i class="fab fa-whatsapp"></i> ${data}</a>`;
+                    return `<a href="https://wa.me/${num}?text=Halo ${encodeURIComponent(row.patient_name)}, surat Anda (${row.service_name}) saat ini berstatus: ${row.status_label}." target="_blank" class="wa-badge">
+                        <i class="fab fa-whatsapp"></i> ${data}
+                    </a>`;
                 }
             },
             {
                 data: 'service_name',
                 render: (data, type, row) => {
                     let html = `<span style="color:${row.service_color || '#6366F1'}; font-weight: 600;">${data || '-'}</span>`;
-                    if (row.file_path) {
+                    if (row.file_path && row.status !== 'done' && row.status !== 'picked_up') {
                         const isWord = row.file_path.toLowerCase().endsWith('.doc') || row.file_path.toLowerCase().endsWith('.docx');
                         const icon = isWord ? 'fa-file-word' : 'fa-file-pdf';
-                        const color = isWord ? '#2B579A' : '#F40F02';
                         const text = isWord ? 'Unduh Word' : 'Lihat PDF';
-                        html += `<br><a href="${row.file_path}" target="_blank" class="btn btn-ghost" style="padding: 0.2rem 0.4rem; font-size: 0.65rem; margin-top: 0.3rem; border-color: ${color}; color: ${color};"><i class="fas ${icon}"></i> ${text}</a>`;
+                        html += `<br><a href="${row.file_path}" target="_blank" style="font-size: 0.72rem; color: #1D4ED8; text-decoration: underline; display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 0.25rem;"><i class="fas ${icon}"></i> ${text}</a>`;
                     }
                     return html;
                 }
             },
             {
-                data: 'document_number',
-                render: data => data ? `<span style="font-weight: 700;">${data}</span>` : '-'
+                data: 'file_path',
+                render: (data, type, row) => {
+                    if ((row.status === 'done' || row.status === 'picked_up') && data) {
+                        const isWord = data.toLowerCase().endsWith('.doc') || data.toLowerCase().endsWith('.docx');
+                        const icon = isWord ? 'fa-file-word' : 'fa-file-pdf';
+                        const text = isWord ? 'Unduh Word' : 'Lihat PDF';
+                        let html = `<a href="${data}" target="_blank" style="font-size: 0.72rem; color: #1D4ED8; text-decoration: underline; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fas ${icon}"></i> ${text}</a>`;
+                        if (row.document_number) {
+                            html += `<br><span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;">No: ${row.document_number}</span>`;
+                        }
+                        return html;
+                    }
+                    return '<span style="color:#94a3b8; font-style:italic;">Belum diunggah</span>';
+                }
             },
             {
                 data: 'status',
-                render: (data, type, row) => `<span class="badge badge-${data}">${row.status_label}</span>`
+                render: (data, type, row) => {
+                    let color = 'waiting';
+                    if (data === 'admin') color = 'calling';
+                    else if (data === 'done' || data === 'picked_up') color = 'done';
+                    else if (data === 'rejected') color = 'skip';
+                    return `<span class="badge badge-${color}">${row.status_label}</span>`;
+                }
             },
             {
                 data: 'id',
@@ -401,16 +420,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     refreshQueues();
 
+    $('#search-input').on('keyup', function () {
+        dtTable.search(this.value).draw();
+    });
+
     try {
         if (!window.Echo) return;
 
+        const appConfig = window.AppConfig || {};
+        const isPusher = appConfig.broadcastConnection === 'pusher';
+
         const echo = new window.Echo({
-            broadcaster: 'reverb',
-            key: Config.reverb.key,
-            wsHost: Config.reverb.host,
-            wsPort: Config.reverb.port,
-            forceTLS: false,
-            enabledTransports: ['ws'],
+            broadcaster: isPusher ? 'pusher' : 'reverb',
+            key: isPusher ? appConfig.pusherAppKey : appConfig.reverbAppKey,
+            cluster: isPusher ? appConfig.pusherCluster : undefined,
+            wsHost: isPusher ? undefined : appConfig.reverbHost,
+            wsPort: isPusher ? undefined : (parseInt(appConfig.reverbPort) || 8080),
+            forceTLS: isPusher ? true : false,
+            enabledTransports: ['ws', 'wss'],
         });
 
         echo.channel('queue-monitor').listen('.queue.updated', (e) => {

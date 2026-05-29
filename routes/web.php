@@ -51,6 +51,8 @@ Route::prefix('admin')->name('admin.')->middleware(['admin.whitelist'])->group(f
     
     Route::patch('counters/{counter}/toggle-active', [\App\Http\Controllers\Admin\CounterController::class, 'toggleActive'])->name('counters.toggle-active');
     Route::resource('counters', \App\Http\Controllers\Admin\CounterController::class);
+
+    Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
 });
 
 Route::prefix('api')->name('api.')->group(function () {
