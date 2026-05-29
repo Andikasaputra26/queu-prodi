@@ -90,54 +90,59 @@ class ProcessGeminiChat implements ShouldQueue
         $year = $currentTimeZone->format('Y');
 
         $holidays = \Illuminate\Support\Facades\Cache::remember("indo_holidays_v2_{$year}", 86400 * 30, function () use ($year) {
-            if ($year === '2026') {
-                return [
-                    '2026-01-01' => 'Tahun Baru 2026 Masehi',
-                    '2026-01-16' => 'Isra Mi\'raj Nabi Muhammad SAW',
-                    '2026-02-16' => 'Cuti Bersama Tahun Baru Imlek 2577 Kongzili',
-                    '2026-02-17' => 'Tahun Baru Imlek 2577 Kongzili',
-                    '2026-03-18' => 'Cuti Bersama Hari Suci Nyepi Tahun Baru Saka 1948',
-                    '2026-03-19' => 'Hari Suci Nyepi (Tahun Baru Saka 1948)',
-                    '2026-03-20' => 'Cuti Bersama Hari Raya Idul Fitri 1447 H',
-                    '2026-03-21' => 'Hari Raya Idul Fitri 1447 H',
-                    '2026-03-22' => 'Hari Raya Idul Fitri 1447 H',
-                    '2026-03-23' => 'Cuti Bersama Hari Raya Idul Fitri 1447 H',
-                    '2026-03-24' => 'Cuti Bersama Hari Raya Idul Fitri 1447 H',
-                    '2026-04-03' => 'Wafat Yesus Kristus',
-                    '2026-04-05' => 'Kebangkitan Yesus Kristus (Paskah)',
-                    '2026-05-01' => 'Hari Buruh Internasional',
-                    '2026-05-14' => 'Kenaikan Yesus Kristus',
-                    '2026-05-15' => 'Cuti Bersama Kenaikan Yesus Kristus',
-                    '2026-05-27' => 'Hari Raya Idul Adha 1447 H',
-                    '2026-05-28' => 'Cuti Bersama Hari Raya Idul Adha 1447 H',
-                    '2026-05-31' => 'Hari Raya Waisak 2570 BE',
-                    '2026-06-01' => 'Hari Lahir Pancasila',
-                    '2026-06-16' => 'Tahun Baru Islam 1448 H',
-                    '2026-08-17' => 'Proklamasi Kemerdekaan RI',
-                    '2026-08-25' => 'Maulid Nabi Muhammad SAW',
-                    '2026-12-24' => 'Cuti Bersama Hari Raya Natal',
-                    '2026-12-25' => 'Hari Raya Natal',
-                ];
-            }
-
+            // Pertama, coba ambil data dari API eksternal agar otomatis & sinkron dengan tahun yang dicari
             try {
                 $response = Http::timeout(5)->get("https://api-hari-libur.vercel.app/api", [
                     'year' => $year
                 ]);
                 if ($response->successful()) {
-                    $holidays = [];
                     $data = $response->json('data') ?? [];
-                    foreach ($data as $item) {
-                        if (isset($item['date']) && isset($item['description'])) {
-                            $holidays[$item['date']] = $item['description'];
+                    if (!empty($data)) {
+                        $holidays = [];
+                        foreach ($data as $item) {
+                            if (isset($item['date']) && isset($item['description'])) {
+                                $holidays[$item['date']] = $item['description'];
+                            }
                         }
+                        return $holidays;
                     }
-                    return $holidays;
                 }
             } catch (\Exception $e) {
-                \Log::error("Failed to fetch Indonesian holidays: " . $e->getMessage());
+                \Log::error("Failed to fetch Indonesian holidays for year {$year}: " . $e->getMessage());
             }
-            return [];
+
+            $imlekYear = (int) $year + 551;
+            $sakaYear = (int) $year - 78;
+            $hijriahYear = (int) $year - 579;
+            $waisakYear = (int) $year + 544;
+
+            return [
+                "{$year}-01-01" => "Tahun Baru {$year} Masehi",
+                "{$year}-01-16" => "Isra Mi'raj Nabi Muhammad SAW",
+                "{$year}-02-16" => "Cuti Bersama Tahun Baru Imlek {$imlekYear} Kongzili",
+                "{$year}-02-17" => "Tahun Baru Imlek {$imlekYear} Kongzili",
+                "{$year}-03-18" => "Cuti Bersama Hari Suci Nyepi Tahun Baru Saka {$sakaYear}",
+                "{$year}-03-19" => "Hari Suci Nyepi (Tahun Baru Saka {$sakaYear})",
+                "{$year}-03-20" => "Cuti Bersama Hari Raya Idul Fitri {$hijriahYear} H",
+                "{$year}-03-21" => "Hari Raya Idul Fitri {$hijriahYear} H",
+                "{$year}-03-22" => "Hari Raya Idul Fitri {$hijriahYear} H",
+                "{$year}-03-23" => "Cuti Bersama Hari Raya Idul Fitri {$hijriahYear} H",
+                "{$year}-03-24" => "Cuti Bersama Hari Raya Idul Fitri {$hijriahYear} H",
+                "{$year}-04-03" => "Wafat Yesus Kristus",
+                "{$year}-04-05" => "Kebangkitan Yesus Kristus (Paskah)",
+                "{$year}-05-01" => "Hari Buruh Internasional",
+                "{$year}-05-14" => "Kenaikan Yesus Kristus",
+                "{$year}-05-15" => "Cuti Bersama Kenaikan Yesus Kristus",
+                "{$year}-05-27" => "Hari Raya Idul Adha {$hijriahYear} H",
+                "{$year}-05-28" => "Cuti Bersama Hari Raya Idul Adha {$hijriahYear} H",
+                "{$year}-05-31" => "Hari Raya Waisak {$waisakYear} BE",
+                "{$year}-06-01" => "Hari Lahir Pancasila",
+                "{$year}-06-16" => "Tahun Baru Islam " . ($hijriahYear + 1) . " H",
+                "{$year}-08-17" => "Proklamasi Kemerdekaan RI",
+                "{$year}-08-25" => "Maulid Nabi Muhammad SAW",
+                "{$year}-12-24" => "Cuti Bersama Hari Raya Natal",
+                "{$year}-12-25" => "Hari Raya Natal",
+            ];
         });
 
         $isHoliday = isset($holidays[$todayFormatted]);
