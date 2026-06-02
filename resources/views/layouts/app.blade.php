@@ -194,7 +194,7 @@
                 </div>
 
                 <form id="chat-widget-form" onsubmit="sendStudentMessage(event)">
-                    <input type="text" id="chat-widget-input" placeholder="Tulis pesan Anda di sini..." required autocomplete="off">
+                    <textarea id="chat-widget-input" placeholder="Tulis pesan Anda... (Shift+Enter untuk baris baru)" required autocomplete="off" rows="1"></textarea>
                     <button type="submit" class="chat-send-btn" aria-label="Kirim Pesan">
                         <i class="fas fa-paper-plane"></i>
                     </button>

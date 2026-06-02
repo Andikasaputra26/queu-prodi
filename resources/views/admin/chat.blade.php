@@ -341,10 +341,11 @@
             border-top: 1px solid var(--border);
             background: #fff;
             display: flex;
+            align-items: flex-end;
             gap: 0.75rem;
         }
 
-        .chat-input-area input {
+        .chat-input-area textarea {
             flex: 1;
             padding: 0.75rem 1.25rem;
             border: 1px solid var(--border);
@@ -352,10 +353,15 @@
             outline: none;
             font-family: inherit;
             font-size: 0.9rem;
-            transition: all 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            resize: none;
+            overflow-y: auto;
+            min-height: 42px;
+            max-height: 160px;
+            line-height: 1.5;
         }
 
-        .chat-input-area input:focus {
+        .chat-input-area textarea:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
         }
@@ -581,8 +587,8 @@
         </div>
 
         <form class="chat-input-area" id="chat-form">
-            <input type="text" id="chat-input" placeholder="Ketik balasan untuk mahasiswa..." autocomplete="off" required>
-            <button type="submit" class="btn btn-primary" id="chat-submit-btn" style="border-radius: 12px; padding: 0 1.5rem;">
+            <textarea id="chat-input" placeholder="Ketik balasan untuk mahasiswa... (Shift+Enter untuk baris baru)" autocomplete="off" required rows="1"></textarea>
+            <button type="submit" class="btn btn-primary" id="chat-submit-btn" style="border-radius: 12px; padding: 0.6rem 1.5rem; align-self: flex-end;">
                 <i class="fas fa-paper-plane"></i> Kirim
             </button>
         </form>
@@ -812,50 +818,123 @@
         html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
         html = html.replace(/`(.*?)`/g, '<code style="background: rgba(0,0,0,0.05); padding: 2px 4px; border-radius: 4px; font-family: monospace;">$1</code>');
 
-        // Split by lines to parse lists
+        // Split by lines to parse lists and tables
         const lines = html.split('\n');
         let inList = false; // false, 'ul', 'ol'
+        let listHtml = '';
+        let inTable = false;
+        let tableAlignments = [];
+        let tableHtml = '';
         let result = [];
 
         for (let i = 0; i < lines.length; i++) {
             let line = lines[i];
             let trimmed = line.trim();
             
+            // Check for table rows starting and ending with |
+            if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
+                // Close list if open
+                if (inList) {
+                    listHtml += inList === 'ul' ? '</ul>' : '</ol>';
+                    result.push(listHtml);
+                    inList = false;
+                    listHtml = '';
+                }
+
+                // Split columns, remove outer |
+                let cols = trimmed.slice(1, -1).split('|').map(c => c.trim());
+
+                // Check if this is a separator line (e.g. |---|---|)
+                let isSeparator = cols.every(col => /^[:\s-]*$/.test(col) && col.includes('-'));
+
+                if (isSeparator) {
+                    // Determine alignments
+                    tableAlignments = cols.map(col => {
+                        let left = col.startsWith(':');
+                        let right = col.endsWith(':');
+                        if (left && right) return 'center';
+                        if (right) return 'right';
+                        return 'left';
+                    });
+                    continue; // Skip separator line output
+                }
+
+                if (!inTable) {
+                    inTable = true;
+                    tableAlignments = Array(cols.length).fill('left'); // default alignments
+                    
+                    tableHtml = '<div style="overflow-x: auto; margin-top: 0.5rem; margin-bottom: 0.5rem; width: 100%; border-radius: 8px;">';
+                    tableHtml += '<table style="width: auto; max-width: 100%; border-collapse: collapse; font-size: 0.85rem; border: 1px solid rgba(128,128,128,0.3); color: inherit;">';
+                    tableHtml += '<thead style="background: rgba(128,128,128,0.15); font-weight: bold;"><tr>';
+                    for (let j = 0; j < cols.length; j++) {
+                        tableHtml += `<th style="border: 1px solid rgba(128,128,128,0.3); padding: 6px 10px; text-align: left;">${cols[j]}</th>`;
+                    }
+                    tableHtml += '</tr></thead><tbody>';
+                } else {
+                    tableHtml += '<tr>';
+                    for (let j = 0; j < cols.length; j++) {
+                        let align = tableAlignments[j] || 'left';
+                        tableHtml += `<td style="border: 1px solid rgba(128,128,128,0.3); padding: 6px 10px; text-align: ${align};">${cols[j] || ''}</td>`;
+                    }
+                    tableHtml += '</tr>';
+                }
+                continue;
+            } else {
+                // Close table if open
+                if (inTable) {
+                    tableHtml += '</tbody></table></div>';
+                    result.push(tableHtml);
+                    inTable = false;
+                    tableAlignments = [];
+                    tableHtml = '';
+                }
+            }
+
             // Bullet points
             if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
                 if (inList !== 'ul') {
                     if (inList) {
-                        result.push(inList === 'ul' ? '</ul>' : '</ol>');
+                        listHtml += inList === 'ul' ? '</ul>' : '</ol>';
+                        result.push(listHtml);
                     }
-                    result.push('<ul style="margin-left: 1.25rem; margin-bottom: 0.5rem; padding-left: 0; list-style-type: disc;">');
+                    listHtml = '<ul style="margin-left: 1.25rem; margin-bottom: 0.5rem; padding-left: 0; list-style-type: disc;">';
                     inList = 'ul';
                 }
-                result.push('<li style="margin-bottom: 0.25rem;">' + trimmed.substring(2) + '</li>');
+                listHtml += '<li style="margin-bottom: 0.25rem;">' + trimmed.substring(2) + '</li>';
             }
             // Numbered list
             else if (/^\d+\.\s/.test(trimmed)) {
                 if (inList !== 'ol') {
                     if (inList) {
-                        result.push(inList === 'ul' ? '</ul>' : '</ol>');
+                        listHtml += inList === 'ul' ? '</ul>' : '</ol>';
+                        result.push(listHtml);
                     }
-                    result.push('<ol style="margin-left: 1.25rem; margin-bottom: 0.5rem; padding-left: 0; list-style-type: decimal;">');
+                    listHtml = '<ol style="margin-left: 1.25rem; margin-bottom: 0.5rem; padding-left: 0; list-style-type: decimal;">';
                     inList = 'ol';
                 }
                 const content = trimmed.replace(/^\d+\.\s/, '');
-                result.push('<li style="margin-bottom: 0.25rem;">' + content + '</li>');
+                listHtml += '<li style="margin-bottom: 0.25rem;">' + content + '</li>';
             }
             // Regular line
             else {
                 if (inList) {
-                    result.push(inList === 'ul' ? '</ul>' : '</ol>');
+                    listHtml += inList === 'ul' ? '</ul>' : '</ol>';
+                    result.push(listHtml);
                     inList = false;
+                    listHtml = '';
                 }
                 result.push(line);
             }
         }
         
+        // Clean up remaining open elements
         if (inList) {
-            result.push(inList === 'ul' ? '</ul>' : '</ol>');
+            listHtml += inList === 'ul' ? '</ul>' : '</ol>';
+            result.push(listHtml);
+        }
+        if (inTable) {
+            tableHtml += '</tbody></table></div>';
+            result.push(tableHtml);
         }
 
         html = result.join('\n');
@@ -936,6 +1015,25 @@
         }
     }
 
+    // Auto-resize textarea
+    function autoResizeTextarea(el) {
+        el.style.height = 'auto';
+        el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+    }
+
+    const chatInput = document.getElementById('chat-input');
+    chatInput.addEventListener('input', function() {
+        autoResizeTextarea(this);
+    });
+
+    // Enter to send, Shift+Enter for newline
+    chatInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            document.getElementById('chat-form').requestSubmit();
+        }
+    });
+
     document.getElementById('chat-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!currentSessionId) return;
@@ -945,6 +1043,7 @@
         if (!text) return;
         
         input.value = '';
+        input.style.height = 'auto';
         
         try {
             const res = await fetch(`/chat/${currentSessionId}/send`, {

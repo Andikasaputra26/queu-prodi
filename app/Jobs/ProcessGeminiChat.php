@@ -24,7 +24,7 @@ class ProcessGeminiChat implements ShouldQueue
     public function handle(): void
     {
         $session = ChatSession::with('messages')->find($this->sessionId);
-        
+
         if (!$session || !$session->is_ai_active || $session->status === 'closed') {
             return;
         }
@@ -33,31 +33,31 @@ class ProcessGeminiChat implements ShouldQueue
         if ($lastStudentMessage) {
             $msgText = strtolower(trim($lastStudentMessage->message));
             $cleanMsgText = preg_replace('/[?.!,]/', '', $msgText);
-            
+
             $isAskingCreator = false;
             if (
                 str_contains($cleanMsgText, 'siapa yang membuat website ini') ||
                 str_contains($cleanMsgText, 'siapa pembuat website ini') ||
                 str_contains($cleanMsgText, 'siapa yang buat website ini') ||
                 (
-                    str_contains($cleanMsgText, 'siapa') && 
+                    str_contains($cleanMsgText, 'siapa') &&
                     (
-                        str_contains($cleanMsgText, 'buat') || 
-                        str_contains($cleanMsgText, 'bikin') || 
-                        str_contains($cleanMsgText, 'membuat') || 
-                        str_contains($cleanMsgText, 'pembuat') || 
-                        str_contains($cleanMsgText, 'creator') || 
+                        str_contains($cleanMsgText, 'buat') ||
+                        str_contains($cleanMsgText, 'bikin') ||
+                        str_contains($cleanMsgText, 'membuat') ||
+                        str_contains($cleanMsgText, 'pembuat') ||
+                        str_contains($cleanMsgText, 'creator') ||
                         str_contains($cleanMsgText, 'developer') ||
                         str_contains($cleanMsgText, 'pencipta') ||
                         str_contains($cleanMsgText, 'cipta') ||
                         str_contains($cleanMsgText, 'rancang') ||
                         str_contains($cleanMsgText, 'perancang')
-                    ) && 
+                    ) &&
                     (
-                        str_contains($cleanMsgText, 'web') || 
-                        str_contains($cleanMsgText, 'aplikasi') || 
-                        str_contains($cleanMsgText, 'sistem') || 
-                        str_contains($cleanMsgText, 'si-pinter') || 
+                        str_contains($cleanMsgText, 'web') ||
+                        str_contains($cleanMsgText, 'aplikasi') ||
+                        str_contains($cleanMsgText, 'sistem') ||
+                        str_contains($cleanMsgText, 'si-pinter') ||
                         str_contains($cleanMsgText, 'sipinter') ||
                         str_contains($cleanMsgText, 'platform') ||
                         str_contains($cleanMsgText, 'platfrom') ||
@@ -83,8 +83,90 @@ class ProcessGeminiChat implements ShouldQueue
         }
 
         $services = QueueService::where('is_active', true)->get()->pluck('name')->implode(', ');
-        
-        $currentTime = now()->timezone('Asia/Makassar')->locale('id')->translatedFormat('l, d F Y H:i');
+
+        $currentTimeZone = now()->timezone('Asia/Makassar');
+        $currentTime = $currentTimeZone->locale('id')->translatedFormat('l, d F Y H:i');
+        $todayFormatted = $currentTimeZone->format('Y-m-d');
+        $year = $currentTimeZone->format('Y');
+
+        $holidays = \Illuminate\Support\Facades\Cache::remember("indo_holidays_v2_{$year}", 86400 * 30, function () use ($year) {
+            // Pertama, coba ambil data dari API eksternal agar otomatis & sinkron dengan tahun yang dicari
+            try {
+                $response = Http::timeout(5)->get("https://api-hari-libur.vercel.app/api", [
+                    'year' => $year
+                ]);
+                if ($response->successful()) {
+                    $data = $response->json('data') ?? [];
+                    if (!empty($data)) {
+                        $holidays = [];
+                        foreach ($data as $item) {
+                            if (isset($item['date']) && isset($item['description'])) {
+                                $holidays[$item['date']] = $item['description'];
+                            }
+                        }
+                        return $holidays;
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::error("Failed to fetch Indonesian holidays for year {$year}: " . $e->getMessage());
+            }
+
+            $imlekYear = (int) $year + 551;
+            $sakaYear = (int) $year - 78;
+            $hijriahYear = (int) $year - 579;
+            $waisakYear = (int) $year + 544;
+
+            return [
+                "{$year}-01-01" => "Tahun Baru {$year} Masehi",
+                "{$year}-01-16" => "Isra Mi'raj Nabi Muhammad SAW",
+                "{$year}-02-16" => "Cuti Bersama Tahun Baru Imlek {$imlekYear} Kongzili",
+                "{$year}-02-17" => "Tahun Baru Imlek {$imlekYear} Kongzili",
+                "{$year}-03-18" => "Cuti Bersama Hari Suci Nyepi Tahun Baru Saka {$sakaYear}",
+                "{$year}-03-19" => "Hari Suci Nyepi (Tahun Baru Saka {$sakaYear})",
+                "{$year}-03-20" => "Cuti Bersama Hari Raya Idul Fitri {$hijriahYear} H",
+                "{$year}-03-21" => "Hari Raya Idul Fitri {$hijriahYear} H",
+                "{$year}-03-22" => "Hari Raya Idul Fitri {$hijriahYear} H",
+                "{$year}-03-23" => "Cuti Bersama Hari Raya Idul Fitri {$hijriahYear} H",
+                "{$year}-03-24" => "Cuti Bersama Hari Raya Idul Fitri {$hijriahYear} H",
+                "{$year}-04-03" => "Wafat Yesus Kristus",
+                "{$year}-04-05" => "Kebangkitan Yesus Kristus (Paskah)",
+                "{$year}-05-01" => "Hari Buruh Internasional",
+                "{$year}-05-14" => "Kenaikan Yesus Kristus",
+                "{$year}-05-15" => "Cuti Bersama Kenaikan Yesus Kristus",
+                "{$year}-05-27" => "Hari Raya Idul Adha {$hijriahYear} H",
+                "{$year}-05-28" => "Cuti Bersama Hari Raya Idul Adha {$hijriahYear} H",
+                "{$year}-05-31" => "Hari Raya Waisak {$waisakYear} BE",
+                "{$year}-06-01" => "Hari Lahir Pancasila",
+                "{$year}-06-16" => "Tahun Baru Islam " . ($hijriahYear + 1) . " H",
+                "{$year}-08-17" => "Proklamasi Kemerdekaan RI",
+                "{$year}-08-25" => "Maulid Nabi Muhammad SAW",
+                "{$year}-12-24" => "Cuti Bersama Hari Raya Natal",
+                "{$year}-12-25" => "Hari Raya Natal",
+            ];
+        });
+
+        $isHoliday = isset($holidays[$todayFormatted]);
+        $holidayName = $isHoliday ? $holidays[$todayFormatted] : null;
+        $isWeekend = $currentTimeZone->isWeekend();
+
+        $statusHariIni = "";
+        if ($isHoliday) {
+            $statusHariIni = "Hari ini adalah Hari Libur Nasional ({$holidayName}). Pelayanan akademik TUTUP/LIBUR hari ini.";
+        } elseif ($isWeekend) {
+            $statusHariIni = "Hari ini adalah hari " . $currentTimeZone->locale('id')->translatedFormat('l') . " (Akhir Pekan). Pelayanan akademik TUTUP/LIBUR hari ini.";
+        } else {
+            $statusHariIni = "Hari ini adalah hari kerja biasa. Pelayanan akademik BUKA sesuai dengan jam operasional.";
+        }
+
+        $daftarHariLiburTeks = "";
+        if (!empty($holidays)) {
+            $daftarHariLiburTeks = "Daftar Hari Libur Nasional Tahun {$year}:\n";
+            foreach ($holidays as $tanggal => $keterangan) {
+                $daftarHariLiburTeks .= "- {$tanggal}: {$keterangan}\n";
+            }
+        } else {
+            $daftarHariLiburTeks = "Daftar Hari Libur Nasional Tahun {$year} tidak tersedia.\n";
+        }
 
         $systemInstructionText = "Anda adalah Asisten Virtual Akademik SI-PINTER (Sistem Pelayanan Informasi Terpadu) yang cerdas dan solutif. "
             . "Tugas Anda membantu mahasiswa mengecek status pengajuan secara real-time dan memberikan informasi mengenai syarat pengajuan surat/layanan akademik di Program Studi.\n\n"
@@ -94,7 +176,7 @@ class ProcessGeminiChat implements ShouldQueue
             . "  * Jika mengunggah format Word (.docx), mahasiswa **wajib** menyisipkan teks `" . '${nmr}' . "` di dalam dokumen agar nomor surat/nomor antrean dapat terisi otomatis secara sistem ketika diproses oleh Admin.\n"
             . "  * Mahasiswa dapat mengunduh Template Surat (`FormatSurat.docx`) langsung pada halaman pendaftaran.\n"
             . "- **Surat Keterangan Aktif (SKA)**:\n"
-            . "  * Digunakan untuk keperluan beasiswa, tunjangan orang tua, dll. Pengajuan di web bersifat opsional tanpa berkas wajib, namun mahasiswa disarankan membawa dokumen pendukung (seperti KTM/KRS aktif) jika diperlukan.\n"
+            . "  * Digunakan untuk keperluan beasiswa, tunjangan orang tua, dll. Pengajuan di web bersifat opsional tanpa berkas wajib, namun mahasiswa disarankan membawa dokumen pendukung (like KTM/KRS aktif) jika diperlukan.\n"
             . "- **Legalisir Dokumen (LEG)**:\n"
             . "  * Untuk melegalisir ijazah, transkrip nilai, atau dokumen akademik lainnya. Mahasiswa wajib membawa dokumen asli beserta fotokopinya yang ingin dilegalisir saat datang ke Program Studi.\n"
             . "- **Surat Pengantar Magang (MAG)**:\n"
@@ -106,9 +188,12 @@ class ProcessGeminiChat implements ShouldQueue
             . "- **Urusan Administrasi Lain (OTH)**:\n"
             . "  * Keperluan administrasi lainnya yang tidak terdaftar di atas.\n\n"
             . "Jam operasional pelayanan akademik (Fakultas Ilmu Sosial dan Hukum, Universitas Negeri Makassar) adalah hari Senin s.d. Jumat, pukul 08:00 hingga 16:00 WITA. Waktu istirahat hari Senin - Kamis pukul 12:00 - 13:00 WITA, dan hari Jumat pukul 11:30 - 13:30 WITA. Pelayanan tutup pada hari Sabtu, Minggu, dan hari libur nasional. Semua waktu operasional menggunakan zona waktu WITA (Waktu Indonesia Tengah, bukan WIB).\n"
-            . "Waktu saat ini: {$currentTime} WITA.\n\n"
+            . "Waktu saat ini: {$currentTime} WITA.\n"
+            . "Status Pelayanan Hari Ini: {$statusHariIni}\n\n"
+            . "{$daftarHariLiburTeks}\n"
             . "Jika mahasiswa menanyakan status pengajuan atau keluhan dan memberikan ID pengajuan (seperti nomor tiket TKT-xxxxx, nomor antrean, atau nomor surat), "
             . "gunakan tool `checkRequestStatus` untuk mengambil data status pengajuan atau keluhan mahasiswa secara real-time dari database.\n"
+            . "Jika menyajikan data detail pengajuan, informasi yang memiliki banyak atribut/kolom, atau daftar data lainnya (misalnya daftar hari libur, daftar antrean, dll.), Anda WAJIB menyajikannya dalam bentuk tabel Markdown agar rapi dan terstruktur.\n"
             . "Jika mahasiswa menanyakan siapa pembuat atau pengembang website/sistem ini, jawab bahwa pembuat website/sistem ini adalah ANDIKA SAPUTRA dari makassar.\n"
             . "Jawab dengan ramah, profesional, ringkas, dan jelas dalam Bahasa Indonesia. Gunakan formatting list/bullet points agar mudah dibaca jika menjelaskan persyaratan. Jika Anda tidak tahu jawabannya atau mahasiswa butuh bantuan staf asli, katakan bahwa Admin akan segera membalas.";
 
@@ -157,7 +242,8 @@ class ProcessGeminiChat implements ShouldQueue
         ];
 
         $apiKey = env('GEMINI_API_KEY');
-        if (!$apiKey) return;
+        if (!$apiKey)
+            return;
 
         $models = ['gemini-2.5-flash', 'gemini-2.0-flash-lite', 'gemini-2.0-flash', 'gemini-flash-latest'];
         $reply = null;
@@ -276,7 +362,7 @@ class ProcessGeminiChat implements ShouldQueue
             $queue = Queue::with('service', 'counter')
                 ->where('queue_number', $requestIdClean)
                 ->orWhere('document_number', $requestIdClean)
-                ->orWhere(function($query) use ($requestIdClean) {
+                ->orWhere(function ($query) use ($requestIdClean) {
                     if (is_numeric($requestIdClean)) {
                         $query->where('id', (int) $requestIdClean);
                     }
@@ -292,12 +378,12 @@ class ProcessGeminiChat implements ShouldQueue
         }
 
         $statusLabel = match ($queue->status) {
-            'pending'   => 'Diajukan / Menunggu Verifikasi',
-            'admin'     => 'Sedang Diproses oleh Admin',
-            'done'      => 'Selesai',
+            'pending' => 'Diajukan / Menunggu Verifikasi',
+            'admin' => 'Sedang Diproses oleh Admin',
+            'done' => 'Selesai',
             'picked_up' => 'Selesai & Sudah Diambil',
-            'rejected'  => 'Ditolak',
-            default     => ucfirst($queue->status),
+            'rejected' => 'Ditolak',
+            default => ucfirst($queue->status),
         };
 
         return [
