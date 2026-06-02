@@ -116,8 +116,6 @@ class ProcessGeminiChat implements ShouldQueue
             'parts' => [['text' => $systemInstructionText]]
         ];
 
-        // OPTIMASI 1: Susun history dengan struktur array object standard Gemini (User & Model)
-        // Ini mempercepat pemrosesan AI secara dramatis dibanding menggabungkannya jadi teks panjang
         $contents = [];
         foreach ($session->messages as $msg) {
             $contents[] = [
@@ -150,7 +148,6 @@ class ProcessGeminiChat implements ShouldQueue
         $apiKey = env('GEMINI_API_KEY');
         if (!$apiKey) return;
 
-        // OPTIMASI 2: Gunakan timeout yang lebih rendah (misal 12 detik) agar jika model utama down, langsung sigap pindah ke model berikutnya
         $models = ['gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-flash-latest'];
         $reply = null;
         $success = false;
@@ -159,7 +156,7 @@ class ProcessGeminiChat implements ShouldQueue
             try {
                 $currentContents = $contents;
                 $loopCount = 0;
-                $maxLoops = 2; // Cukup 2 kali putaran untuk memproses function calling
+                $maxLoops = 2; 
 
                 while ($loopCount < $maxLoops) {
                     $response = Http::timeout(12)->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}", [
