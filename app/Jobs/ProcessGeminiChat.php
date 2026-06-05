@@ -108,7 +108,8 @@ class ProcessGeminiChat implements ShouldQueue
             . "Jam operasional pelayanan akademik (Fakultas Ilmu Sosial dan Hukum, Universitas Negeri Makassar) adalah hari Senin s.d. Jumat, pukul 08:00 hingga 16:00 WITA. Pelayanan tutup pada hari Sabtu, Minggu, dan hari libur nasional. Semua waktu operasional menggunakan zona waktu WITA.\n"
             . "Waktu saat ini: {$currentTime} WITA.\n\n"
             . "Jika mahasiswa menanyakan status pengajuan atau keluhan dan memberikan ID pengajuan (seperti nomor tiket TKT-xxxxx, nomor antrean, atau nomor surat), "
-            . "gunakan tool `checkRequestStatus` untuk mengambil data status pengajuan atau keluhan mahasiswa secara real-time dari database.\n"
+            . "gunakan tool `checkRequestStatus` untuk mengambil data status pengajuan atau keluhan mahasiswa secara real-time dari database. "
+            . "Dalam balasan Anda, pastikan untuk selalu menampilkan data ID Antrian / ID Pengajuan (TKT-xxxxx) dan nomor antrean mahasiswa tersebut dengan jelas.\n"
             . "Jika mahasiswa menanyakan siapa pembuat atau pengembang website/sistem ini, jawab bahwa pembuat website/sistem ini adalah ANDIKA SAPUTRA dari makassar.\n"
             . "Jawab dengan ramah, profesional, ringkas, dan jelas dalam Bahasa Indonesia. Gunakan formatting list/bullet points agar mudah dibaca jika menjelaskan persyaratan.";
 
@@ -284,6 +285,7 @@ class ProcessGeminiChat implements ShouldQueue
 
         return [
             'found' => true,
+            'id_antrian' => 'TKT-' . str_pad($queue->id, 5, '0', STR_PAD_LEFT),
             'id_pengajuan' => 'TKT-' . str_pad($queue->id, 5, '0', STR_PAD_LEFT),
             'nama_mahasiswa' => $queue->patient_name,
             'nomor_antrean' => $queue->queue_number,
