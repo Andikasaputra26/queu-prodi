@@ -316,6 +316,15 @@ async function sendStudentMessage(e) {
     if (!text) return;
 
     input.value = '';
+    input.style.height = 'auto';
+
+    // Tampilkan pesan mahasiswa secara instan di UI (Optimistic UI Update)
+    const tempMessage = {
+        sender: 'student',
+        message: text,
+        created_at: new Date().toISOString()
+    };
+    appendStudentMessage(tempMessage);
 
     const typingIndicator = document.getElementById('chat-typing-indicator');
     if (typingIndicator) {
@@ -346,8 +355,8 @@ async function sendStudentMessage(e) {
             return;
         }
 
-        const data = await res.json();
-        appendStudentMessage(data);
+        // Response JSON dari server tidak perlu di-append lagi karena sudah di-append secara instan di atas
+        await res.json();
     } catch (e) {
         console.error(e);
         if (typingIndicator) typingIndicator.style.display = 'none';
@@ -446,4 +455,30 @@ function resetChatSession() {
     localStorage.removeItem('sipinter_chat_session_id');
     localStorage.removeItem('sipinter_chat_name');
     window.location.reload();
+}
+
+// Auto-grow textarea height and submit message on Enter key press
+function initChatInputListeners() {
+    const input = document.getElementById('chat-widget-input');
+    if (!input) return;
+
+    // Auto-grow textarea based on text height
+    input.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+
+    // Enter key to send (without Shift)
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendStudentMessage(e);
+        }
+    });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initChatInputListeners);
+} else {
+    initChatInputListeners();
 }

@@ -45,7 +45,7 @@ class ChatController extends Controller
 
         $session->messages()->where('sender', $targetSender)->where('is_read', false)->update(['is_read' => true]);
 
-        $messages = $session->messages()->orderBy('created_at', 'asc')->get();
+        $messages = $session->messages()->orderBy('id', 'asc')->get();
         return response()->json($messages);
     }
 
@@ -67,16 +67,16 @@ class ChatController extends Controller
             'message' => $request->message,
         ]);
 
+        broadcast(new ChatMessageSent($message, $session));
+
         if ($request->sender === 'admin') {
             $session->update(['last_activity_at' => now(), 'is_ai_active' => false]);
         } else {
             $session->update(['last_activity_at' => now()]);
             if ($session->is_ai_active && env('GEMINI_API_KEY')) {
-                \App\Jobs\ProcessGeminiChat::dispatch($session->id);
+                \App\Jobs\ProcessGeminiChat::dispatchSync($session->id);
             }
         }
-
-        broadcast(new ChatMessageSent($message, $session));
 
         return response()->json($message);
     }
