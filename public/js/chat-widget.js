@@ -18,15 +18,15 @@ function toggleChat() {
 
     const chatIcon = chatBtn.querySelector('.chat-icon');
     const closeIcon = chatBtn.querySelector('.close-icon');
-    
+
     const isClosed = chatBox.classList.contains('chat-closed');
     const resetBtn = document.getElementById('chat-header-reset-btn');
-    
+
     if (isClosed) {
         chatBox.classList.remove('chat-closed');
         if (chatIcon) chatIcon.style.display = 'none';
         if (closeIcon) closeIcon.style.display = 'block';
-        
+
         // Auto start session or load if name is in localStorage
         const name = localStorage.getItem('sipinter_chat_name');
         if (name) {
@@ -56,11 +56,11 @@ function startWithQuery(query) {
         name = 'Mahasiswa';
         nameInput.value = name;
     }
-    
+
     window.pendingQuery = query;
-    
+
     // Call startStudentChat directly by mimicking submit event
-    startStudentChat({ preventDefault: () => {} });
+    startStudentChat({ preventDefault: () => { } });
 }
 
 async function startStudentChat(e) {
@@ -72,11 +72,11 @@ async function startStudentChat(e) {
     if (!name) return;
 
     localStorage.setItem('sipinter_chat_name', name);
-    
+
     try {
         const res = await fetch('/chat/start', {
             method: 'POST',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
             },
@@ -86,17 +86,17 @@ async function startStudentChat(e) {
             })
         });
         const data = await res.json();
-        
+
         document.getElementById('chat-setup-screen').style.display = 'none';
         document.getElementById('chat-active-screen').style.display = 'flex';
-        
+
         const resetBtn = document.getElementById('chat-header-reset-btn');
         if (resetBtn) resetBtn.style.display = 'flex';
-        
+
         if (data.session.status === 'closed') {
             lockStudentChat();
         }
-        
+
         await loadStudentMessages();
         initStudentWs();
 
@@ -104,14 +104,14 @@ async function startStudentChat(e) {
         if (window.pendingQuery) {
             const query = window.pendingQuery;
             window.pendingQuery = null;
-            
+
             const input = document.getElementById('chat-widget-input');
             if (input && !input.disabled) {
                 input.value = query;
-                sendStudentMessage({ preventDefault: () => {} });
+                sendStudentMessage({ preventDefault: () => { } });
             }
         }
-    } catch(e) {
+    } catch (e) {
         console.error(e);
     }
 }
@@ -119,27 +119,27 @@ async function startStudentChat(e) {
 async function loadStudentMessages() {
     try {
         const res = await fetch(`/chat/${sipinterChatSessionId}/messages?reader=student`);
-        
+
         if (res.status === 404) {
             lockStudentChat();
             return;
         }
-        
+
         const msgs = await res.json();
-        
+
         const container = document.getElementById('chat-widget-messages');
         container.innerHTML = '';
-        
+
         msgs.forEach(m => appendStudentMessage(m));
         setTimeout(() => {
             container.scrollTop = container.scrollHeight;
         }, 100);
-    } catch(e) { console.error(e); }
+    } catch (e) { console.error(e); }
 }
 
 function parseMarkdown(text) {
     if (!text) return '';
-    
+
     // Escape HTML first to prevent XSS
     let html = text
         .replace(/&/g, "&amp;")
@@ -156,130 +156,57 @@ function parseMarkdown(text) {
     html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
     html = html.replace(/`(.*?)`/g, '<code style="background: rgba(0,0,0,0.05); padding: 2px 4px; border-radius: 4px; font-family: monospace;">$1</code>');
 
-    // Split by lines to parse lists and tables
+    // Split by lines to parse lists
     const lines = html.split('\n');
     let inList = false; // false, 'ul', 'ol'
-    let listHtml = '';
-    let inTable = false;
-    let tableAlignments = [];
-    let tableHtml = '';
     let result = [];
 
     for (let i = 0; i < lines.length; i++) {
         let line = lines[i];
         let trimmed = line.trim();
-        
-        // Check for table rows starting and ending with |
-        if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
-            // Close list if open
-            if (inList) {
-                listHtml += inList === 'ul' ? '</ul>' : '</ol>';
-                result.push(listHtml);
-                inList = false;
-                listHtml = '';
-            }
-
-            // Split columns, remove outer |
-            let cols = trimmed.slice(1, -1).split('|').map(c => c.trim());
-
-            // Check if this is a separator line (e.g. |---|---|)
-            let isSeparator = cols.every(col => /^[:\s-]*$/.test(col) && col.includes('-'));
-
-            if (isSeparator) {
-                // Determine alignments
-                tableAlignments = cols.map(col => {
-                    let left = col.startsWith(':');
-                    let right = col.endsWith(':');
-                    if (left && right) return 'center';
-                    if (right) return 'right';
-                    return 'left';
-                });
-                continue; // Skip separator line output
-            }
-
-            if (!inTable) {
-                inTable = true;
-                tableAlignments = Array(cols.length).fill('left'); // default alignments
-                
-                tableHtml = '<div style="overflow-x: auto; margin-top: 0.5rem; margin-bottom: 0.5rem; width: 100%; border-radius: 8px;">';
-                tableHtml += '<table style="width: auto; max-width: 100%; border-collapse: collapse; font-size: 0.85rem; border: 1px solid rgba(128,128,128,0.3); color: inherit;">';
-                tableHtml += '<thead style="background: rgba(128,128,128,0.15); font-weight: bold;"><tr>';
-                for (let j = 0; j < cols.length; j++) {
-                    tableHtml += `<th style="border: 1px solid rgba(128,128,128,0.3); padding: 6px 10px; text-align: left;">${cols[j]}</th>`;
-                }
-                tableHtml += '</tr></thead><tbody>';
-            } else {
-                tableHtml += '<tr>';
-                for (let j = 0; j < cols.length; j++) {
-                    let align = tableAlignments[j] || 'left';
-                    tableHtml += `<td style="border: 1px solid rgba(128,128,128,0.3); padding: 6px 10px; text-align: ${align};">${cols[j] || ''}</td>`;
-                }
-                tableHtml += '</tr>';
-            }
-            continue;
-        } else {
-            // Close table if open
-            if (inTable) {
-                tableHtml += '</tbody></table></div>';
-                result.push(tableHtml);
-                inTable = false;
-                tableAlignments = [];
-                tableHtml = '';
-            }
-        }
 
         // Bullet points
         if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
             if (inList !== 'ul') {
                 if (inList) {
-                    listHtml += inList === 'ul' ? '</ul>' : '</ol>';
-                    result.push(listHtml);
+                    result.push(inList === 'ul' ? '</ul>' : '</ol>');
                 }
-                listHtml = '<ul style="margin-left: 1.25rem; margin-bottom: 0.5rem; padding-left: 0; list-style-type: disc;">';
+                result.push('<ul style="margin-left: 1.25rem; margin-bottom: 0.5rem; padding-left: 0; list-style-type: disc;">');
                 inList = 'ul';
             }
-            listHtml += '<li style="margin-bottom: 0.25rem;">' + trimmed.substring(2) + '</li>';
+            result.push('<li style="margin-bottom: 0.25rem;">' + trimmed.substring(2) + '</li>');
         }
         // Numbered list
         else if (/^\d+\.\s/.test(trimmed)) {
             if (inList !== 'ol') {
                 if (inList) {
-                    listHtml += inList === 'ul' ? '</ul>' : '</ol>';
-                    result.push(listHtml);
+                    result.push(inList === 'ul' ? '</ul>' : '</ol>');
                 }
-                listHtml = '<ol style="margin-left: 1.25rem; margin-bottom: 0.5rem; padding-left: 0; list-style-type: decimal;">';
+                result.push('<ol style="margin-left: 1.25rem; margin-bottom: 0.5rem; padding-left: 0; list-style-type: decimal;">');
                 inList = 'ol';
             }
             const content = trimmed.replace(/^\d+\.\s/, '');
-            listHtml += '<li style="margin-bottom: 0.25rem;">' + content + '</li>';
+            result.push('<li style="margin-bottom: 0.25rem;">' + content + '</li>');
         }
         // Regular line
         else {
             if (inList) {
-                listHtml += inList === 'ul' ? '</ul>' : '</ol>';
-                result.push(listHtml);
+                result.push(inList === 'ul' ? '</ul>' : '</ol>');
                 inList = false;
-                listHtml = '';
             }
             result.push(line);
         }
     }
-    
-    // Clean up remaining open elements
+
     if (inList) {
-        listHtml += inList === 'ul' ? '</ul>' : '</ol>';
-        result.push(listHtml);
-    }
-    if (inTable) {
-        tableHtml += '</tbody></table></div>';
-        result.push(tableHtml);
+        result.push(inList === 'ul' ? '</ul>' : '</ol>');
     }
 
     html = result.join('\n');
 
     // Replace remaining single newlines (not inside tag blocks) with <br>
     html = html.replace(/\n/g, '<br>');
-    
+
     // Clean up empty lines or duplicate <br>s
     html = html.replace(/(<br>\s*){2,}/g, '<br><br>');
 
@@ -291,7 +218,7 @@ function appendStudentMessage(m) {
     if (!container) return;
 
     const isStudent = m.sender === 'student';
-    
+
     // Hide typing indicator
     const typingIndicator = document.getElementById('chat-typing-indicator');
     if (typingIndicator) {
@@ -306,7 +233,7 @@ function appendStudentMessage(m) {
     const row = document.createElement('div');
     row.className = `chat-message-row ${isStudent ? 'student-row animate__animated animate__fadeInUp' : 'admin-row animate__animated animate__fadeInUp'}`;
     row.style.animationDuration = '0.25s';
-    
+
     // Avatar
     const avatar = document.createElement('div');
     avatar.className = 'chat-bubble-avatar';
@@ -315,37 +242,37 @@ function appendStudentMessage(m) {
     } else {
         avatar.innerHTML = '<i class="fas fa-robot"></i>';
     }
-    
+
     // Bubble
     const bubble = document.createElement('div');
     bubble.className = 'chat-bubble';
-    
+
     // Text
     const textSpan = document.createElement('span');
     textSpan.innerHTML = parseMarkdown(m.message);
     bubble.appendChild(textSpan);
-    
+
     // Meta (Timestamp and Badge)
     const meta = document.createElement('div');
     meta.className = 'chat-bubble-meta';
-    
+
     const badge = document.createElement('span');
     badge.className = 'chat-bubble-badge';
     badge.textContent = isStudent ? 'MHS' : 'SI-PINTER';
     meta.appendChild(badge);
-    
+
     const timeSpan = document.createElement('span');
     timeSpan.textContent = new Date(m.created_at || Date.now()).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     meta.appendChild(timeSpan);
-    
+
     bubble.appendChild(meta);
-    
+
     row.appendChild(avatar);
     row.appendChild(bubble);
-    
+
     container.appendChild(row);
     container.scrollTop = container.scrollHeight;
-    
+
     // Check if this is the closing message
     if (m.message.includes('Sesi obrolan ini telah ditutup')) {
         lockStudentChat();
@@ -373,33 +300,12 @@ function lockStudentChat() {
         restartDiv.style.width = '100%';
         restartDiv.innerHTML = `<button id="btn-new-chat-session" onclick="localStorage.removeItem('sipinter_chat_session_id'); localStorage.removeItem('sipinter_chat_name'); window.location.reload();" style="background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; font-weight: 600; box-shadow: 0 4px 12px rgba(29, 78, 216, 0.2); transition: all 0.2s;">Mulai Sesi Baru</button>`;
         document.getElementById('chat-active-screen').appendChild(restartDiv);
-        
+
         // Scroll to bottom
         const container = document.getElementById('chat-widget-messages');
         if (container) container.scrollTop = container.scrollHeight;
     }
 }
-
-// Auto-resize student widget textarea
-function autoResizeWidgetInput(el) {
-    el.style.height = 'auto';
-    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const widgetInput = document.getElementById('chat-widget-input');
-    if (widgetInput) {
-        widgetInput.addEventListener('input', function() {
-            autoResizeWidgetInput(this);
-        });
-        widgetInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendStudentMessage(e);
-            }
-        });
-    }
-});
 
 async function sendStudentMessage(e) {
     if (e && e.preventDefault) e.preventDefault();
@@ -408,11 +314,18 @@ async function sendStudentMessage(e) {
 
     const text = input.value.trim();
     if (!text) return;
-    
+
     input.value = '';
     input.style.height = 'auto';
-    
-    // Show typing indicator
+
+    // Tampilkan pesan mahasiswa secara instan di UI (Optimistic UI Update)
+    const tempMessage = {
+        sender: 'student',
+        message: text,
+        created_at: new Date().toISOString()
+    };
+    appendStudentMessage(tempMessage);
+
     const typingIndicator = document.getElementById('chat-typing-indicator');
     if (typingIndicator) {
         typingIndicator.style.display = 'block';
@@ -420,40 +333,39 @@ async function sendStudentMessage(e) {
         if (container) container.scrollTop = container.scrollHeight;
     }
 
-    // Set a safety timeout to hide typing indicator in 15 seconds
     if (typingTimeout) clearTimeout(typingTimeout);
     typingTimeout = setTimeout(() => {
         const indicator = document.getElementById('chat-typing-indicator');
         if (indicator) indicator.style.display = 'none';
     }, 15000);
-    
+
     try {
         const res = await fetch(`/chat/${sipinterChatSessionId}/send`, {
             method: 'POST',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
             },
             body: JSON.stringify({ message: text, sender: 'student' })
         });
-        
+
         if (res.status === 403) {
             lockStudentChat();
             if (typingIndicator) typingIndicator.style.display = 'none';
             return;
         }
-        
-        const data = await res.json();
-        appendStudentMessage(data);
-    } catch(e) { 
-        console.error(e); 
+
+        // Response JSON dari server tidak perlu di-append lagi karena sudah di-append secara instan di atas
+        await res.json();
+    } catch (e) {
+        console.error(e);
         if (typingIndicator) typingIndicator.style.display = 'none';
     }
 }
 
 function initStudentWs() {
     if (chatEcho) return;
-    
+
     let config = null;
 
     // Try to get config from QueueConfig if available
@@ -465,10 +377,14 @@ function initStudentWs() {
 
     if (window.Echo !== undefined && config) {
         const isPusher = config.broadcaster === 'pusher';
+<<<<<<< HEAD
         if (isPusher && typeof Pusher !== 'undefined') {
             window.Pusher = Pusher;
         }
         
+=======
+
+>>>>>>> main
         let echoOptions = {
             broadcaster: isPusher ? 'pusher' : 'reverb',
             key: isPusher ? config.pusher.key : config.reverb.key,
@@ -485,7 +401,7 @@ function initStudentWs() {
 
         chatEcho = new window.Echo(echoOptions);
     }
-    
+
     if (chatEcho) {
         chatEcho.channel(`chat.${sipinterChatSessionId}`).listen('.chat.message', (e) => {
             if (e.message.sender === 'admin') {
@@ -498,19 +414,19 @@ function initStudentWs() {
                 }
 
                 appendStudentMessage(e.message);
-                
+
                 // Toggle open if closed
                 const chatBox = document.getElementById('chat-widget-box');
                 if (chatBox && chatBox.classList.contains('chat-closed')) {
                     toggleChat();
                 }
-                
+
                 // Play notification sound
                 try {
                     const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
                     audio.volume = 0.4;
                     audio.play();
-                } catch(err) {}
+                } catch (err) { }
 
                 if (navigator.vibrate) navigator.vibrate(200);
             }
@@ -546,4 +462,30 @@ function resetChatSession() {
     localStorage.removeItem('sipinter_chat_session_id');
     localStorage.removeItem('sipinter_chat_name');
     window.location.reload();
+}
+
+// Auto-grow textarea height and submit message on Enter key press
+function initChatInputListeners() {
+    const input = document.getElementById('chat-widget-input');
+    if (!input) return;
+
+    // Auto-grow textarea based on text height
+    input.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+
+    // Enter key to send (without Shift)
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendStudentMessage(e);
+        }
+    });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initChatInputListeners);
+} else {
+    initChatInputListeners();
 }
