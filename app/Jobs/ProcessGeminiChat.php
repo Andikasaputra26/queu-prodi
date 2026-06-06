@@ -90,7 +90,6 @@ class ProcessGeminiChat implements ShouldQueue
         $year = $currentTimeZone->format('Y');
 
         $holidays = \Illuminate\Support\Facades\Cache::remember("indo_holidays_v2_{$year}", 86400 * 30, function () use ($year) {
-            // Pertama, coba ambil data dari API eksternal agar otomatis & sinkron dengan tahun yang dicari
             try {
                 $response = Http::timeout(5)->get("https://api-hari-libur.vercel.app/api", [
                     'year' => $year

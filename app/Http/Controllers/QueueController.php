@@ -21,22 +21,21 @@ class QueueController extends Controller
     {
         $request->validate([
             'patient_name' => 'required|string|max:100',
-            'phone'        => 'required|string|max:30',
-            'service_id'   => 'required|exists:queue_services,id',
-            'file'         => 'nullable|file|mimes:pdf,doc,docx|max:5120', // Max 5MB
+            'phone' => 'required|string|max:30',
+            'service_id' => 'required|exists:queue_services,id',
+            'file' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
         ]);
 
         $service = QueueService::findOrFail($request->service_id);
-        
-        // Validation for seminar services
+
         if (in_array($service->code, ['SP', 'SH', 'ST']) && !$request->hasFile('file')) {
             return back()->withErrors(['file' => 'File (PDF/Word) wajib diunggah untuk layanan ini.'])->withInput();
         }
 
         $queue = DB::transaction(function () use ($request, $service) {
             $service->lockForUpdate();
-            $sequence    = $service->getNextSequence();
-            
+            $sequence = $service->getNextSequence();
+
             do {
                 $randomNumber = mt_rand(100, 999);
                 $queueNumber = $service->code . $randomNumber;
@@ -53,12 +52,12 @@ class QueueController extends Controller
             return Queue::create([
                 'queue_number' => $queueNumber,
                 'patient_name' => $request->patient_name,
-                'phone'        => $request->phone,
-                'service_id'   => $service->id,
-                'status'       => 'pending',
-                'sequence'     => $sequence,
-                'queue_date'   => today(),
-                'file_path'    => $filePath,
+                'phone' => $request->phone,
+                'service_id' => $service->id,
+                'status' => 'pending',
+                'sequence' => $sequence,
+                'queue_date' => today(),
+                'file_path' => $filePath,
             ]);
         });
 
@@ -85,7 +84,7 @@ class QueueController extends Controller
     public function search(Request $request)
     {
         $request->validate(['queue_number' => 'required|string']);
-        
+
         $queue = Queue::where('queue_number', strtoupper($request->queue_number))
             ->orderBy('created_at', 'desc')
             ->first();
@@ -105,24 +104,26 @@ class QueueController extends Controller
             $servicesQuery->where('id', $serviceId);
         }
 
-        $services = $servicesQuery->with(['queues' => function ($query) use ($date) {
-            if ($date) {
-                $query->whereDate('queue_date', $date);
-            } else {
-                $query->whereMonth('queue_date', date('m'))
-                      ->whereYear('queue_date', date('Y'));
+        $services = $servicesQuery->with([
+            'queues' => function ($query) use ($date) {
+                if ($date) {
+                    $query->whereDate('queue_date', $date);
+                } else {
+                    $query->whereMonth('queue_date', date('m'))
+                        ->whereYear('queue_date', date('Y'));
+                }
             }
-        }])->get();
+        ])->get();
 
         $stats = [];
         foreach ($services as $service) {
             $stats[$service->code] = [
                 'service_name' => $service->name,
-                'color'        => $service->color,
-                'pending'      => $service->queues->where('status', 'pending')->count(),
-                'admin'        => $service->queues->where('status', 'admin')->count(),
-                'done'         => $service->queues->where('status', 'done')->count(),
-                'total'        => $service->queues->count(),
+                'color' => $service->color,
+                'pending' => $service->queues->where('status', 'pending')->count(),
+                'admin' => $service->queues->where('status', 'admin')->count(),
+                'done' => $service->queues->where('status', 'done')->count(),
+                'total' => $service->queues->count(),
             ];
         }
 
@@ -133,14 +134,14 @@ class QueueController extends Controller
 
         return [
             'services' => $stats,
-            'calling'  => $calling ? [
-                'queue_number'  => $calling->queue_number,
-                'patient_name'  => $calling->patient_name,
-                'service_name'  => $calling->service?->name,
-                'service_code'  => $calling->service?->code,
+            'calling' => $calling ? [
+                'queue_number' => $calling->queue_number,
+                'patient_name' => $calling->patient_name,
+                'service_name' => $calling->service?->name,
+                'service_code' => $calling->service?->code,
                 'service_color' => $calling->service?->color,
-                'counter_name'  => $calling->counter?->name,
-                'called_at'     => $calling->called_at?->format('H:i:s'),
+                'counter_name' => $calling->counter?->name,
+                'called_at' => $calling->called_at?->format('H:i:s'),
             ] : null,
         ];
     }
@@ -167,18 +168,18 @@ class QueueController extends Controller
             ->orderBy('sequence')
             ->get()
             ->map(fn($q) => [
-                'id'            => $q->id,
-                'queue_number'  => $q->queue_number,
-                'patient_name'  => $q->patient_name,
-                'phone'         => $q->phone,
-                'status'        => $q->status,
-                'status_label'  => $q->status_label,
-                'service_name'  => $q->service?->name,
+                'id' => $q->id,
+                'queue_number' => $q->queue_number,
+                'patient_name' => $q->patient_name,
+                'phone' => $q->phone,
+                'status' => $q->status,
+                'status_label' => $q->status_label,
+                'service_name' => $q->service?->name,
                 'service_color' => $q->service?->color,
-                'counter_name'  => $q->counter?->name,
-                'called_at'     => $q->called_at?->format('H:i:s'),
-                'queue_date'    => $q->queue_date->format('d/m/Y'),
-                'created_at'    => $q->created_at->format('H:i:s'),
+                'counter_name' => $q->counter?->name,
+                'called_at' => $q->called_at?->format('H:i:s'),
+                'queue_date' => $q->queue_date->format('d/m/Y'),
+                'created_at' => $q->created_at->format('H:i:s'),
             ]);
 
         return response()->json($queues);
@@ -190,9 +191,9 @@ class QueueController extends Controller
             $queue->update([
                 'status' => 'picked_up',
             ]);
-            
+
             broadcast(new \App\Events\QueueUpdated('picked_up', $queue, $this->getStats()));
-            
+
             $surveyLink = env('SURVEY_LINK', 'https://docs.google.com/forms/d/e/1FAIpQLSeSnOxJIgkuIeVblX9QDYnJcLvqt3NjbK2VYKg9Oa95_EIKWg/viewform?usp=publish-editor');
             try {
                 \App\Services\WhatsAppService::notifySurvey($queue, $surveyLink);
@@ -200,14 +201,14 @@ class QueueController extends Controller
                 \Log::error('WhatsApp survey notification failed: ' . $e->getMessage());
             }
         }
-        
+
         if ($queue->file_path) {
             $absolutePath = storage_path('app/public/' . $queue->file_path);
             if (file_exists($absolutePath)) {
                 return response()->download($absolutePath);
             }
         }
-        
+
         return back()->withErrors(['error' => 'Berkas tidak ditemukan.']);
     }
 }
