@@ -377,14 +377,10 @@ function initStudentWs() {
 
     if (window.Echo !== undefined && config) {
         const isPusher = config.broadcaster === 'pusher';
-<<<<<<< HEAD
         if (isPusher && typeof Pusher !== 'undefined') {
             window.Pusher = Pusher;
         }
-        
-=======
 
->>>>>>> main
         let echoOptions = {
             broadcaster: isPusher ? 'pusher' : 'reverb',
             key: isPusher ? config.pusher.key : config.reverb.key,
@@ -470,13 +466,13 @@ function initChatInputListeners() {
     if (!input) return;
 
     // Auto-grow textarea based on text height
-    input.addEventListener('input', function() {
+    input.addEventListener('input', function () {
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight) + 'px';
     });
 
     // Enter key to send (without Shift)
-    input.addEventListener('keydown', function(e) {
+    input.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendStudentMessage(e);

@@ -408,41 +408,27 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
         if (!window.Echo) return;
 
-<<<<<<< HEAD
-        const isPusher = Config.broadcaster === 'pusher';
+        const appConfig = window.AppConfig || {};
+        const pageConfig = window.QueueConfig || {};
+        
+        const broadcaster = pageConfig.broadcaster || appConfig.broadcastConnection || 'reverb';
+        const isPusher = broadcaster === 'pusher';
+        
         if (isPusher && typeof Pusher !== 'undefined') {
             window.Pusher = Pusher;
         }
 
-        let echoConfig = {
-            broadcaster: isPusher ? 'pusher' : 'reverb',
-            key: isPusher ? (Config.pusher ? Config.pusher.key : '') : (Config.reverb ? Config.reverb.key : Config.reverbKey),
+        const echoConfig = {
+            broadcaster: broadcaster,
+            key: isPusher ? (pageConfig.pusher?.key || appConfig.pusherAppKey) : (pageConfig.reverb?.key || appConfig.reverbAppKey),
+            cluster: isPusher ? (pageConfig.pusher?.cluster || appConfig.pusherCluster) : undefined,
+            wsHost: isPusher ? undefined : (pageConfig.reverb?.host || appConfig.reverbHost || window.location.hostname),
+            wsPort: isPusher ? undefined : (parseInt(pageConfig.reverb?.port || appConfig.reverbPort) || 8080),
             forceTLS: isPusher ? true : false,
             enabledTransports: ['ws', 'wss'],
         };
 
-        if (isPusher) {
-            echoConfig.cluster = Config.pusher ? Config.pusher.cluster : '';
-        } else {
-            echoConfig.wsHost = Config.reverb ? Config.reverb.host : Config.reverbHost;
-            echoConfig.wsPort = Config.reverb ? Config.reverb.port : Config.reverbPort;
-        }
-
         const echo = new window.Echo(echoConfig);
-=======
-        const appConfig = window.AppConfig || {};
-        const isPusher = appConfig.broadcastConnection === 'pusher';
-
-        const echo = new window.Echo({
-            broadcaster: isPusher ? 'pusher' : 'reverb',
-            key: isPusher ? appConfig.pusherAppKey : appConfig.reverbAppKey,
-            cluster: isPusher ? appConfig.pusherCluster : undefined,
-            wsHost: isPusher ? undefined : appConfig.reverbHost,
-            wsPort: isPusher ? undefined : (parseInt(appConfig.reverbPort) || 8080),
-            forceTLS: isPusher ? true : false,
-            enabledTransports: ['ws', 'wss'],
-        });
->>>>>>> main
 
         echo.channel('queue-monitor').listen('.queue.updated', (e) => {
             setWsStatus(true);
@@ -470,7 +456,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-<<<<<<< HEAD
         // Reverb/Pusher connection events
         if (echo.connector.pusher && echo.connector.pusher.connection) {
             echo.connector.pusher.connection.bind('connected', () => setWsStatus(true));
@@ -481,12 +466,6 @@ document.addEventListener('DOMContentLoaded', () => {
             echo.connector.socket.on('connect', () => setWsStatus(true));
             echo.connector.socket.on('disconnect', () => setWsStatus(false));
         }
-=======
-        echo.connector.pusher.connection.bind('connected', () => setWsStatus(true));
-        echo.connector.pusher.connection.bind('disconnected', () => setWsStatus(false));
-        echo.connector.pusher.connection.bind('unavailable', () => setWsStatus(false));
-        echo.connector.pusher.connection.bind('failed', () => setWsStatus(false));
->>>>>>> main
 
     } catch (err) { console.warn('WS:', err); }
 

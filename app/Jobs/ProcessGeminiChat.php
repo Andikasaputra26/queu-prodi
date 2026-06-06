@@ -23,9 +23,8 @@ class ProcessGeminiChat implements ShouldQueue
 
     public function handle(): void
     {
-        // Gunakan eager loading untuk langsung mengambil pesan demi menghemat query DB
         $session = ChatSession::with('messages')->find($this->sessionId);
-        
+
         if (!$session || !$session->is_ai_active || $session->status === 'closed') {
             return;
         }
@@ -34,31 +33,31 @@ class ProcessGeminiChat implements ShouldQueue
         if ($lastStudentMessage) {
             $msgText = strtolower(trim($lastStudentMessage->message));
             $cleanMsgText = preg_replace('/[?.!,]/', '', $msgText);
-            
+
             $isAskingCreator = false;
             if (
                 str_contains($cleanMsgText, 'siapa yang membuat website ini') ||
                 str_contains($cleanMsgText, 'siapa pembuat website ini') ||
                 str_contains($cleanMsgText, 'siapa yang buat website ini') ||
                 (
-                    str_contains($cleanMsgText, 'siapa') && 
+                    str_contains($cleanMsgText, 'siapa') &&
                     (
-                        str_contains($cleanMsgText, 'buat') || 
-                        str_contains($cleanMsgText, 'bikin') || 
-                        str_contains($cleanMsgText, 'membuat') || 
-                        str_contains($cleanMsgText, 'pembuat') || 
-                        str_contains($cleanMsgText, 'creator') || 
+                        str_contains($cleanMsgText, 'buat') ||
+                        str_contains($cleanMsgText, 'bikin') ||
+                        str_contains($cleanMsgText, 'membuat') ||
+                        str_contains($cleanMsgText, 'pembuat') ||
+                        str_contains($cleanMsgText, 'creator') ||
                         str_contains($cleanMsgText, 'developer') ||
                         str_contains($cleanMsgText, 'pencipta') ||
                         str_contains($cleanMsgText, 'cipta') ||
                         str_contains($cleanMsgText, 'rancang') ||
                         str_contains($cleanMsgText, 'perancang')
-                    ) && 
+                    ) &&
                     (
-                        str_contains($cleanMsgText, 'web') || 
-                        str_contains($cleanMsgText, 'aplikasi') || 
-                        str_contains($cleanMsgText, 'sistem') || 
-                        str_contains($cleanMsgText, 'si-pinter') || 
+                        str_contains($cleanMsgText, 'web') ||
+                        str_contains($cleanMsgText, 'aplikasi') ||
+                        str_contains($cleanMsgText, 'sistem') ||
+                        str_contains($cleanMsgText, 'si-pinter') ||
                         str_contains($cleanMsgText, 'sipinter') ||
                         str_contains($cleanMsgText, 'platform') ||
                         str_contains($cleanMsgText, 'platfrom') ||
@@ -84,7 +83,6 @@ class ProcessGeminiChat implements ShouldQueue
         }
 
         $services = QueueService::where('is_active', true)->get()->pluck('name')->implode(', ');
-<<<<<<< HEAD
 
         $currentTimeZone = now()->timezone('Asia/Makassar');
         $currentTime = $currentTimeZone->locale('id')->translatedFormat('l, d F Y H:i');
@@ -92,55 +90,13 @@ class ProcessGeminiChat implements ShouldQueue
         $year = $currentTimeZone->format('Y');
 
         $holidays = \Illuminate\Support\Facades\Cache::remember("indo_holidays_v2_{$year}", 86400 * 30, function () use ($year) {
-            if ($year === '2026') {
-                return [
-                    '2026-01-01' => 'Tahun Baru 2026 Masehi',
-                    '2026-01-16' => 'Isra Mi\'raj Nabi Muhammad SAW',
-                    '2026-02-16' => 'Cuti Bersama Tahun Baru Imlek 2577 Kongzili',
-                    '2026-02-17' => 'Tahun Baru Imlek 2577 Kongzili',
-                    '2026-03-18' => 'Cuti Bersama Hari Suci Nyepi Tahun Baru Saka 1948',
-                    '2026-03-19' => 'Hari Suci Nyepi (Tahun Baru Saka 1948)',
-                    '2026-03-20' => 'Cuti Bersama Hari Raya Idul Fitri 1447 H',
-                    '2026-03-21' => 'Hari Raya Idul Fitri 1447 H',
-                    '2026-03-22' => 'Hari Raya Idul Fitri 1447 H',
-                    '2026-03-23' => 'Cuti Bersama Hari Raya Idul Fitri 1447 H',
-                    '2026-03-24' => 'Cuti Bersama Hari Raya Idul Fitri 1447 H',
-                    '2026-04-03' => 'Wafat Yesus Kristus',
-                    '2026-04-05' => 'Kebangkitan Yesus Kristus (Paskah)',
-                    '2026-05-01' => 'Hari Buruh Internasional',
-                    '2026-05-14' => 'Kenaikan Yesus Kristus',
-                    '2026-05-15' => 'Cuti Bersama Kenaikan Yesus Kristus',
-                    '2026-05-27' => 'Hari Raya Idul Adha 1447 H',
-                    '2026-05-28' => 'Cuti Bersama Hari Raya Idul Adha 1447 H',
-                    '2026-05-31' => 'Hari Raya Waisak 2570 BE',
-                    '2026-06-01' => 'Hari Lahir Pancasila',
-                    '2026-06-16' => 'Tahun Baru Islam 1448 H',
-                    '2026-08-17' => 'Proklamasi Kemerdekaan RI',
-                    '2026-08-25' => 'Maulid Nabi Muhammad SAW',
-                    '2026-12-24' => 'Cuti Bersama Hari Raya Natal',
-                    '2026-12-25' => 'Hari Raya Natal',
-                ];
-            }
-
+            // Pertama, coba ambil data dari API eksternal agar otomatis & sinkron dengan tahun yang dicari
             try {
                 $response = Http::timeout(5)->get("https://api-hari-libur.vercel.app/api", [
                     'year' => $year
                 ]);
                 if ($response->successful()) {
-                    $holidays = [];
                     $data = $response->json('data') ?? [];
-                    foreach ($data as $item) {
-                        if (isset($item['date']) && isset($item['description'])) {
-                            $holidays[$item['date']] = $item['description'];
-                        }
-                    }
-                    return $holidays;
-                }
-            } catch (\Exception $e) {
-                \Log::error("Failed to fetch Indonesian holidays: " . $e->getMessage());
-            }
-            return [];
-                        $data = $response->json('data') ?? [];
                     if (!empty($data)) {
                         $holidays = [];
                         foreach ($data as $item) {
@@ -187,7 +143,6 @@ class ProcessGeminiChat implements ShouldQueue
                 "{$year}-12-24" => "Cuti Bersama Hari Raya Natal",
                 "{$year}-12-25" => "Hari Raya Natal",
             ];
->>>>>>> main
         });
 
         $isHoliday = isset($holidays[$todayFormatted]);
@@ -202,8 +157,6 @@ class ProcessGeminiChat implements ShouldQueue
         } else {
             $statusHariIni = "Hari ini adalah hari kerja biasa. Pelayanan akademik BUKA sesuai dengan jam operasional.";
         }
-<<<<<<< HEAD
-=======
 
         $daftarHariLiburTeks = "";
         if (!empty($holidays)) {
@@ -214,10 +167,6 @@ class ProcessGeminiChat implements ShouldQueue
         } else {
             $daftarHariLiburTeks = "Daftar Hari Libur Nasional Tahun {$year} tidak tersedia.\n";
         }
->>>>>>> main
-=======
-        $currentTime = now()->timezone('Asia/Makassar')->locale('id')->translatedFormat('l, d F Y H:i');
->>>>>>> main
 
         $systemInstructionText = "Anda adalah Asisten Virtual Akademik SI-PINTER (Sistem Pelayanan Informasi Terpadu) yang cerdas dan solutif. "
             . "Tugas Anda membantu mahasiswa mengecek status pengajuan secara real-time dan memberikan informasi mengenai syarat pengajuan surat/layanan akademik di Program Studi.\n\n"
@@ -227,7 +176,7 @@ class ProcessGeminiChat implements ShouldQueue
             . "  * Jika mengunggah format Word (.docx), mahasiswa **wajib** menyisipkan teks `" . '${nmr}' . "` di dalam dokumen agar nomor surat/nomor antrean dapat terisi otomatis secara sistem ketika diproses oleh Admin.\n"
             . "  * Mahasiswa dapat mengunduh Template Surat (`FormatSurat.docx`) langsung pada halaman pendaftaran.\n"
             . "- **Surat Keterangan Aktif (SKA)**:\n"
-            . "  * Digunakan untuk keperluan beasiswa, tunjangan orang tua, dll. Pengajuan di web bersifat opsional tanpa berkas wajib, namun mahasiswa disarankan membawa dokumen pendukung (seperti KTM/KRS aktif) jika diperlukan.\n"
+            . "  * Digunakan untuk keperluan beasiswa, tunjangan orang tua, dll. Pengajuan di web bersifat opsional tanpa berkas wajib, namun mahasiswa disarankan membawa dokumen pendukung (like KTM/KRS aktif) jika diperlukan.\n"
             . "- **Legalisir Dokumen (LEG)**:\n"
             . "  * Untuk melegalisir ijazah, transkrip nilai, atau dokumen akademik lainnya. Mahasiswa wajib membawa dokumen asli beserta fotokopinya yang ingin dilegalisir saat datang ke Program Studi.\n"
             . "- **Surat Pengantar Magang (MAG)**:\n"
@@ -238,42 +187,36 @@ class ProcessGeminiChat implements ShouldQueue
             . "  * Rekomendasi dosen untuk lanjut studi atau kompetisi. Siapkan draf rekomendasi atau berkas penunjang prestasi/studi.\n"
             . "- **Urusan Administrasi Lain (OTH)**:\n"
             . "  * Keperluan administrasi lainnya yang tidak terdaftar di atas.\n\n"
-<<<<<<< HEAD
             . "Jam operasional pelayanan akademik (Fakultas Ilmu Sosial dan Hukum, Universitas Negeri Makassar) adalah hari Senin s.d. Jumat, pukul 08:00 hingga 16:00 WITA. Waktu istirahat hari Senin - Kamis pukul 12:00 - 13:00 WITA, dan hari Jumat pukul 11:30 - 13:30 WITA. Pelayanan tutup pada hari Sabtu, Minggu, dan hari libur nasional. Semua waktu operasional menggunakan zona waktu WITA (Waktu Indonesia Tengah, bukan WIB).\n"
             . "Waktu saat ini: {$currentTime} WITA.\n"
             . "Status Pelayanan Hari Ini: {$statusHariIni}\n\n"
-<<<<<<< HEAD
+            . "{$daftarHariLiburTeks}\n"
             . "Jika mahasiswa menanyakan status pengajuan atau keluhan dan memberikan ID pengajuan (seperti nomor tiket TKT-xxxxx, nomor antrean, atau nomor surat), "
             . "gunakan tool `checkRequestStatus` untuk mengambil data status pengajuan atau keluhan mahasiswa secara real-time dari database.\n"
-            . "Jika ada yang bertanya siapa pembuat, pencipta, atau pengembang website/sistem ini, beritahukan bahwa pembuatnya adalah **ANDIKA SAPUTRA dari Makassar**.\n\n"
-=======
-            . "{$daftarHariLiburTeks}\n"
-=======
-            . "Jam operasional pelayanan akademik (Fakultas Ilmu Sosial dan Hukum, Universitas Negeri Makassar) adalah hari Senin s.d. Jumat, pukul 08:00 hingga 16:00 WITA. Pelayanan tutup pada hari Sabtu, Minggu, dan hari libur nasional. Semua waktu operasional menggunakan zona waktu WITA.\n"
-            . "Waktu saat ini: {$currentTime} WITA.\n\n"
->>>>>>> main
-            . "Jika mahasiswa menanyakan status pengajuan atau keluhan dan memberikan ID pengajuan (seperti nomor tiket TKT-xxxxx, nomor antrean, atau nomor surat), "
-            . "gunakan tool `checkRequestStatus` untuk mengambil data status pengajuan atau keluhan mahasiswa secara real-time dari database. "
-            . "Dalam balasan Anda, pastikan untuk selalu menampilkan data ID Antrian / ID Pengajuan (TKT-xxxxx) dan nomor antrean mahasiswa tersebut dengan jelas.\n"
+            . "Jika menyajikan data detail pengajuan, informasi yang memiliki banyak atribut/kolom, atau daftar data lainnya (misalnya daftar hari libur, daftar antrean, dll.), Anda WAJIB menyajikannya dalam bentuk tabel Markdown agar rapi dan terstruktur.\n"
             . "Jika mahasiswa menanyakan siapa pembuat atau pengembang website/sistem ini, jawab bahwa pembuat website/sistem ini adalah ANDIKA SAPUTRA dari makassar.\n"
-<<<<<<< HEAD
->>>>>>> main
             . "Jawab dengan ramah, profesional, ringkas, dan jelas dalam Bahasa Indonesia. Gunakan formatting list/bullet points agar mudah dibaca jika menjelaskan persyaratan. Jika Anda tidak tahu jawabannya atau mahasiswa butuh bantuan staf asli, katakan bahwa Admin akan segera membalas.";
-=======
-            . "Jawab dengan ramah, profesional, ringkas, dan jelas dalam Bahasa Indonesia. Gunakan formatting list/bullet points agar mudah dibaca jika menjelaskan persyaratan.";
->>>>>>> main
 
         $systemInstruction = [
-            'parts' => [['text' => $systemInstructionText]]
+            'parts' => [
+                ['text' => $systemInstructionText]
+            ]
         ];
 
-        $contents = [];
+        $historyText = "";
         foreach ($session->messages as $msg) {
-            $contents[] = [
-                'role'  => $msg->sender === 'admin' ? 'model' : 'user',
-                'parts' => [['text' => $msg->message]]
-            ];
+            $senderName = $msg->sender === 'admin' ? 'Asisten/Admin' : 'Mahasiswa';
+            $historyText .= $senderName . ": " . $msg->message . "\n";
         }
+
+        $prompt = "Berikut adalah riwayat obrolan sejauh ini:\n" . $historyText . "\nSilakan berikan balasan Anda selanjutnya sebagai Asisten/Admin (jawab langsung isi pesannya saja, tanpa prefix):";
+
+        $contents = [
+            [
+                'role' => 'user',
+                'parts' => [['text' => $prompt]]
+            ]
+        ];
 
         $tools = [
             [
@@ -289,7 +232,9 @@ class ProcessGeminiChat implements ShouldQueue
                                     'description' => 'ID unik pengajuan keluhan mahasiswa.'
                                 ]
                             ],
-                            'required' => ['request_id']
+                            'required' => [
+                                'request_id'
+                            ]
                         ]
                     ]
                 ]
@@ -297,22 +242,10 @@ class ProcessGeminiChat implements ShouldQueue
         ];
 
         $apiKey = env('GEMINI_API_KEY');
-        if (!$apiKey) return;
+        if (!$apiKey)
+            return;
 
-<<<<<<< HEAD
-        $models = [
-            'gemini-3.5-flash',
-            'gemini-3.1-flash-lite',
-            'gemini-flash-lite-latest',
-            'gemini-3-flash-preview',
-            'gemini-2.5-flash',
-            'gemini-2.0-flash-lite',
-            'gemini-2.0-flash',
-            'gemini-flash-latest'
-        ];
-=======
-        $models = ['gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-flash-latest'];
->>>>>>> main
+        $models = ['gemini-2.5-flash', 'gemini-2.0-flash-lite', 'gemini-2.0-flash', 'gemini-flash-latest'];
         $reply = null;
         $success = false;
 
@@ -320,32 +253,29 @@ class ProcessGeminiChat implements ShouldQueue
             try {
                 $currentContents = $contents;
                 $loopCount = 0;
-                $maxLoops = 2; 
+                $maxLoops = 3;
 
                 while ($loopCount < $maxLoops) {
-                    $response = Http::timeout(12)->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}", [
+                    $response = Http::timeout(30)->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}", [
                         'contents' => $currentContents,
                         'tools' => $tools,
                         'system_instruction' => $systemInstruction,
                     ]);
 
                     if (!$response->successful()) {
-                        \Log::warning("Gemini model {$model} failed: Status {$response->status()}");
+                        \Log::warning("Gemini model {$model} failed: Status {$response->status()}", ['body' => $response->body()]);
                         break;
                     }
 
                     $candidate = $response->json('candidates.0');
-<<<<<<< HEAD
                     if (!$candidate) {
-                        \Log::warning("Gemini model {$model} successful but returned no candidates.", ['body' => $response->json()]);
                         break;
                     }
-=======
-                    if (!$candidate) break;
->>>>>>> main
 
                     $content = $candidate['content'] ?? null;
-                    if (!$content) break;
+                    if (!$content) {
+                        break;
+                    }
 
                     $functionCall = null;
                     foreach ($content['parts'] ?? [] as $part) {
@@ -402,9 +332,11 @@ class ProcessGeminiChat implements ShouldQueue
                     break;
                 }
 
-                if ($success) break;
+                if ($success) {
+                    break;
+                }
             } catch (\Exception $e) {
-                \Log::error("Gemini model {$model} exception: " . $e->getMessage());
+                \Log::error("Gemini model {$model} exception: " . $e->getMessage() . "\n" . $e->getTraceAsString());
             }
         }
 
@@ -430,11 +362,12 @@ class ProcessGeminiChat implements ShouldQueue
             $queue = Queue::with('service', 'counter')
                 ->where('queue_number', $requestIdClean)
                 ->orWhere('document_number', $requestIdClean)
-                ->orWhere(function($query) use ($requestIdClean) {
+                ->orWhere(function ($query) use ($requestIdClean) {
                     if (is_numeric($requestIdClean)) {
                         $query->where('id', (int) $requestIdClean);
                     }
-                })                ->first();
+                })
+                ->first();
         }
 
         if (!$queue) {
@@ -445,17 +378,16 @@ class ProcessGeminiChat implements ShouldQueue
         }
 
         $statusLabel = match ($queue->status) {
-            'pending'   => 'Diajukan / Menunggu Verifikasi',
-            'admin'     => 'Sedang Diproses oleh Admin',
-            'done'      => 'Selesai',
+            'pending' => 'Diajukan / Menunggu Verifikasi',
+            'admin' => 'Sedang Diproses oleh Admin',
+            'done' => 'Selesai',
             'picked_up' => 'Selesai & Sudah Diambil',
-            'rejected'  => 'Ditolak',
-            default     => ucfirst($queue->status),
+            'rejected' => 'Ditolak',
+            default => ucfirst($queue->status),
         };
 
         return [
             'found' => true,
-            'id_antrian' => 'TKT-' . str_pad($queue->id, 5, '0', STR_PAD_LEFT),
             'id_pengajuan' => 'TKT-' . str_pad($queue->id, 5, '0', STR_PAD_LEFT),
             'nama_mahasiswa' => $queue->patient_name,
             'nomor_antrean' => $queue->queue_number,
@@ -469,3 +401,4 @@ class ProcessGeminiChat implements ShouldQueue
         ];
     }
 }
+

@@ -109,27 +109,23 @@
     @if(request()->routeIs('admin.*'))
     <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.3.0/dist/web/pusher.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
-<<<<<<< HEAD
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const isPusher = '{{ env("BROADCAST_CONNECTION") }}' === 'pusher';
+            const appConfig = window.AppConfig || {};
+            const isPusher = appConfig.broadcastConnection === 'pusher';
             if (isPusher && typeof Pusher !== 'undefined') {
                 window.Pusher = Pusher;
             }
             
-            let echoConfig = {
+            const echoConfig = {
                 broadcaster: isPusher ? 'pusher' : 'reverb',
-                key: isPusher ? '{{ env("PUSHER_APP_KEY") }}' : '{{ env("VITE_REVERB_APP_KEY") }}',
+                key: isPusher ? appConfig.pusherAppKey : appConfig.reverbAppKey,
+                cluster: isPusher ? appConfig.pusherCluster : undefined,
+                wsHost: isPusher ? undefined : appConfig.reverbHost,
+                wsPort: isPusher ? undefined : (parseInt(appConfig.reverbPort) || 8080),
                 forceTLS: isPusher ? true : false,
                 enabledTransports: ['ws', 'wss'],
             };
-
-            if (isPusher) {
-                echoConfig.cluster = '{{ env("PUSHER_APP_CLUSTER") }}';
-            } else {
-                echoConfig.wsHost = '{{ env("VITE_REVERB_HOST", "localhost") }}';
-                echoConfig.wsPort = {{ env("VITE_REVERB_PORT", 8080) }};
-            }
 
             const adminEcho = new window.Echo(echoConfig);
 
@@ -162,8 +158,6 @@
             });
         });
     </script>
-=======
->>>>>>> main
     @endif
 
     <script src="{{ asset('js/app-layout.js') }}"></script>
