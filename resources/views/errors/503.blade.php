@@ -428,23 +428,6 @@
             </div>
 
         </div>
-
-        <!-- Action Buttons -->
-        <div class="actions-container">
-            <button id="btn-reload" onclick="window.location.reload()" class="btn btn-primary">
-                <i class="fa-solid fa-rotate-right"></i> Muat Ulang Halaman
-            </button>
-            <a id="btn-wa-support" href="https://wa.me/628123456789" class="btn btn-secondary" target="_blank">
-                <i class="fa-brands fa-whatsapp"></i> Hubungi Layanan Akademik
-            </a>
-        </div>
-
-        <!-- Footer -->
-        <div class="footer">
-            <p>Terima kasih atas pengertian dan kesabaran Anda.</p>
-            <p>&copy; {{ date('Y') }} <span class="footer-brand">SI-PINTER</span>. All rights reserved.</p>
-        </div>
-
     </div>
 
 </body>
