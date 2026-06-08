@@ -62,13 +62,15 @@ class WhatsAppService
             $message .= "Terima kasih telah menggunakan layanan SI-PINTER 😊\n\n";
             $message .= "Salam hangat,\n\n*Admin SI-PINTER*";
         } elseif ($queue->status === 'rejected') {
-            $message = "🔔 *Update Progres Pengajuan Surat⏰*\n\nHalo, *{$queue->patient_name}*! 👋\n\nTerima kasih atas pengajuan surat yang telah Anda lakukan. Saat ini, pengajuan Anda belum dapat kami proses karena terdapat beberapa ketidaksesuaian pada berkas yang dilampirkan ❌\n";
+            $message = "🔔 *Update Progres Pengajuan Surat⏰*\n\nHalo, *{$queue->patient_name}*! 👋\n\nTerima kasih atas pengajuan surat yang telah Anda lakukan. 
+            Saat ini, pengajuan Anda belum dapat kami proses karena terdapat beberapa ketidaksesuaian pada berkas yang dilampirkan ❌\n";
             if ($queue->reject_reason) {
                 $message .= "\n*Alasan Penolakan:*\n{$queue->reject_reason}\n";
             }
             $message .= "\nSilakan perbaiki dokumen Anda lalu lakukan antrian ulang melalui sistem SI-PINTER ya 😊\n\nSalam hangat,\n\n*Admin SI-PINTER*";
         } elseif ($queue->status === 'admin') {
-            $message = "🔔 *Update Progres Pengajuan Surat⏰*\n\nHalo, *{$queue->patient_name}*! 👋\n\nSurat Anda sedang dalam proses pemeriksaan. Silakan pantau perkembangannya secara berkala melalui sistem SI-PINTER ya 😊\n\nSalam hangat,\n\n*Admin SI-PINTER*";
+            $message = "🔔 *Update Progres Pengajuan Surat⏰*\n\nHalo, *{$queue->patient_name}*! 👋\n\nSurat Anda sedang dalam proses pemeriksaan. 
+            Silakan pantau perkembangannya secara berkala melalui sistem SI-PINTER ya 😊\n\nSalam hangat,\n\n*Admin SI-PINTER*";
         } else {
             return true; 
         }
@@ -84,7 +86,8 @@ class WhatsAppService
 
         $message = "⏰ *Pengingat: Surat Anda Belum Diunduh!*\n\n";
         $message .= "Halo, *{$queue->patient_name}*! 👋\n";
-        $message .= "Kami ingin mengingatkan bahwa dokumen permohonan Anda untuk *{$queue->service->name}* dengan nomor antrean *{$queue->queue_number}* sudah selesai diproses dan siap untuk diunduh 📄\n\n";
+        $message .= "Kami ingin mengingatkan bahwa dokumen permohonan Anda untuk *{$queue->service->name}* dengan nomor antrean *{$queue->queue_number}* sudah selesai 
+        diproses dan siap untuk diunduh 📄\n\n";
         $message .= "Silakan unduh dokumen Anda langsung melalui halaman tiket berikut:\n";
         $message .= "🔗 {$ticketUrl}\n\n";
         $message .= "Jangan sampai terlewat ya, dokumen ini penting untuk keperluan administrasi Anda 📑\n\n";
