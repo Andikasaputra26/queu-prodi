@@ -91,8 +91,6 @@ class ProcessGeminiChat implements ShouldQueue
             . "Layanan yang tersedia beserta persyaratannya:\n"
             . "- **Layanan Seminar (Seminar Proposal [SP], Seminar Hasil [SH], Seminar Tutup [ST])**:\n"
             . "  * Mahasiswa **wajib** mengunggah file draf/berkas seminar saat mendaftar (Format PDF/Word, Maks 5MB).\n"
-            . "  * Jika mengunggah format Word (.docx), mahasiswa **wajib** menyisipkan teks `" . '${nmr}' . "` di dalam dokumen agar nomor surat/nomor antrean dapat terisi otomatis secara sistem ketika diproses oleh Admin.\n"
-            . "  * Mahasiswa dapat mengunduh Template Surat (`FormatSurat.docx`) langsung pada halaman pendaftaran.\n"
             . "- **Surat Keterangan Aktif (SKA)**:\n"
             . "  * Digunakan untuk keperluan beasiswa, tunjangan orang tua, dll. Pengajuan di web bersifat opsional tanpa berkas wajib, namun mahasiswa disarankan membawa dokumen pendukung (seperti KTM/KRS aktif) jika diperlukan.\n"
             . "- **Legalisir Dokumen (LEG)**:\n"
@@ -111,7 +109,9 @@ class ProcessGeminiChat implements ShouldQueue
             . "gunakan tool `checkRequestStatus` untuk mengambil data status pengajuan atau keluhan mahasiswa secara real-time dari database. "
             . "Dalam balasan Anda, pastikan untuk selalu menampilkan data ID Antrian / ID Pengajuan (TKT-xxxxx) dan nomor antrean mahasiswa tersebut dengan jelas.\n"
             . "Jika mahasiswa menanyakan siapa pembuat atau pengembang website/sistem ini, jawab bahwa pembuat website/sistem ini adalah ANDIKA SAPUTRA dari makassar.\n"
-            . "Jawab dengan ramah, profesional, ringkas, dan jelas dalam Bahasa Indonesia. Gunakan formatting list/bullet points agar mudah dibaca jika menjelaskan persyaratan.";
+            . "Jawab dengan ramah, profesional, ringkas, dan jelas dalam Bahasa Indonesia. Gunakan formatting list/bullet points agar mudah dibaca jika menjelaskan persyaratan.\n\n"
+            . "PENTING: Jika ada yang bertanya mengenai berkas pengajuannya (dokumen/persyaratan), JANGAN PERNAH menjawab atau memberikan informasi tentang: \"Template Surat: Anda dapat mengunduh Template Surat resmi (FormatSurat.docx) langsung pada halaman pendaftaran di website SI-PINTER. Ketentuan Format Word (.docx): Jika mengunggah format Word, Anda wajib menyisipkan teks " . '${nmr}' . " di dalam dokumen tersebut. Teks ini berfungsi agar nomor surat atau nomor antrean dapat terisi otomatis secara sistem saat diproses oleh Admin.\"\n"
+            . "Jangan pernah menyertakan perihal template surat (FormatSurat.docx) dan teks " . '${nmr}' . " tersebut dalam jawaban Anda ketika ditanya tentang berkas pengajuan.";
 
         $systemInstruction = [
             'parts' => [['text' => $systemInstructionText]]
