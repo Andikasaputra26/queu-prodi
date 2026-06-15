@@ -74,7 +74,7 @@
                     <p style="font-size: 0.75rem; color: #047857; margin-bottom: 1rem; line-height: 1.4;">
                         Silakan unduh berkas yang telah ditandatangani dan distempel resmi di bawah ini.
                     </p>
-                    <a href="{{ route('queue.download', $queue->id) }}" onclick="setTimeout(() => window.location.reload(), 1500)" class="btn btn-success" style="width: 100%; justify-content: center; font-size: 0.9rem; padding: 0.6rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15); text-decoration: none; font-weight: 600; box-sizing: border-box;">
+                    <a href="{{ route('queue.download', $queue->id) }}" target="_blank" onclick="setTimeout(() => window.location.reload(), 1500)" class="btn btn-success" style="width: 100%; justify-content: center; font-size: 0.9rem; padding: 0.6rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15); text-decoration: none; font-weight: 600; box-sizing: border-box;">
                         <i class="fas fa-download"></i> Unduh Dokumen
                     </a>
                 </div>
@@ -177,6 +177,17 @@ window.TicketConfig = {
                 customClass: {
                     popup: 'animate__animated animate__zoomIn'
                 }
+            });
+        });
+    @endif
+
+    @if($errors->any())
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: '{!! $errors->first() !!}',
+                confirmButtonColor: '#EF4444',
             });
         });
     @endif

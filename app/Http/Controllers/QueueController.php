@@ -202,9 +202,9 @@ class QueueController extends Controller
         }
         
         if ($queue->file_path) {
-            $absolutePath = storage_path('app/public/' . $queue->file_path);
-            if (file_exists($absolutePath)) {
-                return response()->download($absolutePath);
+            $disk = \Illuminate\Support\Facades\Storage::disk('public');
+            if ($disk->exists($queue->file_path)) {
+                return response()->download($disk->path($queue->file_path));
             }
         }
         

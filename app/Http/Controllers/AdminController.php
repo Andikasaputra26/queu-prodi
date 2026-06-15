@@ -137,8 +137,9 @@ class AdminController extends Controller
 
             if (!$request->hasFile('file') && $queue->file_path && str_ends_with(strtolower($queue->file_path), 'docx')) {
                 try {
-                    $absolutePath = storage_path('app/public/' . $queue->file_path);
-                    if (file_exists($absolutePath)) {
+                    $disk = \Illuminate\Support\Facades\Storage::disk('public');
+                    if ($disk->exists($queue->file_path)) {
+                        $absolutePath = $disk->path($queue->file_path);
                         $templateProcessor = new \PhpOffice\PhpWord\TemplateProcessor($absolutePath);
                         $templateProcessor->setValue('nmr', $request->document_number);
                         $templateProcessor->saveAs($absolutePath);
